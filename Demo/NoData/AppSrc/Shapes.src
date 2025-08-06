@@ -1,0 +1,918 @@
+﻿Use Windows.pkg
+Use cHtmlHelp.pkg
+Use cApplication.pkg
+Use cConnection.pkg
+Use cCJCommandBarSystem.pkg
+Use cImageContainer.pkg
+
+Object oHtmlHelp is a cHtmlHelp
+End_Object
+
+Object oApplication is a cApplication
+    Set pbPreserveEnvironment to False
+    Set peHelpType to htNoHelp
+
+    Object oConnection is a cConnection
+        Use LoginEncryption.pkg
+        Use DatabaseLoginDialog.dg
+    End_Object
+
+    Set psProduct to "DataFlex Graphics Library Examples"
+    Set psVersion to "25.0"
+End_Object
+
+Use Colr_dlg.pkg
+Use File_dlg.pkg
+
+Use cGDIPlus.pkg
+
+Use cGraphicsContainer.pkg
+
+Use File_dlg.pkg
+
+Use cGDISolidBrush.pkg
+Use cGDIHatchBrush.pkg
+Use cGDIPen.pkg
+Use cGDIGraphicsPath.pkg
+Use cGDIImage.pkg
+Use cGDITextureBrush.pkg
+Use cGDIBrush.pkg
+Use cGDIFont.pkg
+Use cGDIStringFormat.pkg
+Use cGDIFontFamily.pkg
+
+Enum_List
+    Define C_SHAPE_ARC  for 1
+    Define C_SHAPE_RECT
+    Define C_SHAPE_CIRCLE
+    Define C_SHAPE_TRAFFICLIGHT
+    Define C_SHAPE_HATCH
+    Define C_SHAPE_TEXTURE
+    Define C_SHAPE_GRADIENTS
+    Define C_SHAPE_PIE
+    Define C_DRAW_TEXT
+End_Enum_List
+
+Object oShapesPanel is a BasicPanel
+    Set Border_Style to Border_Thick
+    Set Size to 287 463
+    Set Location to 5 3
+    Set Label to "Shapes"
+
+    Object oCJCommandBarSystem is a cCJCommandBarSystem
+        Object oShapesToolbar is a cCJToolbar
+            Set peStretched to stStretch
+
+            Object oColorsMenuItem is a cCJMenuItem
+                Set psCaption to "Color"
+                Set psToolTip to "Select a different color"
+                Set psImage to "ColorPalette.Ico"
+                Set peControlType to xtpControlSplitButtonPopup
+
+                Object oBackgroundColorMenuItem is a cCJMenuItem
+                    Set psCaption to "Background"
+                    Set psTooltip to "Background"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcBackColor of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+
+                Object oLineColorMenuItem is a cCJMenuItem
+                    Set psCaption to "Line"
+                    Set psTooltip to "Line"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcLineColor of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+
+                Object oHatchBackgroundColorMenuItem is a cCJMenuItem
+                    Set psCaption to "Hatch Background"
+                    Set psTooltip to "Background Color of a Hatch Brush"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcHatchBackgroundColor of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+
+                Object oHatchForegroundColorMenuItem is a cCJMenuItem
+                    Set psCaption to "Hatch Foreground"
+                    Set psTooltip to "Foreground Color of a Hatch Brush"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcHatchForegroundColor of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+
+                Object oGradientStartColorMenuItem is a cCJMenuItem
+                    Set psCaption to "Gradient Start"
+                    Set psTooltip to "Start Color of a Gradient"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcGradientStartColor of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+
+                Object oGradientEndColorMenuItem is a cCJMenuItem
+                    Set psCaption to "Gradient End"
+                    Set psTooltip to "End Color of a Gradient"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcGradientEndColor of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+
+                Object oPiePart1MenuItem is a cCJMenuItem
+                    Set psCaption to "Pie Part 1"
+                    Set psTooltip to "Color of the cut out part of the pie"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcPiePart1Color of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+
+                Object oPiePart2MenuItem is a cCJMenuItem
+                    Set psCaption to "Pie Part 2"
+                    Set psTooltip to "Color of the remaining pie part"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bColorSelected
+                        Integer eColor
+
+                        Get Show_Dialog of oColorDialog to bColorSelected
+                        If (bColorSelected) Begin
+                            Get SelectedColor of oColorDialog to eColor
+                            Set pcPiePart2Color of oGraphics to eColor
+                        End
+                    End_Procedure
+                End_Object
+            End_Object
+
+            Object oGraphicsPathMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlCheckBox
+                Set psCaption to "Path"
+                Set psToolTip to "Use GraphicsPath"
+                Set pbControlBeginGroup to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Boolean bChecked
+
+                    Get ComChecked to bChecked
+                    Move (not (bChecked)) to bChecked
+                    Set ComChecked to bChecked
+                    Set pbUseGraphicsPath of oGraphics to bChecked
+                    Send RecreateShape of oGraphics
+                End_Procedure
+            End_Object
+
+            Object oShapeMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlComboBox
+                Set pbControlBeginGroup to True
+                Set psToolTip to "Select Shape type"
+
+                Procedure OnCreateControl Handle hoObj
+                    Set ComDropDownWidth of hoObj to 100
+                    Set ComWidth of hoObj to 100
+                    Send FillComboList hoObj
+                End_Procedure
+
+                Procedure FillComboList Handle hoCombo
+                    Send ComClear of hoCombo
+                    Send ComAddItem of hoCombo "Arc" 1
+                    Send ComAddItem of hoCombo "Rectangle" 2
+                    Send ComAddItem of hoCombo "Circle" 3
+                    Send ComAddItem of hoCombo "Traffic Light" 4
+                    Send ComAddItem of hoCombo "Hatch Brush" 5
+                    Send ComAddItem of hoCombo "Texture Brush" 6
+                    Send ComAddItem of hoCombo "Gradients" 7
+                    Send ComAddItem of hoCombo "Pie" 8
+                    Send ComAddItem of hoCombo "Draw Text" 9
+
+                    Set ComItemData of hoCombo 1 to C_SHAPE_ARC
+                    Set ComItemData of hoCombo 2 to C_SHAPE_RECT
+                    Set ComItemData of hoCombo 3 to C_SHAPE_CIRCLE
+                    Set ComItemData of hoCombo 4 to C_SHAPE_TRAFFICLIGHT
+                    Set ComItemData of hoCombo 5 to C_SHAPE_HATCH
+                    Set ComItemData of hoCombo 6 to C_SHAPE_TEXTURE
+                    Set ComItemData of hoCombo 7 to C_SHAPE_GRADIENTS
+                    Set ComItemData of hoCombo 8 to C_SHAPE_PIE
+                    Set ComItemData of hoCombo 9 to C_DRAW_TEXT
+                End_Procedure
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoCombo
+                    Integer iIndex eShape
+
+                    Get CreateProxyControl vCommandBarControl to hoCombo
+                    Get ComListIndex of hoCombo to iIndex
+                    If (iIndex > 0) Begin
+                        Get ComItemData of hoCombo iIndex to eShape
+                        Set pbVisible of oHatchStyleMenuItem to (eShape = C_SHAPE_HATCH)
+                        Set pbVisible of oLinearGradientModeMenuItem to (eShape = C_SHAPE_GRADIENTS)
+                        Set peShape of oGraphics to eShape
+                        Send RecreateShape of oGraphics
+                    End
+                    Send Destroy of hoCombo
+                End_Procedure
+            End_Object
+
+            Object oWrapModeMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlComboBox
+                Set pbControlBeginGroup to True
+                Set psToolTip to "Select Wrap Mode"
+
+                Procedure OnCreateControl Handle hoObj
+                    Set ComDropDownWidth of hoObj to 100
+                    Set ComWidth of hoObj to 100
+                    Send FillComboList hoObj
+                End_Procedure
+
+                Procedure FillComboList Handle hoCombo
+                    Send ComClear of hoCombo
+                    Send ComAddItem of hoCombo "Tile" 1
+                    Send ComAddItem of hoCombo "Tile Flip X" 2
+                    Send ComAddItem of hoCombo "Tile Flip Y" 3
+                    Send ComAddItem of hoCombo "Tile Flip XY" 4
+                    Send ComAddItem of hoCombo "Clamp" 5
+
+                    Set ComItemData of hoCombo 1 to gpWrapModeTile
+                    Set ComItemData of hoCombo 2 to gpWrapModeTileFlipX
+                    Set ComItemData of hoCombo 3 to gpWrapModeTileFlipY
+                    Set ComItemData of hoCombo 4 to gpWrapModeTileFlipXY
+                    Set ComItemData of hoCombo 5 to gpWrapModeClamp
+                End_Procedure
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoCombo
+                    Integer iIndex
+                    gpWrapMode eWrapMode
+
+                    Get CreateProxyControl vCommandBarControl to hoCombo
+                    Get ComListIndex of hoCombo to iIndex
+                    If (iIndex > 0) Begin
+                        Get ComItemData of hoCombo iIndex to eWrapMode
+                        Set peWrapMode of oGraphics to eWrapMode
+                        Send RecreateShape of oGraphics
+                    End
+                    Send Destroy of hoCombo
+                End_Procedure
+            End_Object
+
+            Object oLinearGradientModeMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlComboBox
+                Set pbControlBeginGroup to True
+                Set psToolTip to "Select Linear Gradient Mode"
+                Set pbVisible to False
+
+                Procedure OnCreateControl Handle hoObj
+                    Set ComDropDownWidth of hoObj to 120
+                    Set ComWidth of hoObj to 120
+                    Send FillComboList hoObj
+                End_Procedure
+
+                Procedure FillComboList Handle hoCombo
+                    Send ComClear of hoCombo
+                    Send ComAddItem of hoCombo "Horizontal" 1
+                    Send ComAddItem of hoCombo "Vertical" 2
+                    Send ComAddItem of hoCombo "Forward Diagonal" 3
+                    Send ComAddItem of hoCombo "Backward Diagonal" 4
+
+                    Set ComItemData of hoCombo 1 to gpLinearGradientModeHorizontal
+                    Set ComItemData of hoCombo 2 to gpLinearGradientModeVertical
+                    Set ComItemData of hoCombo 3 to gpLinearGradientModeForwardDiagonal
+                    Set ComItemData of hoCombo 4 to gpLinearGradientModeBackwardDiagonal
+                End_Procedure
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoCombo
+                    Integer iIndex
+                    gpLinearGradientMode eLinearGradientMode
+
+                    Get CreateProxyControl vCommandBarControl to hoCombo
+                    Get ComListIndex of hoCombo to iIndex
+                    If (iIndex > 0) Begin
+                        Get ComItemData of hoCombo iIndex to eLinearGradientMode
+                        Set peLinearGradientMode of oGraphics to eLinearGradientMode
+                        Send RecreateShape of oGraphics
+                    End
+                    Send Destroy of hoCombo
+                End_Procedure
+            End_Object
+
+            Object oHatchStyleMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlComboBox
+                Set psToolTip to "Select HatchStyle (only used for Hatch Shapes)"
+                Set pbVisible to False
+
+                Procedure OnCreateControl Handle hoObj
+                    Set ComDropDownWidth of hoObj to 180
+                    Set ComWidth of hoObj to 180
+                    Send FillComboList hoObj
+                End_Procedure
+
+                Procedure FillComboList Handle hoCombo
+                    Send ComClear of hoCombo
+                    Send ComAddItem of hoCombo "Horizontal" 1
+                    Send ComAddItem of hoCombo "Vertical" 2
+                    Send ComAddItem of hoCombo "Forward Diagonal" 3
+                    Send ComAddItem of hoCombo "Backward Diagonal" 4
+                    Send ComAddItem of hoCombo "Cross" 5
+                    Send ComAddItem of hoCombo "Diagonal Cross" 6
+                    Send ComAddItem of hoCombo "05 Percent" 7
+                    Send ComAddItem of hoCombo "10 Percent" 8
+                    Send ComAddItem of hoCombo "20 Percent" 9
+                    Send ComAddItem of hoCombo "25 Percent" 10
+                    Send ComAddItem of hoCombo "30 Percent" 11
+                    Send ComAddItem of hoCombo "40 Percent" 12
+                    Send ComAddItem of hoCombo "50 Percent" 13
+                    Send ComAddItem of hoCombo "60 Percent" 14
+                    Send ComAddItem of hoCombo "70 Percent" 15
+                    Send ComAddItem of hoCombo "75 Percent" 16
+                    Send ComAddItem of hoCombo "80 Percent" 17
+                    Send ComAddItem of hoCombo "90 Percent" 18
+                    Send ComAddItem of hoCombo "Light Downward Diagonal" 19
+                    Send ComAddItem of hoCombo "Light Upward Diagonal" 20
+                    Send ComAddItem of hoCombo "Dark Downward Diagonal" 21
+                    Send ComAddItem of hoCombo "Dark Upward Diagonal" 22
+                    Send ComAddItem of hoCombo "Wide Downward Diagonal" 23
+                    Send ComAddItem of hoCombo "Wide Upward Diagonal" 24
+                    Send ComAddItem of hoCombo "Light Vertical" 25
+                    Send ComAddItem of hoCombo "Light Horizontal" 26
+                    Send ComAddItem of hoCombo "Narrow Vertical" 27
+                    Send ComAddItem of hoCombo "Narrow Horizontal" 28
+                    Send ComAddItem of hoCombo "Dark Vertical" 29
+                    Send ComAddItem of hoCombo "Dark Horizontal" 30
+                    Send ComAddItem of hoCombo "Dashed Downward Diagonal" 31
+                    Send ComAddItem of hoCombo "Dashed Upward Diagonal" 32
+                    Send ComAddItem of hoCombo "Dashed Horizontal" 33
+                    Send ComAddItem of hoCombo "Dashed Vertical" 34
+                    Send ComAddItem of hoCombo "Small Confetti" 35
+                    Send ComAddItem of hoCombo "Large Confetti" 36
+                    Send ComAddItem of hoCombo "ZigZag" 37
+                    Send ComAddItem of hoCombo "Wave" 38
+                    Send ComAddItem of hoCombo "Diagonal Brick" 39
+                    Send ComAddItem of hoCombo "Horizontal Brick" 40
+                    Send ComAddItem of hoCombo "Weave" 41
+                    Send ComAddItem of hoCombo "Plaid" 42
+                    Send ComAddItem of hoCombo "Divot" 43
+                    Send ComAddItem of hoCombo "Dotted Grid" 44
+                    Send ComAddItem of hoCombo "Dotted Diamond" 45
+                    Send ComAddItem of hoCombo "Shingle" 46
+                    Send ComAddItem of hoCombo "Trellis" 47
+                    Send ComAddItem of hoCombo "Sphere" 48
+                    Send ComAddItem of hoCombo "Small Grid" 49
+                    Send ComAddItem of hoCombo "Small Checker Board" 50
+                    Send ComAddItem of hoCombo "Large Checker Board" 51
+                    Send ComAddItem of hoCombo "Outlined Diamond" 52
+                    Send ComAddItem of hoCombo "Solid Diamond" 53
+
+                    Set ComItemData of hoCombo 1 to gpHatchStyleHorizontal
+                    Set ComItemData of hoCombo 2 to gpHatchStyleVertical
+                    Set ComItemData of hoCombo 3 to gpHatchStyleForwardDiagonal
+                    Set ComItemData of hoCombo 4 to gpHatchStyleBackwardDiagonal
+                    Set ComItemData of hoCombo 5 to gpHatchStyleCross
+                    Set ComItemData of hoCombo 6 to gpHatchStyleDiagonalCross
+                    Set ComItemData of hoCombo 7 to gpHatchStyle05Percent
+                    Set ComItemData of hoCombo 8 to gpHatchStyle10Percent
+                    Set ComItemData of hoCombo 9 to gpHatchStyle20Percent
+                    Set ComItemData of hoCombo 10 to gpHatchStyle25Percent
+                    Set ComItemData of hoCombo 11 to gpHatchStyle30Percent
+                    Set ComItemData of hoCombo 12 to gpHatchStyle40Percent
+                    Set ComItemData of hoCombo 13 to gpHatchStyle50Percent
+                    Set ComItemData of hoCombo 14 to gpHatchStyle60Percent
+                    Set ComItemData of hoCombo 15 to gpHatchStyle70Percent
+                    Set ComItemData of hoCombo 16 to gpHatchStyle75Percent
+                    Set ComItemData of hoCombo 17 to gpHatchStyle80Percent
+                    Set ComItemData of hoCombo 18 to gpHatchStyle90Percent
+                    Set ComItemData of hoCombo 19 to gpHatchStyleLightDownwardDiagonal
+                    Set ComItemData of hoCombo 20 to gpHatchStyleLightUpwardDiagonal
+                    Set ComItemData of hoCombo 21 to gpHatchStyleDarkDownwardDiagonal
+                    Set ComItemData of hoCombo 22 to gpHatchStyleDarkUpwardDiagonal
+                    Set ComItemData of hoCombo 23 to gpHatchStyleWideDownwardDiagonal
+                    Set ComItemData of hoCombo 24 to gpHatchStyleWideUpwardDiagonal
+                    Set ComItemData of hoCombo 25 to gpHatchStyleLightVertical
+                    Set ComItemData of hoCombo 26 to gpHatchStyleLightHorizontal
+                    Set ComItemData of hoCombo 27 to gpHatchStyleNarrowVertical
+                    Set ComItemData of hoCombo 28 to gpHatchstyleNarrowHorizontal
+                    Set ComItemData of hoCombo 29 to gpHatchstyleDarkVertical
+                    Set ComItemData of hoCombo 30 to gpHatchStyleDarkHorizontal
+                    Set ComItemData of hoCombo 31 to gpHatchStyleDashedDownwardDiagonal
+                    Set ComItemData of hoCombo 32 to gpHatchStyleDashedUpwardDiagonal
+                    Set ComItemData of hoCombo 33 to gpHatchStyleDashedHorizontal
+                    Set ComItemData of hoCombo 34 to gpHatchStyleDashedVertical
+                    Set ComItemData of hoCombo 35 to gpHatchStyleSmallConfetti
+                    Set ComItemData of hoCombo 36 to gpHatchStyleLargeConfetti
+                    Set ComItemData of hoCombo 37 to gpHatchStyleZigZag
+                    Set ComItemData of hoCombo 38 to gpHatchStyleWave
+                    Set ComItemData of hoCombo 39 to gpHatchStyleDiagonalBrick
+                    Set ComItemData of hoCombo 40 to gpHatchStyleHorizontalBrick
+                    Set ComItemData of hoCombo 41 to gpHatchStyleWeave
+                    Set ComItemData of hoCombo 42 to gpHatchStylePlaid
+                    Set ComItemData of hoCombo 43 to gpHatchStyleDivot
+                    Set ComItemData of hoCombo 44 to gpHatchStyleDottedGrid
+                    Set ComItemData of hoCombo 45 to gpHatchStyleDottedDiamond
+                    Set ComItemData of hoCombo 46 to gpHatchStyleShingle
+                    Set ComItemData of hoCombo 47 to gpHatchStyleTrellis
+                    Set ComItemData of hoCombo 48 to gpHatchStyleSphere
+                    Set ComItemData of hoCombo 49 to gpHatchStyleSmallGrid
+                    Set ComItemData of hoCombo 50 to gpHatchStyleSmallCheckerBoard
+                    Set ComItemData of hoCombo 51 to gpHatchStyleLargeCheckerBoard
+                    Set ComItemData of hoCombo 52 to gpHatchStyleOutlinedDiamond
+                    Set ComItemData of hoCombo 53 to gpHatchStyleSolidDiamond
+                End_Procedure
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoCombo
+                    Integer iIndex
+                    gpHatchStyle eHatchStyle
+
+                    Get CreateProxyControl vCommandBarControl to hoCombo
+                    Get ComListIndex of hoCombo to iIndex
+                    If (iIndex > 0) Begin
+                        Get ComItemData of hoCombo iIndex to eHatchStyle
+                        Set peHatchStyle of oGraphics to eHatchStyle
+                        Send RecreateShape of oGraphics
+                    End
+                    Send Destroy of hoCombo
+                End_Procedure
+            End_Object
+
+            Object oSaveAsFileMenuItem is a cCJMenuItem
+                Set psCaption to "Save"
+                Set psToolTip to "Save as file"
+                Set pbControlBeginGroup to True
+                Set psImage to "ActionSave.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Send SaveToFile of oGraphics
+                End_Procedure
+            End_Object
+        End_Object
+
+        Procedure OnComResizeClient Integer iLeft Integer iTop Integer iRight Integer iBottom
+            Forward Send OnComResizeClient iLeft iTop iRight iBottom
+            Set GuiSize of oGraphics to (iBottom - iTop) (iRight - iLeft)
+            Set GuiLocation of oGraphics to iTop iLeft
+        End_Procedure
+    End_Object
+
+    Object oColorDialog is a ColorDialog
+    End_Object
+
+    Object oGraphics is a cGraphicsContainer
+        Set Location to 21 5
+        Set Size to 265 453
+        Set peAnchors to anAll
+        Set Border_Style to Border_Dialog
+
+        Property Boolean pbUseGraphicsPath
+        Property gpWrapMode peWrapMode
+        Property gpLinearGradientMode peLinearGradientMode
+        Property Integer peShape
+        Property gpHatchStyle peHatchStyle
+        Property Integer pcHatchForegroundColor clRed
+        Property Integer pcHatchBackgroundColor clBlue
+        Property Integer pcGradientStartColor clRed
+        Property Integer pcGradientEndColor clBlue
+        Property Integer pcPiePart1Color clRed
+        Property Integer pcPiePart2Color clBlack
+
+        Procedure SaveToFile
+            Handle hoDialog hoBitmapImage hBitmap
+            Integer iFilterIndex
+            gpStatus eResult
+            Boolean bSave
+            String sMimeType sFileName
+            DateTime dtNow
+
+            Get phBmp to hBitmap
+            If (hBitmap <> 0) Begin
+                Get CreateImageFromHBITMAP of ghoGDIPlusHandler hBitmap 0 to hoBitmapImage
+                If (hoBitmapImage <> 0) Begin
+                    Get Create (RefClass (SaveAsDialog)) to hoDialog
+                    Set Filter_String of hoDialog to "Jpeg|*.Jpg|Bitmap|*.Bmp|TIFF|*.Tiff|GIF|*.Gif|PNG|*.Png|"
+                    Set Dialog_Caption of hoDialog to "Select location for destination"
+                    Move (CurrentDateTime ()) to dtNow
+                    Move (SFormat ("%1_%2%3%4", Cast (Cast (dtNow, Date), String), Right ("0" + Cast (DateGetHour (dtNow), String), 2), Right ("0" + Cast (DateGetMinute (dtNow), String), 2), Right ("0" + Cast (DateGetSecond (dtNow), String), 2))) to sFileName
+                    Set File_Title of hoDialog to sFileName
+                    Get Show_Dialog of hoDialog to bSave
+                    If (bSave) Begin
+                        Get Filter_Index of hoDialog to iFilterIndex
+                        Case Begin
+                            Case (iFilterIndex = 1)
+                                Move CS_JPG_Mimetype to sMimeType
+                                Case Break
+                            Case (iFilterIndex = 2)
+                                Move CS_BMP_Mimetype to sMimeType
+                                Case Break
+                            Case (iFilterIndex = 3)
+                                Move CS_TIF_Mimetype to sMimeType
+                                Case Break
+                            Case (iFilterIndex = 4)
+                                Move CS_GIF_Mimetype to sMimeType
+                                Case Break
+                            Case (iFilterIndex = 5)
+                                Move CS_PNG_Mimetype to sMimeType
+                                Case Break
+                        Case End
+                        Get File_Name of hoDialog to sFileName
+                    End
+                    Send Destroy of hoDialog
+
+                    Get SaveImageToFile of hoBitmapImage sFileName sMimeType to eResult
+                    If (eResult <> gpOk) Begin
+                        Send Stop_Box ("Unable to save drawing to '" + sFileName + "'")
+                    End
+                End
+                Else Begin
+                    Send Stop_Box "Conversion from image information of the Graphics canvas to an image failed"
+                End
+            End
+            Else Begin
+                Send Stop_Box "Graphics canvas does not have image information stored"
+            End
+        End_Procedure
+
+        Procedure DrawText String sText
+            Handle hoFontFamily hoFont hoStringFormat hoBrush hoGraphics
+            tRectF LayoutRect
+            gpStatus eResult
+            UInteger uiBrushColor
+
+            Get Create (RefClass (cGDIFontFamily)) to hoFontFamily
+            Get CreateFamilyFromName of hoFontFamily "Arial" to eResult
+            If (eResult <> gpOk) Begin
+                Get GenericSansSerif of hoFontFamily to eResult
+            End
+
+            Get Create (RefClass (cGDIFont)) to hoFont
+            Get CreateFont of hoFont hoFontFamily 24 FontStyleBold gpUnitPoint to eResult
+
+            Get Create (RefClass (cGDIStringFormat)) to hoStringFormat
+            Get CreateStringFormat of hoStringFormat StringFormatFlagsNoFitBlackBox LANG_NEUTRAL to eResult
+            Set peTrimming of hoStringFormat to StringTrimmingNone
+            Set peAlignment of hoStringFormat to StringAlignmentNear
+            Set peLineAlignment of hoStringFormat to StringAlignmentNear
+
+            Get Create (RefClass (cGDISolidBrush)) to hoBrush
+            Get ARGBFromRGB of ghoGDIPlusHandler (RGB (232, 70, 0)) 255 to uiBrushColor
+            Get CreateSolidFill of hoBrush uiBrushColor to eResult
+
+            Move 100 to LayoutRect.x
+            Move 100 to LayoutRect.y
+
+            Get phoGraphics to hoGraphics
+            Get DrawString of hoGraphics sText hoFont hoStringFormat hoBrush LayoutRect to eResult
+
+            Send Destroy of hoBrush
+            Send Destroy of hoStringFormat
+            Send Destroy of hoFontFamily
+            Send Destroy of hoFont
+        End_Procedure
+
+        Procedure OnPaintShape Handle hoGraphics tWinRect Rect
+            Boolean bUseGraphicsPath
+
+            Get pbUseGraphicsPath to bUseGraphicsPath
+            If (bUseGraphicsPath) Begin
+                Send PaintUsingPath hoGraphics Rect
+            End
+            Else Begin
+                Send PaintDirectly hoGraphics Rect
+            End
+        End_Procedure
+
+        Procedure PaintUsingPath Handle hoGraphics tWinRect Rect
+            Handle hoGraphicsPath hoPen hoBrush hoImage
+            UInteger uiLineColor uiPenColor
+            Integer eShape
+            gpStatus eStatus
+            String sFileName
+
+            Get Create (RefClass (cGDIGraphicsPath)) to hoGraphicsPath
+            Get CreatePath of hoGraphicsPath gpFillModeAlternate to eStatus
+
+            Get Create (RefClass (cGDIPen)) to hoPen
+            Get pcLineColor to uiLineColor
+            Get ARGBFromRGB of ghoGDIPlusHandler uiLineColor 255 to uiPenColor
+            Get CreatePenFromColor of hoPen uiPenColor 2 gpUnitPixel to eStatus
+            If (eStatus = gpOk) Begin
+                Get peShape to eShape
+                Case Begin
+                    Case (eShape = C_SHAPE_ARC)
+                        Get AddArc of hoGraphicsPath 0 0 100 50 0.0 180.0 to eStatus
+                        Get AddArc of hoGraphicsPath 0 60 100 50 0.0 180.0 to eStatus
+                        Get AddArc of hoGraphicsPath 0 120 100 50 0.0 180.0 to eStatus
+                        Get StartFigure of hoGraphicsPath to eStatus
+                        Get AddArc of hoGraphicsPath 0 180 100 50 0.0 180.0 to eStatus
+                        Get AddArc of hoGraphicsPath 0 240 100 50 0.0 180.0 to eStatus
+                        Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+                        Case Break
+                    Case (eShape = C_SHAPE_RECT)
+                        Get AddRect of hoGraphicsPath 50 30 100 100 to eStatus
+                        Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+                        Case Break
+                    Case (eShape = C_SHAPE_CIRCLE)
+                        Get AddArc of hoGraphicsPath 150 50 100 100 0 360 to eStatus
+                        Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+                        Case Break
+                    Case (eShape = C_SHAPE_TRAFFICLIGHT)
+                        // Outline
+                        Get StartFigure of hoGraphicsPath to eStatus
+                        Get AddArc of hoGraphicsPath 10 10 49 49 0 -180 to eStatus
+
+                        Get StartFigure of hoGraphicsPath to eStatus
+                        Get AddLine of hoGraphicsPath 11 34.5 11 120 to eStatus
+
+                        Get StartFigure of hoGraphicsPath to eStatus
+                        Get AddLine of hoGraphicsPath 59 34.5 59 120 to eStatus
+
+                        Get StartFigure of hoGraphicsPath to eStatus
+                        Get AddArc of hoGraphicsPath 10 94.5 49 49 0 180 to eStatus
+                        Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+
+                        Send Destroy of hoGraphicsPath
+                        Get Create (RefClass (cGDIGraphicsPath)) to hoGraphicsPath
+                        Get CreatePath of hoGraphicsPath gpFillModeAlternate to eStatus
+
+                        // Create a Brush to fill the circle shapes
+                        Get Create (RefClass (cGDISolidBrush)) to hoBrush
+                        Get CreateSolidFill of hoBrush uiPenColor to eStatus
+
+                        // Red circle
+                        Get ARGBFromRGB of ghoGDIPlusHandler clRed 255 to uiPenColor
+                        Set pcColor of hoPen to uiPenColor
+                        Set pcBrushColor of hoBrush uiPenColor to eStatus
+                        Get AddArc of hoGraphicsPath 23 30 25 25 0 360 to eStatus
+                        Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+                        Get FillPath of hoGraphics hoBrush hoGraphicsPath to eStatus
+
+                        // Orange circle
+                        Send Destroy of hoGraphicsPath
+                        Get Create (RefClass (cGDIGraphicsPath)) to hoGraphicsPath
+                        Get CreatePath of hoGraphicsPath gpFillModeAlternate to eStatus
+
+                        Get ARGBFromRGB of ghoGDIPlusHandler (RGB (232, 70, 0)) 255 to uiPenColor
+                        Set pcColor of hoPen to uiPenColor
+                        Set pcBrushColor of hoBrush uiPenColor to eStatus
+                        Get AddArc of hoGraphicsPath 23 65 25 25 0 360 to eStatus
+                        Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+                        Get FillPath of hoGraphics hoBrush hoGraphicsPath to eStatus
+
+                        // Green circle
+                        Send Destroy of hoGraphicsPath
+                        Get Create (RefClass (cGDIGraphicsPath)) to hoGraphicsPath
+                        Get CreatePath of hoGraphicsPath gpFillModeAlternate to eStatus
+
+                        Get ARGBFromRGB of ghoGDIPlusHandler clGreen 255 to uiPenColor
+                        Set pcColor of hoPen to uiPenColor
+                        Set pcBrushColor of hoBrush uiPenColor to eStatus
+                        Get AddArc of hoGraphicsPath 23 100 25 25 0 360 to eStatus
+                        Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+                        Get FillPath of hoGraphics hoBrush hoGraphicsPath to eStatus
+
+                        Send Destroy of hoBrush
+                        Case Break
+                    Case (eShape = C_SHAPE_TEXTURE)
+                        Get SelectFile of oFileSelectorDialog to sFileName
+                        If (sFileName <> "") Begin
+                            Get CreateImageFromFile of ghoGDIPlusHandler sFileName to hoImage
+                            If (hoImage <> 0) Begin
+                                Get Create (RefClass (cGDITextureBrush)) to hoBrush
+                                Get CreateTexture of hoBrush hoImage gpWrapModeTile to eStatus
+                                If (eStatus = gpOk) Begin
+                                    Get AddArc of hoGraphicsPath 0 0 100 50 0 360 to eStatus
+                                    Get DrawPath of hoGraphics hoPen hoGraphicsPath to eStatus
+                                    Get FillPath of hoGraphics hoBrush hoGraphicsPath to eStatus
+                                End
+                                Send Destroy of hoBrush
+                                Send Destroy of hoImage
+                            End
+                        End
+                        Case Break
+                Case End
+            End
+            Send Destroy of hoPen
+            Send Destroy of hoGraphicsPath
+        End_Procedure
+
+        Procedure PaintDirectly Handle hoGraphics tWinRect Rect
+            gpStatus eStatus
+            gpWrapMode eWrapMode
+            gpLinearGradientMode eLinearGradientMode
+            Handle hoPen hoBrush hoImage
+            Integer eShape eHatchStyle
+            UInteger uiLineColor uiPenColor uiHatchForeColor uiHatchBackColor
+            UInteger uiGradientStartColor uiGradientEndColor uiPiePart1Color uiPiePart2Color
+            String sFileName
+
+            Get Create (RefClass (cGDIPen)) to hoPen
+            Get pcLineColor to uiLineColor
+            Get ARGBFromRGB of ghoGDIPlusHandler uiLineColor 255 to uiPenColor
+            Get CreatePenFromColor of hoPen uiPenColor 2 gpUnitPixel to eStatus
+            If (eStatus = gpOk) Begin
+                Get peShape to eShape
+                Case Begin
+                    Case (eShape = C_SHAPE_ARC)
+                        Get DrawArc of hoGraphics hoPen 0 0 100 50 0.00 180.0 to eStatus
+                        Get DrawLine of hoGraphics hoPen 0 25 100 85 to eStatus
+
+                        Get DrawArc of hoGraphics hoPen 0 60 100 50 0.0 180.0 to eStatus
+                        Get DrawLine of hoGraphics hoPen 0 85 100 145 to eStatus
+                        Get DrawArc of hoGraphics hoPen 0 120 100 50 0.0 180.0 to eStatus
+
+                        Get DrawArc of hoGraphics hoPen 0 180 100 50 0.0 180.0 to eStatus
+                        Get DrawLine of hoGraphics hoPen 0 205 100 265 to eStatus
+                        Get DrawArc of hoGraphics hoPen 0 240 100 50 0.0 180.0 to eStatus
+                        Case Break
+                    Case (eShape = C_SHAPE_RECT)
+                        Get DrawRectangle of hoGraphics hoPen 50 30 100 100 to eStatus
+                        Case Break
+                    Case (eShape = C_SHAPE_CIRCLE)
+                        Get DrawArc of hoGraphics hoPen 150 50 100 100 0 360 to eStatus
+                        Case Break
+                    Case (eShape = C_SHAPE_TRAFFICLIGHT)
+                        // Outline
+                        Get DrawArc of hoGraphics hoPen 10 10 49 49 0 -180 to eStatus
+                        Get DrawLine of hoGraphics hoPen 11 34.5 11 120 to eStatus
+                        Get DrawLine of hoGraphics hoPen 59 34.5 59 120 to eStatus
+                        Get DrawArc of hoGraphics hoPen 10 94.5 49 49 0 180 to eStatus
+
+                        // Create a Brush to fill the circle shapes
+                        Get Create (RefClass (cGDISolidBrush)) to hoBrush
+                        Get CreateSolidFill of hoBrush uiPenColor to eStatus
+
+                        // Red circle
+                        Get ARGBFromRGB of ghoGDIPlusHandler clRed 255 to uiPenColor
+                        Set pcColor of hoPen to uiPenColor
+                        Set pcBrushColor of hoBrush uiPenColor to eStatus
+                        Get DrawArc of hoGraphics hoPen 23 30 25 25 0 360 to eStatus
+                        Get FillEllipse of hoGraphics hoBrush 23 30 25 25 to eStatus
+
+                        // Orange circle
+                        Get ARGBFromRGB of ghoGDIPlusHandler (RGB (232, 70, 0)) 255 to uiPenColor
+                        Set pcColor of hoPen to uiPenColor
+                        Set pcBrushColor of hoBrush uiPenColor to eStatus
+                        Get DrawArc of hoGraphics hoPen 23 65 25 25 0 360 to eStatus
+                        Get FillEllipse of hoGraphics hoBrush 23 65 25 25 to eStatus
+
+                        // Green circle
+                        Get ARGBFromRGB of ghoGDIPlusHandler clGreen 255 to uiPenColor
+                        Set pcColor of hoPen to uiPenColor
+                        Set pcBrushColor of hoBrush uiPenColor to eStatus
+                        Get DrawArc of hoGraphics hoPen 23 100 25 25 0 360 to eStatus
+                        Get FillEllipse of hoGraphics hoBrush 23 100 25 25 to eStatus
+
+                        Send Destroy of hoBrush
+                        Case Break
+                    Case (eShape = C_SHAPE_HATCH)
+                        Get Create (RefClass (cGDIHatchBrush)) to hoBrush
+                        Get pcHatchBackgroundColor to uiHatchBackColor
+                        Get pcHatchForegroundColor to uiHatchForeColor
+                        Get ARGBFromRGB of ghoGDIPlusHandler uiHatchForeColor 255 to uiHatchForeColor
+                        Get ARGBFromRGB of ghoGDIPlusHandler uiHatchBackColor 255 to uiHatchBackColor
+                        Get peHatchStyle to eHatchStyle
+                        Get CreateHatchBrush of hoBrush eHatchStyle uiHatchForeColor uiHatchBackColor to eStatus
+                        Get FillEllipse of hoGraphics hoBrush 10 10 60 40 to eStatus
+                        Send Destroy of hoBrush
+                        Case Break
+                    Case (eShape = C_SHAPE_TEXTURE)
+                        Get SelectFile of oFileSelectorDialog to sFileName
+                        If (sFileName <> "") Begin
+                            Get CreateImageFromFile of ghoGDIPlusHandler sFileName to hoImage
+                            If (hoImage <> 0) Begin
+                                Get Create (RefClass (cGDITextureBrush)) to hoBrush
+                                Get CreateTexture of hoBrush hoImage gpWrapModeTile to eStatus
+                                If (eStatus = gpOk) Begin
+                                    Get FillEllipse of hoGraphics hoBrush 0 0 100 50 to eStatus
+                                End
+                                Send Destroy of hoBrush
+                                Send Destroy of hoImage
+                            End
+                        End
+                        Case Break
+                    Case (eShape = C_SHAPE_GRADIENTS)
+                        Get Create (RefClass (cGDILinearGradientBrush)) to hoBrush
+                        Get pcGradientStartColor to  uiGradientStartColor
+                        Get pcGradientEndColor to uiGradientEndColor
+                        Get ARGBFromRGB of ghoGDIPlusHandler  uiGradientStartColor 255 to  uiGradientStartColor
+                        Get ARGBFromRGB of ghoGDIPlusHandler uiGradientEndColor 255 to uiGradientEndColor
+                        Get peWrapMode to eWrapMode
+                        Get peLinearGradientMode to eLinearGradientMode
+                        Case Begin
+                            Case (eLinearGradientMode = gpLinearGradientModeHorizontal)
+                                Get CreateLineBrushIA of hoBrush 0 10 200 10  uiGradientStartColor uiGradientEndColor eLinearGradientMode eWrapMode to eStatus
+                                If (eStatus = gpOk) Begin
+                                    Get CreatePenFromBrush of hoPen hoBrush 1 gpUnitPixel to eStatus
+                                    Get DrawLine of hoGraphics hoPen 0 10 200 10 to eStatus
+                                    Get FillEllipse of hoGraphics hoBrush 0 30 200 100 to eStatus
+                                    Get FillRectangle of hoGraphics hoBrush 0 155 500 30 to eStatus
+                                End
+                                Case Break
+                            Case (eLinearGradientMode = gpLinearGradientModeVertical)
+                                Get CreateLineBrushIA of hoBrush 0 10 0 200  uiGradientStartColor uiGradientEndColor eLinearGradientMode eWrapMode to eStatus
+                                If (eStatus = gpOk) Begin
+                                    Get CreatePenFromBrush of hoPen hoBrush 1 gpUnitPixel to eStatus
+                                    Get DrawLine of hoGraphics hoPen 10 10 10 200 to eStatus
+                                    Get FillEllipse of hoGraphics hoBrush 0 30 200 100 to eStatus
+                                    Get FillRectangle of hoGraphics hoBrush 0 155 500 30 to eStatus
+                                End
+                                Case Break
+                            Case (eLinearGradientMode = gpLinearGradientModeBackwardDiagonal)
+                            Case (eLinearGradientMode = gpLinearGradientModeForwardDiagonal)
+                                Get CreateLineBrushIA of hoBrush 0 0 200 100  uiGradientStartColor uiGradientEndColor eLinearGradientMode eWrapMode to eStatus
+                                If (eStatus = gpOk) Begin
+                                    Get CreatePenFromBrush of hoPen hoBrush 10 gpUnitPixel to eStatus
+                                    Get DrawLine of hoGraphics hoPen 0 0 600 300 to eStatus
+                                    Get FillEllipse of hoGraphics hoBrush 10 100 200 100 to eStatus
+                                End
+                                Case Break
+                        Case End
+                        Send Destroy of hoBrush
+                        Case Break
+                    Case (eShape = C_SHAPE_PIE)
+                        Get pcPiePart1Color to uiPiePart1Color
+                        Get pcPiePart2Color to uiPiePart2Color
+                        Get ARGBFromRGB of ghoGDIPlusHandler uiPiePart1Color 255 to uiPiePart1Color
+                        Get ARGBFromRGB of ghoGDIPlusHandler uiPiePart2Color 255 to uiPiePart2Color
+                        Set pcColor of hoPen to uiPiePart1Color
+                        Get DrawPie of hoGraphics hoPen 25.0 12.5 200.0 100.0 0.0 45.0 to eStatus
+                        Set pcColor of hoPen to uiPiePart2Color
+                        Get DrawPie of hoGraphics hoPen 5.0 5.0 200.0 100.0 45.0 315.0 to eStatus
+                        Case Break
+                    Case (eShape = C_DRAW_TEXT)
+                        Send DrawText "DataFlex is the best"
+                        Case Break
+                Case End
+            End
+            Send Destroy of hoPen
+        End_Procedure
+    End_Object
+
+    Object oFileSelectorDialog is a OpenDialog
+        Function SelectFile Returns String
+            Boolean bSelected
+            String sFileName
+
+            Get Show_Dialog to bSelected
+            If (bSelected) Begin
+                Get File_Name to sFileName
+            End
+
+            Function_Return sFileName
+        End_Function
+    End_Object
+End_Object
+
+Start_UI oShapesPanel
+

@@ -1,0 +1,8 @@
+﻿Use VdfBase.pkg
+
+Struct tUUID
+    UInteger Data1
+    UShort Data2
+    UShort Data3
+    UChar[8] Data4
+End_Struct

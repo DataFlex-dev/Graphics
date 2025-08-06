@@ -1,0 +1,85 @@
+Use DataDict.pkg
+
+Open Person
+Open System
+Open PersonPhoto
+Open PersonProduct
+
+Register_Object oPersonLookup
+
+Class cPersonDataDictionary is a DataDictionary
+
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Main_file to Person.File_Number
+
+        Set Add_Client_File to PersonPhoto.File_Number
+        Set Add_Client_File to PersonProduct.File_Number
+
+        Set Add_System_File to System.File_Number DD_Lock_on_New_Save
+
+        Set Foreign_Field_Option DD_KEYFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_KEYFIELD DD_FINDREQ to True
+        Set Foreign_Field_Option DD_INDEXFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_DEFAULT DD_DISPLAYONLY to True
+
+        Set Field_Option Field Person.ID DD_AUTOFIND to True
+        Set Field_Class_Name Field Person.ID to "dbForm"
+        Set Status_Help Field Person.ID to "Auto Assigned ID of the Person"
+        Set Field_Label_Long Field Person.ID to "ID"
+        Set Key_Field_State Field Person.ID to True
+        Set Field_Prompt_Object Field Person.ID to oPersonLookup
+        Set Field_Auto_Increment Field Person.ID to File_Field System.Person_ID
+
+        Set Field_Label_Long Field Person.LastName to "Last Name"
+        Set Field_Label_Short Field Person.LastName to "Last N."
+        Set Field_Class_Name Field Person.LastName to "dbForm"
+        Set Status_Help Field Person.LastName to "Last Name of the Person"
+        Set Field_Prompt_Object Field Person.LastName to oPersonLookup
+
+        Set Field_Prompt_Object Field Person.FirstName to oPersonLookup
+        Set Field_Label_Long Field Person.FirstName to "First Name"
+        Set Field_Label_Short Field Person.FirstName to "First N."
+        Set Field_Class_Name Field Person.FirstName to "dbForm"
+        Set Status_Help Field Person.FirstName to "First Name of the Person"
+
+        Set Field_Option Field Person.MiddleInitials DD_CAPSLOCK to True
+        Set Field_Label_Long Field Person.MiddleInitials to "Middle Initials"
+        Set Field_Label_Short Field Person.MiddleInitials to "M.I."
+        Set Field_Class_Name Field Person.MiddleInitials to "dbForm"
+        Set Status_Help Field Person.MiddleInitials to "Middle Initials for this Person (e.g. H. in William H. Millsboro)"
+
+        Set Field_Prompt_Object Field Person.Birthdate to oPersonLookup
+        Set Field_Class_Name Field Person.Birthdate to "dbForm"
+        Set Field_Mask_Type Field Person.Birthdate to Mask_Date_Window
+        Set Field_Label_Long Field Person.Birthdate to "Birth Date"
+        Set Field_Label_Short Field Person.Birthdate to "D.O.B."
+        Set Status_Help Field Person.Birthdate to "Birth Date of the Person"
+
+        Set Field_Label_Long Field Person.Comments to "Comments"
+        Set Field_Class_Name Field Person.Comments to "cDbTextEdit"
+        Set Status_Help Field Person.Comments to "Comments about the Person"
+
+        Set Field_Mask_Type Field Person.StartedWithDF to Mask_Numeric_Window
+        Set Field_Mask Field Person.StartedWithDF to "####"
+        Set Field_Class_Name Field Person.StartedWithDF to "dbSpinForm"
+        Set Field_Label_Short Field Person.StartedWithDF to "Started DF"
+        Set Field_Label_Long Field Person.StartedWithDF to "Started with DF"
+        Set Status_Help Field Person.StartedWithDF to "In what year did this person start with using DataFlex"
+        Set Field_Value_Range Field Person.StartedWithDF to 1981 (DateGetYear (CurrentDateTime ()))
+
+        Set Cascade_Delete_State to False
+    End_Procedure
+
+    Procedure Field_Defaults
+        Forward Send Field_Defaults
+        Set Field_Changed_Value Field Person.StartedWithDF to 1981
+    End_Procedure
+
+End_Class
+
+#IFDEF Is$WebApp
+#ELSE
+Use SelectionLists\Person.sl
+#ENDIF

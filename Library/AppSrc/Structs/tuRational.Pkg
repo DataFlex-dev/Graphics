@@ -1,0 +1,6 @@
+Use VDFBase.Pkg
+
+Struct tuRational
+    UInteger uiValue1
+    UInteger uiValue2
+End_Struct

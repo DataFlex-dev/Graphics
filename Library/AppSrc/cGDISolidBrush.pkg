@@ -1,0 +1,72 @@
+﻿Use cGDIPlus.pkg
+Use cGDISolidBrush.h.pkg
+Use cGDIBrush.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDISolidBrush }
+{ Description = "The SolidBrush class defines a solid color Brush object." }
+{ Description += "a Brush Object is used to fill in shapes similar to the way a paint brush can paint the inside of a shape." }
+Class cGDISolidBrush is a cGDIBrush
+    { Description = "Creates a logical brush from a color. Returns a non-zero (GDI+ result) value when the operation fails." }
+    { Description += "Handle this status if needed" }
+    { MethodType = Method }
+    Function CreateSolidFill UInteger uiColor Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        // If exists remove the old brush
+        Send DeleteBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateSolidFill (uiColor, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Returns the brush color." }
+    { Description += "Calls HandleGDIResult if the operation failed" }
+    { Description += "Calls HandleGDIError if there is no brush available" }
+    Function pcBrushColor Returns UInteger
+        gpStatus eStatus
+        UInteger uiColor
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to uiColor
+            Move (GdipGetSolidFillColor (pBrush, AddressOf (uiColor))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting pcBrushColor"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return uiColor
+    End_Function
+
+    { Description = "Sets the brush color of an existing brush" }
+    { Description += "Calls HandleGDIResult if the operation failed" }
+    { Description += "Calls HandleGDIError if there is no brush available" }
+    { MethodType = Property }
+    Procedure Set pcBrushColor Integer uiColor
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetSolidFillColor (pBrush, uiColor)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting pcBrushColor"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+End_Class

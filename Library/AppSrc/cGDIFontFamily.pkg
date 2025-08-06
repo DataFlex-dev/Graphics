@@ -1,0 +1,277 @@
+﻿Use cGDIFontFamily.h.pkg
+Use LanguageIDs.h.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIFontFamily }
+{ Description = "The FontFamily class encapsulates a set of fonts that make up a font family." }
+{ Description += " A font family is a group of fonts that have the same typeface but different styles." }
+Class cGDIFontFamily is a cObject
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Creates a property to hold a reference to the GDI+ FontFamily object and support properties such as language" }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { DesignTime = False }
+        { Description = "Can hold a pointer of the GDI+ FontFamily object" }
+        Property Pointer ppFontFamily
+        { DesignTime = False }
+        { Description = "Language Identifier" }
+        Property Short peLanguage LANG_NEUTRAL
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Send a message to delete the GDI+ FontFamily object when the DataFlex object gets destroyed" }
+    Procedure Destroy_Object
+        Send DeleteFontFamily
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Returns the cell ascent" }
+    { Description += "Calls HandleGDIError when the FontFamily object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    { MethodType = Method }
+    Function CellAscent gpFontStyle eStyle Returns UShort
+        gpStatus eStatus
+        Pointer pFontFamily
+        UShort uiAscent
+
+        Get ppFontFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move 0 to uiAscent
+            Move (GdipGetCellAscent (pFontFamily, eStyle, AddressOf (uiAscent))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting CellAscent"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+
+        Function_Return uiAscent
+    End_Function
+
+    { Description = "Returns the cell descent" }
+    { Description += "Calls HandleGDIError when the FontFamily object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    { MethodType = Method }
+    Function CellDescent gpFontStyle eStyle Returns UShort
+        gpStatus eStatus
+        Pointer pFontFamily
+        UShort uiDescent
+
+        Get ppFontFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move 0 to uiDescent
+            Move (GdipGetCellDescent(pFontFamily, eStyle, AddressOf (uiDescent))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting CellDescent"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+
+        Function_Return uiDescent
+    End_Function
+
+    { Description = "Creates a copy of an existing fontfamily." }
+    { Description += "Return value is a new cGDIFontFamily Object or zero when the operation fails." }
+    { MethodType = Method }
+    Function CloneFontFamily Returns Handle
+        gpStatus eStatus
+        Pointer pSourceFontFamily pClonedFontFamily
+        Handle hoFontFamily
+
+        Get ppFontFamily to pSourceFontFamily
+        If (pSourceFontFamily <> 0) Begin
+            Move 0 to pClonedFontFamily
+            Move (GdipCloneFontFamily (pSourceFontFamily, AddressOf (pClonedFontFamily))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIFontFamily)) "ClonedFontFamily" to hoFontFamily
+                Set ppFontFamily of hoFontFamily to pClonedFontFamily
+            End
+        End
+
+        Function_Return hoFontFamily
+    End_Function
+
+    { Description = "Creates a font family object based on the passed name or returns a status unequal to gpOk" }
+    { MethodType = Method }
+    Function CreateFamilyFromName WString wName Returns gpStatus
+        gpStatus eStatus
+        Pointer pFontFamily
+
+        Move 0 to pFontFamily
+        Move (GdipCreateFontFamilyFromName (AddressOf (wName), 0, AddressOf (pFontFamily))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppFontFamily to pFontFamily
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Releases resources used by the FontFamily object." }
+    { Description += "Calls HandleGDIError when the FontFamily object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    { MethodType = Method }
+    Procedure DeleteFontFamily
+        gpStatus eStatus
+        Pointer pFontFamily
+
+        Get ppFontFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move (GdipDeleteFontFamily (pFontFamily)) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppFontFamily to 0
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Deleting FontFamily"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Returns the EM height" }
+    { Description += "Calls HandleGDIError when the FontFamily object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function EMHeight gpFontStyle eStyle Returns UShort
+        gpStatus eStatus
+        Pointer pFontFamily
+        UShort uiHeight
+
+        Get ppFontFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move 0 to uiHeight
+            Move (GdipGetEmHeight (pFontFamily, eStyle, AddressOf (uiHeight))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting EMHeight"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+
+        Function_Return uiHeight
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Returns the family name" }
+    { Description += "Calls HandleGDIError when the FontFamily object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function FamilyName Short eLanguage Returns String
+        gpStatus eStatus
+        Pointer pFontFamily
+        WString wName
+
+        Get ppFontFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move (ZeroString (LF_FACESIZE)) to wName
+            Move (GdipGetFamilyName (pFontFamily, AddressOf (wName), eLanguage)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting FamilyName"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+
+        Function_Return wName
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a font family object based on result of a call for the Generic Sans Serif family" }
+    { Description = "Returns a generic sans serif family" }
+    Function GenericSansSerif Returns gpStatus
+        gpStatus eStatus
+        Pointer pFontFamily
+
+        Move 0 to pFontFamily
+        Move (GdipGetGenericFontFamilySansSerif (AddressOf (pFontFamily))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppFontFamily to pFontFamily
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a font family object based on result of a call for the Generic Serif family" }
+    Function GenericSerif Returns gpStatus
+        gpStatus eStatus
+        Pointer pFontFamily
+
+        Move 0 to pFontFamily
+        Move (GdipGetGenericFontFamilySerif (AddressOf (pFontFamily))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppFontFamily to pFontFamily
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a font family object based on result of a call for the Generic Monospace family" }
+    Function GenericMonospace Returns gpStatus
+        gpStatus eStatus
+        Pointer pFontFamily
+
+        Move 0 to pFontFamily
+        Move (GdipGetGenericFontFamilyMonospace (AddressOf (pFontFamily))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppFontFamily to pFontFamily
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Determines if a font style is available" }
+    Function IsStyleAvailable gpFontStyle eStyle Returns Boolean
+        Pointer pFontFamily
+        gpStatus eStatus
+        Boolean bAvailable
+
+        Get ppFontFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move False to bAvailable
+            Move (GdipIsStyleAvailable(pFontFamily, eStyle, AddressOf (bAvailable))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting FamilyName"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+
+        Function_Return bAvailable
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Returns the line spacing, in design units, of this font family for the specified style or style combination." }
+    { Description += "The line spacing is the vertical distance Between the base lines of two consecutive lines of text." }
+    Function LineSpacing gpFontStyle eStyle Returns Integer
+        Pointer pFontFamily
+        gpStatus eStatus
+        UShort uiLineSpacing
+
+        Get ppFontFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move 0 to uiLineSpacing
+            Move (GdipGetLineSpacing (pFontFamily, eStyle, AddressOf (uiLineSpacing))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting LineSpacing"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+
+        Function_Return uiLineSpacing
+    End_Function
+End_Class

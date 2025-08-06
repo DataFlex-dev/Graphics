@@ -1,0 +1,100 @@
+Use Windows.pkg
+Use cApplication.pkg
+
+/*
+   this example program shows how to copy file names to the Windows clipboard in a way
+   that they can be later pasted in a Windows explorer.
+   Drag files from any folder on to the panel and then go to a different folder in a
+   Windows explorer and press Ctrl+V to paste.
+   
+   Of course the panel is not needed but just a way to collect filenames
+*/
+
+Object oApplication is a cApplication
+    Set psAutoOpenWorkspace to ""
+    Set pbPreserveEnvironment to False
+    Set peHelpType to htNoHelp
+End_Object
+
+Use globmem.pkg
+Use cClipboard.pkg
+
+Struct tWinDropFiles
+    UInteger pFiles
+    tWinPoint pt
+    Integer fNC
+    Integer fWide
+End_Struct
+
+Object oMain is a BasicPanel
+    Set Size to 92 146
+    Set pbAcceptDropFiles to True
+
+    Property String[] psFileNames
+
+    Procedure OnFileDropped String sFilename Boolean bLast
+        String[] sFileNames
+
+        Get psFileNames to sFileNames
+        Move sFilename to sFileNames[-1]
+        Set psFileNames to sFileNames
+
+        If (bLast) Begin
+            Send CopyNamesToClipboard
+        End
+    End_Procedure
+
+    Object oClipboardFiles is a cClipboard
+    End_Object
+
+    Procedure CopyNamesToClipboard
+        String[] sFileNames
+        Integer iElements iElement iClipboardSize iRetval iOffSet iBytes
+        tWinDropFiles FilesToBeCopied
+        WString wsFileName
+        Handle hDrop hWnd
+        Pointer pDrop
+
+        Get psFileNames to sFileNames
+        Move (ReverseArray (sFileNames)) to sFileNames
+        Move (SizeOfArray (sFileNames)) to iElements
+        If (iElements > 0) Begin
+            Decrement iElements
+
+            Move (SizeOfType (tWinDropFiles)) to iClipboardSize
+
+            For iElement from 0 to iElements
+                Move sFileNames[iElement] to wsFileName
+                Move (SizeOfWString (wsFileName) * 2) to iBytes
+                Move (iClipboardSize + iBytes + 2) to iClipboardSize
+            Loop
+
+            Move (iClipboardSize + 2) to iClipboardSize // two \0 meeded at the end
+
+            Move (GlobalAlloc (GMEM_MOVEABLE ior GMEM_ZEROINIT, iClipboardSize)) to hDrop
+            Move (GlobalLock (hDrop)) to pDrop
+
+            Move (SizeOfType (tWinDropFiles)) to FilesToBeCopied.pFiles
+            Move True to FilesToBeCopied.fWide
+
+            Move (MemCopy (pDrop, AddressOf (FilesToBeCopied), SizeOfType (tWinDropFiles))) to iRetval
+            Move (SizeOfType (tWinDropFiles)) to iOffSet
+
+            For iElement from 0 to iElements
+                Move sFileNames[iElement] to wsFileName
+                Move (SizeOfWString (wsFileName) * 2) to iBytes
+                Move (MemCopy (pDrop + iOffSet, AddressOf (wsFileName), iBytes)) to iRetval
+                Move (iOffSet + iBytes + 2) to iOffSet
+            Loop
+
+            Move (GlobalUnlock (pDrop)) to iRetval
+
+            Send DoOpen of oClipboardFiles 0
+            Send DoEmpty of oClipboardFiles
+            Set ppData of oClipboardFiles CF_HDROP to hDrop
+            Send DoClose of oClipboardFiles
+        End
+    End_Procedure
+End_Object
+
+Start_UI oMain

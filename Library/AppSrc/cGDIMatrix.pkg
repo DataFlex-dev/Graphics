@@ -1,0 +1,534 @@
+﻿Use cGDIPlus.pkg
+Use cGDIMatrix.h.pkg
+Use cGDIBrush.pkg
+
+Use Structs\tRectF.pkg
+Use Structs\tPointF.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIMatrix }
+{ Description = "A Matrix object represents a 3×3 matrix that, in turn, represents an affine transformation." }
+{ Description += "a Matrix Object stores only six of the 9 numbers in a 3×3 matrix because all 3×3 matrices that represent affine transformations have the same third column (0, 0, 1)." }
+Class cGDIMatrix is a cObject
+    { Description = "Create a property to store the matrix in" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { DesignTime = False }
+        { Description = "A pointer to the connected matrix" }
+        Property Pointer ppMatrix
+    End_Procedure
+
+    { Description = "Augmented to send a message to delete the matrix" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Destroy_Object
+        Send DeleteMatrix
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Cleans up resources used by a Matrix object" }
+    { Description += "Sends HandleGDIResult if the GDI+ DeleteBrush function fails" }
+    { MethodType = Method }
+    Procedure DeleteMatrix
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (GdipDeleteMatrix (pMatrix)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Delete Matrix"
+            End
+            Else Begin
+                Set ppMatrix to 0
+            End
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Creates and initializes a Matrix object that represents the identity matrix." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateMatrix Returns gpStatus
+        Pointer pMatrix
+        gpStatus eStatus
+
+        // If exists remove the old matrix
+        Send DeleteMatrix
+
+        Move 0 to pMatrix
+        Move (GdipCreateMatrix (AddressOf (pMatrix))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppMatrix to pMatrix
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates and initializes a Matrix object based on six numbers that define an affine transformation." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateMatrix2 Float fRow1Column1 Float fRow1Column2 Float fRow2Column1 Float fRow2Column2 Float fRow3Column1 Float fRow3Column2 Returns gpStatus
+        Pointer pMatrix
+        gpStatus eStatus
+
+        // If exists remove the old matrix
+        Send DeleteMatrix
+
+        Move 0 to pMatrix
+        Move (GdipCreateMatrix2 (fRow1Column1, fRow1Column2, fRow2Column1, fRow2Column2, fRow3Column1, fRow3Column2, AddressOf (pMatrix))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppMatrix to 0
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a Matrix object based on a rectangle and a point." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateMatrix3 tRectF rect tPointF dstplg Returns gpStatus
+        Pointer pMatrix
+        gpStatus eStatus
+
+        // If exists remove the old matrix
+        Send DeleteMatrix
+
+        Move 0 to pMatrix
+        Move (GdipCreateMatrix3 (AddressOf (rect), AddressOf (dstplg), AddressOf (pMatrix))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppMatrix to 0
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a Matrix object based on a rectangle and a point." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateMatrix3I tWinRect rect tWinPoint dstplg Returns gpStatus
+        Pointer pMatrix
+        gpStatus eStatus
+
+        // If exists remove the old matrix
+        Send DeleteMatrix
+
+        Move 0 to pMatrix
+        Move (GdipCreateMatrix3I (AddressOf (rect), AddressOf (dstplg), AddressOf (pMatrix))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppMatrix to 0
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a new Matrix object that is a copy of this Matrix object."}
+    { Description += "Return value is a new cGDIMatrix Object or zero when the operation fails." }
+    { MethodType = Method }
+    Function CloneMatrix Returns Handle
+        gpStatus eStatus
+        Pointer pSourceMatrix pClonedMatrix
+        Handle hoMatrix
+
+        Get ppMatrix to pSourceMatrix
+        If (pSourceMatrix <> 0) Begin
+            Move 0 to pClonedMatrix
+            Move (GdipCloneMatrix (pSourceMatrix, AddressOf (pClonedMatrix))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIMatrix)) "ClonedMatrix" to hoMatrix
+                Set ppMatrix of hoMatrix to pClonedMatrix
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return hoMatrix
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Sets the elements of this matrix." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Procedure SetMatrixElements Float fRow1Column1 Float fRow1Column2 Float fRow2Column1 Float fRow2Column2 Float fRow3Column1 Float fRow3Column2 Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (GdipSetMatrixElements (pMatrix, fRow1Column1, fRow1Column2, fRow2Column1, fRow2Column2, fRow3Column1, fRow3Column2)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Procedure
+
+    { Description = "Updates this matrix with the product of itself and another matrix" }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    { MethodType = Method }
+    Function MultiplyMatrix Handle hoMatrix gpMatrixOrder eOrder Returns gpStatus
+        Boolean bIsMatrix
+        gpStatus eStatus
+        Pointer pMatrix pMatrix2
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            If (hoMatrix <> 0) Begin
+                Get IsObjectOfClass of hoMatrix (RefClass (cGDIMatrix)) to bIsMatrix
+                If (bIsMatrix) Begin
+                    Get ppMatrix of hoMatrix to pMatrix2
+                    If (pMatrix2 <> 0) Begin
+                        If (num_arguments = 1) Begin
+                            Move (GdipMultiplyMatrix (pMatrix, pMatrix2, gpMatrixOrderPrepend)) to eStatus
+                        End
+                        Else Begin
+                            Move (GdipMultiplyMatrix (pMatrix, pMatrix2, eOrder)) to eStatus
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this matrix with the product of itself and a translation matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function TranslateMatrix Float fOffsetX Float fOffsetY gpMatrixOrder eOrder Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            If (num_arguments = 2) Begin
+                Move (GdipTranslateMatrix (pMatrix, fOffsetX, fOffsetY, gpMatrixOrderPrepend)) to eStatus
+            End
+            Else Begin
+                Move (GdipTranslateMatrix (pMatrix, fOffsetX, fOffsetY, eOrder)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this matrix with the product of itself and a scaling matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function ScaleMatrix Float fOffsetX Float fOffsetY gpMatrixOrder eOrder Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            If (num_arguments = 2) Begin
+                Move (GdipScaleMatrix (pMatrix, fOffsetX, fOffsetY, gpMatrixOrderPrepend)) to eStatus
+            End
+            Else Begin
+                Move (GdipScaleMatrix (pMatrix, fOffsetX, fOffsetY, eOrder)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this matrix with the product of itself and a rotating matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function RotateMatrix Float fAngle gpMatrixOrder eOrder Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            If (num_arguments = 2) Begin
+                Move (GdipRotateMatrix (pMatrix, fAngle, gpMatrixOrderPrepend)) to eStatus
+            End
+            Else Begin
+                Move (GdipRotateMatrix (pMatrix, fAngle, eOrder)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this matrix with the product of itself and a shearing matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function ShearMatrix Float fOffsetX Float fOffsetY gpMatrixOrder eOrder Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            If (num_arguments = 2) Begin
+                Move (GdipShearMatrix (pMatrix, fOffsetX, fOffsetY, gpMatrixOrderPrepend)) to eStatus
+            End
+            Else Begin
+                Move (GdipShearMatrix (pMatrix, fOffsetX, fOffsetY, eOrder)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "If this matrix is invertible, the Invert method replaces the elements of this matrix with the elements of its inverse." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function InvertMatrix Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (GdipInvertMatrix (pMatrix)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Multiplies each point in an array by this matrix. Each point is treated as a row matrix." }
+    { Description += "The multiplication is performed with the row matrix on the left and this matrix on the right." }
+    { Description += "The points array parameter on input, contains the points to be transformed and, on output, receives the transformed points." }
+    { Description += "Each point in the array is transformed (multiplied by this matrix) and updated with the result of the transformation." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function TransformMatrixPoints tPointF[] ByRef MatrixPoints Integer iCount Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (GdipTransformMatrixPoints (pMatrix, AddressOf (MatrixPoints), iCount)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Multiplies each point in an array by this matrix. Each point is treated as a row matrix." }
+    { Description += "The multiplication is performed with the row matrix on the left and this matrix on the right." }
+    { Description += "The points array parameter on input, contains the points to be transformed and, on output, receives the transformed points." }
+    { Description += "Each point in the array is transformed (multiplied by this matrix) and updated with the result of the transformation." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function TransformMatrixPointsI tWinPoint[] ByRef MatrixPoints Integer iCount Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (GdipTransformMatrixPointsI (pMatrix, AddressOf (MatrixPoints), iCount)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Multiplies each vector in an array by this matrix. The translation elements of this matrix (third row) are ignored." }
+    { Description +="Each vector is treated as a row matrix. The multiplication is performed with the row matrix on the left and this matrix on the right." }
+    { Description += "The points array of parameter on input, contains the vectors to be transformed and, on output, receives the transformed vectors." }
+    { Description += "Each vector in the array is transformed (multiplied by this matrix) and updated with the result of the transformation" }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function VectorTransformMatrixPoints tPointF[] ByRef MatrixPoints Integer iCount Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (GdipVectorTransformMatrixPoints (pMatrix, AddressOf (MatrixPoints), iCount)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Multiplies each vector in an array by this matrix. The translation elements of this matrix (third row) are ignored." }
+    { Description +="Each vector is treated as a row matrix. The multiplication is performed with the row matrix on the left and this matrix on the right." }
+    { Description += "The points array of parameter on input, contains the vectors to be transformed and, on output, receives the transformed vectors." }
+    { Description += "Each vector in the array is transformed (multiplied by this matrix) and updated with the result of the transformation" }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function VectorTransformMatrixPointsI tWinPoint[] ByRef MatrixPoints Integer iCount Returns gpStatus
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (GdipVectorTransformMatrixPointsI (pMatrix, AddressOf (MatrixPoints), iCount)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Gets the elements of this matrix." }
+    { Description += "The elements are placed in an array in the order m11, m12, m21, m22, m31, m32, where mij denotes the element in row i, column j." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Method }
+    Function MatrixElements Returns Float[]
+        Float[] fElements
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move (ResizeArray (fElements, 6)) to fElements
+            Move (GdipGetMatrixElements (pMatrix, AddressOf (fElements))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "MatrixElements"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return fElements
+    End_Function
+
+    { Description = "Determines whether this matrix is invertible." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Method }
+    Function IsMatrixInvertable Returns Boolean
+        Boolean bInvertable
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move False to bInvertable
+            Move (GdipIsMatrixInvertible (pMatrix, AddressOf (bInvertable))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "IsMatrixInvertable"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return bInvertable
+    End_Function
+
+    { Description = "Determines whether this matrix is the identity matrix." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Method }
+    Function IsMatrixIdentity Returns Boolean
+        Boolean bIdentity
+        gpStatus eStatus
+        Pointer pMatrix
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            Move False to bIdentity
+            Move (GdipIsMatrixIdentity (pMatrix, AddressOf (bIdentity))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "IsMatrixIdentity"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return bIdentity
+    End_Function
+
+    { Description = "determines whether the elements of this matrix are equal to the elements of another matrix." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Method }
+    Function IsMatrixEqual Handle hoMatrix Returns Boolean
+        Boolean bIsMatrix bEqual
+        gpStatus eStatus
+        Pointer pMatrix pMatrix2
+
+        Get ppMatrix to pMatrix
+        If (pMatrix <> 0) Begin
+            If (hoMatrix <> 0) Begin
+                Get IsObjectOfClass of hoMatrix (RefClass (cGDIMatrix)) to bIsMatrix
+                If (bIsMatrix) Begin
+                    Get ppMatrix of hoMatrix to pMatrix2
+                    If (pMatrix2 <> 0) Begin
+                        Move False to bEqual
+                        Move (GdipIsMatrixEqual (pMatrix, pMatrix2, AddressOf (bEqual))) to eStatus
+                        If (eStatus <> gpOk) Begin
+                            Send HandleGDIResult of ghoGDIPlusHandler eStatus "IsMatrixEqual"
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+        End
+
+        Function_Return bEqual
+    End_Function
+End_Class

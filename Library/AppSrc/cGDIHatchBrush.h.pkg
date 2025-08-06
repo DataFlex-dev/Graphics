@@ -1,0 +1,90 @@
+﻿Use cGDIPlus.h.pkg
+Use cGDIBrush.h.pkg
+
+Define gpHatchStyle for Integer
+Enum_List // HatchStyle
+    Define gpHatchStyleHorizontal                   // Specifies horizontal lines.
+    Define gpHatchStyleVertical                     // Specifies vertical lines.
+    Define gpHatchStyleForwardDiagonal              // Specifies diagonal lines that slant to the right from top points to bottom points. The lines are antialiased.
+    Define gpHatchStyleBackwardDiagonal             // Specifies diagonal lines that slant to the left from top points to bottom points. The lines are antialiased.
+    Define gpHatchStyleCross                        // Specifies horizontal and vertical lines that cross at 90-degree angles.
+    Define gpHatchStyleDiagonalCross                // Specifies Forward diagonal and backward diagonal lines that cross at 90-degree angles. The lines are antialiased.
+    Define gpHatchStyle05Percent                    // Specifies a 5-percent hatch. The ratio of foreground color to background color is 5:100.
+    Define gpHatchStyle10Percent                    // Specifies a 10-percent hatch. The ratio of foreground color to background color is 10:100.
+    Define gpHatchStyle20Percent                    // Specifies a 20-percent hatch. The ratio of foreground color to background color is 20:100.
+    Define gpHatchStyle25Percent                    // Specifies a 25-percent hatch. The ratio of foreground color to background color is 25:100.
+    Define gpHatchStyle30Percent                    // Specifies a 30-percent hatch. The ratio of foreground color to background color is 30:100.
+    Define gpHatchStyle40Percent                    // Specifies a 40-percent hatch. The ratio of foreground color to background color is 40:100.
+    Define gpHatchStyle50Percent                    // Specifies a 50-percent hatch. The ratio of foreground color to background color is 50:100.
+    Define gpHatchStyle60Percent                    // Specifies a 60-percent hatch. The ratio of foreground color to background color is 60:100.
+    Define gpHatchStyle70Percent                    // Specifies a 70-percent hatch. The ratio of foreground color to background color is 70:100.
+    Define gpHatchStyle75Percent                    // Specifies a 75-percent hatch. The ratio of foreground color to background color is 75:100.
+    Define gpHatchStyle80Percent                    // Specifies an 80-percent hatch. The ratio of foreground color to background color is 80:100.
+    Define gpHatchStyle90Percent                    // Specifies a 90-percent hatch. The ratio of foreground color to background color is 90:100.
+    Define gpHatchStyleLightDownwardDiagonal        // Specifies diagonal lines that slant to the right from top points to bottom points and are spaced 50 percent closer together than HatchStyleForwardDiagonal but are not antialiased.
+    Define gpHatchStyleLightUpwardDiagonal          // Specifies diagonal lines that slant to the left from top points to bottom points and are spaced 50 percent closer together than HatchStyleBackwardDiagonal but are not antialiased.
+    Define gpHatchStyleDarkDownwardDiagonal         // Specifies diagonal lines that slant to the right from top points to bottom points, are spaced 50 percent closer together than HatchStyleForwardDiagonal, and are twice the width of HatchStyleForwardDiagonal but are not antialiased.
+    Define gpHatchStyleDarkUpwardDiagonal           // Specifies diagonal lines that slant to the left from top points to bottom points, are spaced 50 percent closer together than HatchStyleBackwardDiagonal, and are twice the width of HatchStyleBackwardDiagonal but are not antialiased.
+    Define gpHatchStyleWideDownwardDiagonal         // Specifies diagonal lines that slant to the right from top points to bottom points, have the same spacing as HatchStyleForwardDiagonal, and are triple the width of HatchStyleForwardDiagonal but are not antialiased.
+    Define gpHatchStyleWideUpwardDiagonal           // Specifies diagonal lines that slant to the left from top points to bottom points, have the same spacing as HatchStyleBackwardDiagonal, and are triple the width of HatchStyleBackwardDiagonal but are not antialiased.
+    Define gpHatchStyleLightVertical                // Specifies vertical lines that are spaced 50 percent closer together than HatchStyleVertical.
+    Define gpHatchStyleLightHorizontal              // Specifies horizontal lines that are spaced 50 percent closer together than HatchStyleHorizontal.
+    Define gpHatchStyleNarrowVertical               // Specifies vertical lines that are spaced 75 percent closer together than HatchStyleVertical (or 25 percent closer together than HatchStyleLightVertical).
+    Define gpHatchStyleNarrowHorizontal             // Specifies horizontal lines that are spaced 75 percent closer together than HatchStyleHorizontal ( or 25 percent closer together than HatchStyleLightHorizontal).
+    Define gpHatchStyleDarkVertical                 // Specifies vertical lines that are spaced 50 percent closer together than HatchStyleVerical and are twice the width of HatchStyleVertical.
+    Define gpHatchStyleDarkHorizontal               // Specifies horizontal lines that are spaced 50 percent closer together than HatchStyleHorizontal and are twice the width of HatchStyleHorizontal.
+    Define gpHatchStyleDashedDownwardDiagonal       // Specifies horizontal lines that are composed of Forward diagonals.
+    Define gpHatchStyleDashedUpwardDiagonal         // Specifies horizontal lines that are composed of backward diagonals.
+    Define gpHatchStyleDashedHorizontal             // Specifies horizontal dashed lines.
+    Define gpHatchStyleDashedVertical               // Specifies vertical dashed lines.
+    Define gpHatchStyleSmallConfetti                // Specifies a hatch that has the appearance of confetti.
+    Define gpHatchStyleLargeConfetti                // Specifies a hatch that has the appearance of confetti composed of larger pieces than HatchStyleSmallConfetti.
+    Define gpHatchStyleZigZag                       // Specifies horizontal lines of zigzags.
+    Define gpHatchStyleWave                         // Specifies horizontal lines of tildes.
+    Define gpHatchStyleDiagonalBrick                // Specifies a hatch that has the appearance of a wall of bricks laid in a backward diagonal direction.
+    Define gpHatchStyleHorizontalBrick              // Specifies a hatch that has the appearance of a wall of bricks laid horizontally.
+    Define gpHatchStyleWeave                        // Specifies a hatch that has the appearance of a woven material.
+    Define gpHatchStylePlaid                        // Specifies a hatch that has the appearance of a plaid material.
+    Define gpHatchStyleDivot                        // Specifies a hatch that has the appearance of divots.
+    Define gpHatchStyleDottedGrid                   // Specifies horizontal and vertical dotted lines that cross at 90-degree angles.
+    Define gpHatchStyleDottedDiamond                // Specifies Forward diagonal and backward diagonal dotted lines that cross at 90-degree angles.
+    Define gpHatchStyleShingle                      // Specifies a hatch that has the appearance of shingles laid in a Forward diagonal direction.
+    Define gpHatchStyleTrellis                      // Specifies a hatch that has the appearance of a trellis.
+    Define gpHatchStyleSphere                       // Specifies a hatch that has the appearance of a checkerboard of spheres.
+    Define gpHatchStyleSmallGrid                    // Specifies horizontal and vertical lines that cross at 90-degree angles and are spaced 50 percent closer together than HatchStyleCross.
+    Define gpHatchStyleSmallCheckerBoard            // Specifies a hatch that has the appearance of a checkerboard.
+    Define gpHatchStyleLargeCheckerBoard            // Specifies a hatch that has the appearance of a checkerboard with squares that are twice the size of HatchStyleSmallCheckerBoard.
+    Define gpHatchStyleOutlinedDiamond              // Specifies Forward diagonal and backward diagonal lines that cross at 90-degree angles but are not antialiased.
+    Define gpHatchStyleSolidDiamond                 // Specifies a hatch that has the appearance of a checkerboard placed diagonally.
+    Define gpHatchStyleTotal                        // Specifies no hatch thereby allowing the brush to be transparent.
+End_Enum_List
+
+Define gpHatchStyleLargeGrid  for gpHatchStyleCross        // Specifies HatchStyleCross.
+Define gpHatchStyleMin        for gpHatchStyleHorizontal   // Specifies HatchStyleHorizonal.
+Define gpHatchStyleMax        for gpHatchStyleSolidDiamond // Specifies HatchStyleSolidDiamond.
+
+// GpStatus WINGDIPAPI GdipCreateHatchBrush(GpHatchStyle hatchstyle, ARGB forecol, ARGB backcol, GpHatch **brush)
+External_Function GdipCreateHatchBrush "GdipCreateHatchBrush" gdiplus.dll ;
+    gpHatchStyle hatchstyle ;
+    UInteger forecol ;
+    UInteger backcol ;
+    Pointer brush ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetHatchStyle(GpHatch *brush, GpHatchStyle *hatchstyle)
+External_Function GdipGetHatchStyle "GdipGetHatchStyle" gdiplus.dll ;
+    Pointer brush ;
+    Pointer hatchstyle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetHatchForegroundColor(GpHatch *brush, ARGB* forecol)
+External_Function GdipGetHatchForegroundColor "GdipGetHatchForegroundColor" gdiplus.dll ;
+    Pointer brush ;
+    Pointer forecol ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetHatchBackgroundColor(GpHatch *brush, ARGB* backcol)
+External_Function GdipGetHatchBackgroundColor "GdipGetHatchBackgroundColor" gdiplus.dll ;
+    Pointer brush ;
+    Pointer backcol ;
+    Returns gpStatus

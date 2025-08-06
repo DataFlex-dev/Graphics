@@ -1,0 +1,5 @@
+#REPLACE FILE3 Product
+#REPLACE Product.Recnum |FN3,0
+#REPLACE Product.ID |FN3,1
+#REPLACE Product.Name |FS3,2
+#REPLACE Product.Image |FS3,3

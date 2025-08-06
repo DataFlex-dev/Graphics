@@ -1,0 +1,8 @@
+Use VDFBase.pkg
+
+Struct tRectF
+    Float x      // Real number used to initialize the x-coordinate of the upper-left corner of the rectangle
+    Float y      // Real number used to initialize the y-coordinate of the upper-left corner of the rectangle
+    Float width  // Real number used to initialize the width of this rectangle
+    Float height // Real number used to initialize the height of this rectangle
+End_Struct

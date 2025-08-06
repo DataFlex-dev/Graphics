@@ -1,0 +1,10 @@
+#REPLACE FILE5 PersonPhoto
+#REPLACE PersonPhoto.Recnum |FN5,0
+#REPLACE PersonPhoto.ID |FN5,1
+#REPLACE PersonPhoto.Person_ID |FN5,2
+#REPLACE PersonPhoto.Added |FD5,3
+#REPLACE PersonPhoto.Comments |FS5,4
+#REPLACE PersonPhoto.Where |FS5,5
+#REPLACE PersonPhoto.MadeInYear |FN5,6
+#REPLACE PersonPhoto.MakeInMonth |FN5,7
+#REPLACE PersonPhoto.Image |FS5,8

@@ -1,0 +1,104 @@
+﻿Use Windows.pkg
+Use cImageContainer.pkg
+
+{ ClassLibrary = Windows }
+{ Description = "Subclass of cImageContainer to make dynamic object creation for each found image easier." }
+{ Description += "Sends the ReadPreferences method to pickup preferences from the registry." }
+Class cGalleryImageContainer is an cImageContainer
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Property Boolean pbShowEnlarged True
+
+        Set Size to 50 50
+        Set Border_Style to Border_None
+        Set pcBackColor to (GetSysColor (clBtnFace iand $FFFFFF))
+        Set pbVisible to False
+
+        Send ReadPreferences
+    End_Procedure
+
+    { MethodType =  Method }
+    { Description = "The peImageStyle is set to the ImageStyle attribute stored in the registry under Preferences. If no value was found the image style is set to ifFitOneSide." }
+    { Description += "The pbDropShadow is set to the DropShadow attribute stored in the registry under Preferences. If no value was found the drop shows is set to true." }
+    Procedure ReadPreferences
+        Boolean bDropShadow
+        Integer iImageStyle
+
+        Get ReadDword of ghoApplication "Preferences" "ImageStyle" ifFitOneSide to iImageStyle
+        Set peImageStyle to iImageStyle
+
+        Get ReadDword of ghoApplication "Preferences" "DropShadow" True to bDropShadow
+        Set pbDropShadow to bDropShadow
+    End_Procedure
+
+    { MethodType = Event }
+    { Description = "Displays a context sensitive menu when the right mouse button is clicked." }
+    Procedure OnRightMouseDown Integer iX Integer iY Integer iKeys
+        Forward Send OnRightMouseDown iX iY iKeys
+
+        Send ShowImageContextMenu Self
+    End_Procedure
+
+    { MethodType = Event }
+    { Description = "When clicked the name of the displayed file will be shown in the statusbar of the component that creates objects of this class." }
+    Procedure OnLeftMouseDown Integer iX Integer iY Integer iKeys
+        String sImageName
+        Handle hoStatusBar
+
+        Forward Send OnLeftMouseDown iX iY iKeys
+
+        Get StatusBar_Id to hoStatusBar
+        If (hoStatusBar > 0) Begin
+            Get psImage to sImageName
+            Send DisplayFileName of hoStatusBar sImageName
+        End
+    End_Procedure
+
+    { MethodType = Event }
+    { Description = "Redefine the method of the superclass (so do not forward) because the original method brings up the dialog to select an image and that is not desired here." }
+    Procedure OnLButtonDblClick Longptr wParam LongPtr lParam
+        Send RequestDisplayLargeImage
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "First finds out if it is possible to display a large version of the image by calling CanDisplayLargeImage then send the DisplayImageBig message to the zoom dialog to display a larger version of the image." }
+    Procedure RequestDisplayLargeImage
+        Handle hoZoomDialog
+        String sImage
+        Boolean bShow
+
+        Get CanDisplayLargeImage (&sImage) (&hoZoomDialog) to bShow
+        If (bShow) Begin
+            Send DisplayImageBig of hoZoomDialog sImage
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "An image can be displayed as large image if the image itself is visible, the code defines a zoom dialog object and the property pbShowEnlarged is set to true." }
+    { Description += "Method returns true and (via byref parameters) the name of the image and the zoom dialog object identifier." }
+    Function CanDisplayLargeImage String ByRef sImageName Handle ByRef hoZoomDialog Returns Boolean
+        Boolean bVisible bShowEnlarged
+
+        Get pbVisible to bVisible
+        If (bVisible) Begin
+            Get phoZoomedDialog to hoZoomDialog
+            If (hoZoomDialog > 0) Begin
+                Get pbShowEnlarged to bShowEnlarged
+                If (bShowEnlarged) Begin
+                    Get psImage to sImageName
+                End
+            End
+        End
+
+        Function_Return bShowEnlarged
+    End_Function
+
+    { MethodType = Property }
+    { Description = "An object of this class should not respond to the paste operation." }
+    Function CanPaste Returns Boolean
+        Function_Return False
+    End_Function
+End_Class

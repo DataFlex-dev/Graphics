@@ -1,0 +1,131 @@
+﻿Use Winuser.pkg
+
+// MSDN Clipboard Reference:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/ff468801.aspx
+
+External_Function WinAPI_AddClipboardFormatListener "AddClipboardFormatListener" User32.Dll ;
+    Handle hWnd ;
+    Returns Boolean
+
+External_Function WinAPI_ChangeClipboardChain "ChangeClipboardChain" User32.Dll ;
+    Handle hWndRemove ;
+    Handle hWndNewNext ;
+    Returns Boolean
+
+External_Function WinAPI_CloseClipboard "CloseClipboard" User32.Dll ;
+    Returns Boolean
+
+External_Function WinAPI_CountClipboardFormats "CountClipboardFormats" User32.Dll ;
+    Returns Integer
+
+External_Function WinAPI_EmptyClipboard "EmptyClipboard" User32.Dll ;
+    Returns Boolean
+
+External_Function WinAPI_EnumClipboardFormats "EnumClipboardFormats" User32.Dll ;
+    Integer format ;
+    Returns Integer
+
+External_Function WinAPI_GetClipboardData "GetClipboardData" User32.Dll ;
+    Integer uFormat ;
+    Returns Handle
+
+External_Function WinAPI_GetClipboardFormatName "GetClipboardFormatNameW" User32.Dll ;
+    Integer format ;
+    Pointer lpszFormatName ;
+    Integer cchMaxCount ;
+    Returns Integer
+
+External_Function WinAPI_GetPredefinedClipboardFormatName "GetPredefinedClipboardFormatNameW" User32.Dll ;
+    Integer format Pointer lpszFormatName Integer cchMaxCount ;
+    Returns Integer
+
+External_Function WinAPI_GetClipboardOwner "GetClipboardOwner" User32.Dll ;
+    Returns Handle
+
+External_Function WinAPI_GetClipboardSequenceNumber "GetClipboardSequenceNumber" User32.Dll ;
+    Returns UInteger
+
+External_Function WinAPI_GetClipboardViewer "GetClipboardViewer" User32.Dll ;
+    Returns Handle
+
+External_Function WinAPI_GetOpenClipboardWindow "GetOpenClipboardWindow" User32.Dll ;
+    Returns Handle
+
+External_Function WinAPI_GetPriorityClipboardFormat "GetPriorityClipboardFormat" User32.Dll ;
+    Pointer ppFormatPriorityList ;
+    Integer cFormats ;
+    Returns Integer
+
+External_Function WinAPI_GetUpdatedClipboardFormats "GetUpdatedClipboardFormats" User32.Dll ;
+    Pointer lpuiFormats ;
+    UInteger cFormats ;
+    Pointer pcFormatsOut ;
+    Returns Boolean
+
+External_Function WinAPI_IsClipboardFormatAvailable "IsClipboardFormatAvailable" User32.Dll ;
+    Integer uFormat ;
+    Returns Boolean
+
+External_Function WinAPI_OpenClipboard "OpenClipboard" User32.Dll ;
+    Handle hWnd ;
+    Returns Boolean
+
+External_Function WinAPI_RegisterClipboardFormat "RegisterClipboardFormat" User32.Dll ;
+    WString lpszFormat ;
+    Returns UInteger
+
+External_Function WinAPI_RemoveClipboardFormatListener "RemoveClipboardFormatListener" User32.Dll ;
+    Handle hWnd ;
+    Returns Boolean
+
+External_Function WinAPI_SetClipboardData "SetClipboardData" User32.Dll ;
+    Integer uFormat ;
+    Handle hMem ;
+    Returns Handle
+
+External_Function WinAPI_SetClipboardViewer "SetClipboardViewer" User32.Dll ;
+    Handle hWnd ;
+    Returns Handle
+
+// constants for ClipboardFormat are available in Winuser.pkg
+Define ClipboardFormat for Integer
+
+// according to comments on https://msdn.microsoft.com/en-us/library/windows/desktop/ms649040.aspx
+Define C_MAX_ClipboardFormatNameLength for 256
+
+Define CF_BITMAP            for 2 // a Handle to a bitmap (HBITMAP).
+Define CF_DIB               for 8 // a memory Object containing a BITMAPINFO structure followed by the bitmap bits.
+Define CF_DIBV5             for 17 // a memory Object containing a BITMAPV5HEADER structure followed by the bitmap color space information and the bitmap bits.
+Define CF_DIF               for 5 // Software Arts' Data Interchange Format.
+Define CF_DSPBITMAP         for |CI$0082 // Bitmap display format associated with a private format. The hMem parameter must be a Handle to data that can be displayed in bitmap format in lieu of the privately formatted data.
+Define CF_DSPENHMETAFILE    for |CI$008E // Enhanced metafile display format associated with a private format. The hMem parameter must be a Handle to data that can be displayed in enhanced metafile format in lieu of the privately formatted data.
+Define CF_DSPMETAFILEPICT   for |CI$0083 // Metafile-picture display format associated with a private format. The hMem parameter must be a Handle to data that can be displayed in metafile-picture format in lieu of the privately formatted data.
+Define CF_DSPTEXT           for |CI$0081 // Text display format associated with a private format. The hMem parameter must be a Handle to data that can be displayed in text format in lieu of the privately formatted data.
+Define CF_ENHMETAFILE       for 14 // a Handle to an enhanced metafile (HENHMETAFILE).
+Define CF_HDROP             for 15 // a Handle to type HDROP that identifies a list of files. an application can retrieve information about the files by passing the Handle to the DragQueryFile Function.
+Define CF_LOCALE            for 16 // The data is a Handle (HGLOBAL) to the locale identifier (LCID) associated with text in the clipboard. When you Close the clipboard, If it contains CF_TEXT data but no CF_LOCALE data, the system automatically sets the CF_LOCALE format to the current input language. You can Use the CF_LOCALE format to associate a different locale with the clipboard text.
+                                   // an application that pastes text from the clipboard can retrieve this format to determine which character Set was used to generate the text.
+                                   // Note that the clipboard does not support plain text in multiple character sets. to achieve this, Use a formatted text data type such as RTF instead.
+                                   // The system uses the code page associated with CF_LOCALE to implicitly convert from CF_TEXT to CF_UNICODETEXT. Therefore, the correct code page table is used for the conversion.
+Define CF_METAFILEPICT      for 3  // Handle to a metafile picture format as defined by the METAFILEPICT structure. When passing a CF_METAFILEPICT Handle by means of DDE, the application responsible for deleting hMem should also free the metafile referred to by the CF_METAFILEPICT Handle.
+Define CF_OEMTEXT           for 7  // Text format containing characters in the OEM character Set. Each line ends with a carriage return/linefeed (CR-LF) combination. a null character signals the End of the data.
+Define CF_OWNERDISPLAY      for |CI$0080 // Owner-display format. The clipboard owner must display and update the clipboard viewer window, and receive the WM_ASKCBFORMATNAME, WM_HSCROLLCLIPBOARD, WM_PAINTCLIPBOARD, WM_SIZECLIPBOARD, and WM_VSCROLLCLIPBOARD messages. The hMem parameter must be NULL.
+Define CF_PALETTE           for 9 // Handle to a color palette. Whenever an application places data in the clipboard that depends on or assumes a color palette, it should place the palette on the clipboard as well.
+                                  // If the clipboard contains data in the CF_PALETTE (logical color palette) format, the application should Use the SelectPalette and RealizePalette functions to realize (compare) any other data in the clipboard against that logical palette.
+                                  // When displaying clipboard data, the clipboard always uses as its current palette any Object on the clipboard that is in the CF_PALETTE format.
+Define CF_PENDATA           for 10 // Data for the pen extensions to the Microsoft Windows for Pen Computing.
+Define CF_RIFF              for 11 // Represents audio data more complex than can be represented in a CF_WAVE standard wave format.
+Define CF_SYLK              for 4 // Microsoft Symbolic Link (SYLK) format.
+Define CF_TEXT              for 1 // Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. a null character signals the End of the data. Use this format for ANSI text.
+Define CF_TIFF              for 6 // Tagged-image file format.
+Define CF_UNICODETEXT       for 13 // Unicode text format. Each line ends with a carriage return/linefeed (CR-LF) combination. a null character signals the End of the data.
+Define CF_WAVE              for 12 // Represents audio data in one of the standard wave formats, such as 11 kHz or 22 kHz PCM.
+
+// "Private" formats don't get GlobalFree()'d
+Define CF_PRIVATEFIRST      for |CI$0200 // Start of a range of Integer values for private clipboard formats. The range ends with CF_PRIVATELAST. Handles associated with private clipboard formats are not freed automatically; the clipboard owner must free such handles, typically in response to the WM_DESTROYCLIPBOARD message.
+Define CF_PRIVATELAST       for |CI$02FF // See CF_PRIVATEFIRST.
+
+// "GDIOBJ" formats Do Get DeleteObject()'d
+Define CF_GDIOBJFIRST       for |CI$0300 // Start of a range of Integer values for application-defined GDI Object clipboard formats. The End of the range is CF_GDIOBJLAST.
+                                         // Handles associated with clipboard formats in this range are not automatically deleted using the GlobalFree Function when the clipboard is emptied. Also, when using values in this range, the hMem parameter is not a Handle to a GDI Object, but is a Handle allocated by the GlobalAlloc Function with the GMEM_MOVEABLE flag.
+Define CF_GDIOBJLAST        for |CI$03FF // See CF_GDIOBJFIRST.

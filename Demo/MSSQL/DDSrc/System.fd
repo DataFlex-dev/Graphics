@@ -1,0 +1,7 @@
+#REPLACE FILE1 System
+#REPLACE System.Recnum |FN1,0
+#REPLACE System.Person_ID |FN1,1
+#REPLACE System.Product_ID |FN1,2
+#REPLACE System.Photo_ID |FN1,3
+#REPLACE System.PersonPhoto_ID |FN1,4
+#REPLACE System.PersonProduct_ID |FN1,5

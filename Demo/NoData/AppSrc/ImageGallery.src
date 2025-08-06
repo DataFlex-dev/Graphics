@@ -1,0 +1,1967 @@
+﻿Use DfAllEnt.pkg
+Use cCJStandardCommandBarSystem.pkg
+Use dfTreeVw.pkg
+Use Functions\FileDateTime.pkg
+Use cImageList32.pkg
+Use Classes\cImageGallery.pkg
+Use Dialogs\ImageGalleryConfigDialog.dg
+Use Classes\cGalleryImageContainer.pkg
+Use cCJCommandBarSystem.pkg
+Use Functions\PathFindExtension.Pkg
+Use Rgb.pkg
+Use Classes\cSplitterControl.Pkg
+Use Functions\WindowsFolders.pkg
+Use Structs\tBarSize.pkg
+Use Structs\tPictureNames.pkg
+Use cToolTipController.pkg
+
+Object oApplication is a cApplication
+    Set pbPreserveEnvironment to False
+    Set peHelpType to htNoHelp
+
+    Object oConnection is a cConnection
+        Use LoginEncryption.pkg
+        Use DatabaseLoginDialog.dg
+    End_Object
+
+    Set psProduct to "DataFlex Graphics Library Examples"
+    Set psVersion to "25.0"
+End_Object
+
+Object oTooltipController is a cToolTipController
+    Set piIcon to TTI_INFO
+    Set pbBalloonStyle to True
+    Set psTitle to "ImageGallery"
+    Move Self to ghoToolTipController
+End_Object
+
+// Fake class for designing in the studio
+{ DesignerClass = cDTView }
+Class cImageGalleryPanel is a Panel
+End_Class
+
+Object oMain is a cImageGalleryPanel
+    Set Label to "Image Gallery"
+    Set Location to 4 3
+    Set Size to 300 550
+    Set Icon to "Default.Ico"
+
+    Use Dialogs\ImageZoomedDialog.dg
+    Use Dialogs\ImageProperties.dg
+
+    { DesignTime = False }
+    { Description = "Will be filled when the number of image pages is calculated" }
+    Property Integer piPages
+    { Description = "Is used by the browse buttons to keep track of page for next, previous" }
+    { DesignTime = False }
+    Property Integer piCurrentPage
+
+    Set peNeighborhood to nhPublic
+    Set piMinSize to 200 250
+
+    Object oCommandBarSystem is a cCJCommandBarSystem
+        Set pbTimerUpdate to True
+        Set peVisualTheme to xtpThemeVisualStudio2012Light
+
+        Function BarClientSize Returns tBarSize
+            Boolean bComObjectCreated
+            tBarSize BarSize
+
+            Get IsComObjectCreated to bComObjectCreated
+            If (bComObjectCreated) Begin
+                Send ComGetClientRect (&BarSize.iLeft) (&BarSize.iTop) (&BarSize.iRight) (&BarSize.iBottom)
+            End
+
+            Function_Return BarSize
+        End_Function
+
+        Procedure OnComResize
+            Send ResizeViewContents
+        End_Procedure
+
+        Object oMenuBar is a cCJMenuBar
+            Object oFileMenu is a cCJMenuItem
+                Set peControlType to xtpControlPopup
+                Set psCaption   to "&File"
+                Set psDescription to "Quit this application."
+                Set psCategory to "Menus"
+
+                Object oConfigMenuItem is a cCJMenuItem
+                    Set psCaption to "Config"
+                    Set psDescription to "Config"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Send Popup_Modal of oImageGalleryConfigDialog
+                    End_Procedure
+                End_Object
+
+                Object oExitMenu is a cCJExitMenuItem
+                    Set pbControlBeginGroup to True
+                End_Object
+            End_Object
+
+            Object oBrowseMenuItem is a cCJMenuItem
+                Set psCaption to "Browse"
+                Set psTooltip to "Browse"
+                Set peControlType to xtpControlPopup
+
+                Object oFirstPageMenuItem is a cCJMenuItem
+                    Set psCaption to "First Page"
+                    Set psDescription to "First Page"
+                    Set psImage to "ActionFirst.ico"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Set piCurrentPage to 1
+                        Send DisplayImagePage of oGalleryContainer 1
+                        Send ChangeListIndex of oPageSelectMenuItem 1
+                    End_Procedure
+
+                    Function IsEnabled Returns Boolean
+                        Integer iCurrentPage
+
+                        Get piCurrentPage to iCurrentPage
+
+                        Function_Return (iCurrentPage > 1)
+                    End_Function
+                End_Object
+
+                Object oPreviousPageMenuItem is a cCJMenuItem
+                    Set psCaption to "Previous Page"
+                    Set psImage to "ActionPrevious.ico"
+                    Set psDescription to "Previous Page"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Integer iCurrentPage
+
+                        Get piCurrentPage to iCurrentPage
+                        If (iCurrentPage > 1) Begin
+                            Decrement iCurrentPage
+                            Set piCurrentPage to iCurrentPage
+                            Send DisplayImagePage of oGalleryContainer iCurrentPage
+                            Send ChangeListIndex of oPageSelectMenuItem iCurrentPage
+                        End
+                    End_Procedure
+
+                    Function IsEnabled Returns Boolean
+                        Integer iCurrentPage
+
+                        Get piCurrentPage to iCurrentPage
+
+                        Function_Return (iCurrentPage > 1)
+                    End_Function
+                End_Object
+
+                Object oNextPageMenuItem is a cCJMenuItem
+                    Set psCaption to "Next Page"
+                    Set psImage to "ActionNext.ico"
+                    Set psDescription to "Next Page"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Integer iCurrentPage iPages
+
+                        Get piCurrentPage to iCurrentPage
+                        Get piPages to iPages
+                        If (iCurrentPage < iPages) Begin
+                            Increment iCurrentPage
+                            Set piCurrentPage to iCurrentPage
+                            Send DisplayImagePage of oGalleryContainer iCurrentPage
+                            Send ChangeListIndex of oPageSelectMenuItem iCurrentPage
+                        End
+                    End_Procedure
+
+                    Function IsEnabled Returns Boolean
+                        Integer iCurrentPage iPages
+
+                        Get piCurrentPage to iCurrentPage
+                        Get piPages to iPages
+
+                        Function_Return (iCurrentPage < iPages)
+                    End_Function
+                End_Object
+
+                Object oLastPageMenuItem is a cCJMenuItem
+                    Set psCaption to "Last Page"
+                    Set psImage to "ActionLast.ico"
+                    Set psDescription to "Last Page"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Integer iCurrentPage iPages
+
+                        Get piPages to iPages
+                        Set piCurrentPage to iPages
+                        Send DisplayImagePage of oGalleryContainer iPages
+                        Send ChangeListIndex of oPageSelectMenuItem iPages
+                    End_Procedure
+
+                    Function IsEnabled Returns Boolean
+                        Integer iCurrentPage iPages
+
+                        Get piCurrentPage to iCurrentPage
+                        Get piPages to iPages
+
+                        Function_Return (iCurrentPage < iPages)
+                    End_Function
+                End_Object
+            End_Object
+
+            Object oOptionsMenuItem is a cCJMenuItem
+                Set psCaption to "Options"
+                Set psTooltip to "Options"
+                Set peControlType to xtpControlPopup
+
+                Object oImageFitMenuItem is a cCJMenuItem
+                    Set psCaption to "Image Fit"
+                    Set psTooltip to "Image Fit"
+                    Set peControlType to xtpControlPopup
+
+                    Object oOriginalMenuItem is a cCJMenuItem
+                        Set psCaption to "Original"
+                        Set psDescription to "Original"
+
+                        Function IsChecked Returns Boolean
+                            Integer eImageStyle
+
+                            Get ReadDword of ghoApplication "Preferences" "ImageStyle" 0 to eImageStyle
+
+                            Function_Return (eImageStyle = ifOriginal)
+                        End_Function
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send ChangeImageFit of (oDisplayOptionsMenuItem (oOptionsToolbar)) ifOriginal
+                        End_Procedure
+                    End_Object
+
+                    Object oFitOneSideMenuItem is a cCJMenuItem
+                        Set psCaption to "Fit One Side"
+                        Set psDescription to "Fit One Side"
+
+                        Function IsChecked Returns Boolean
+                            Integer eImageStyle
+
+                            Get ReadDword of ghoApplication "Preferences" "ImageStyle" 0 to eImageStyle
+
+                            Function_Return (eImageStyle = ifFitOneSide)
+                        End_Function
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send ChangeImageFit of (oDisplayOptionsMenuItem (oOptionsToolbar)) ifFitOneSide
+                        End_Procedure
+                    End_Object
+
+                    Object oFitBothSidesMenuItem is a cCJMenuItem
+                        Set psCaption to "Fit Both Sides"
+                        Set psDescription to "Fit Both Sides"
+
+                        Function IsChecked Returns Boolean
+                            Integer eImageStyle
+
+                            Get ReadDword of ghoApplication "Preferences" "ImageStyle" 0 to eImageStyle
+
+                            Function_Return (eImageStyle = ifFitBothSides)
+                        End_Function
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send ChangeImageFit of (oDisplayOptionsMenuItem (oOptionsToolbar)) ifFitBothSides
+                        End_Procedure
+                    End_Object
+                End_Object
+
+                Object oDropShadowMenuItem is a cCJMenuItem
+                    Set psCaption to "Drop Shadow"
+                    Set psDescription to "Draw a shadow under the images"
+
+                    Function IsChecked Returns Boolean
+                        Boolean bDropShadow
+
+                        Get ReadDword of ghoApplication "Preferences" "DropShadow" False to bDropShadow
+
+                        Function_Return bDropShadow
+                    End_Function
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bChecked
+
+                        Forward Send OnExecute vCommandBarControl
+
+                        Get pbChecked to bChecked
+                        Move (not (bChecked)) to bChecked
+
+                        Send WriteDword of ghoApplication "Preferences" "DropShadow" bChecked
+
+                        Send ChangeDropShadow of oGalleryContainer bChecked
+                    End_Procedure
+                End_Object
+
+                Object oBlackBackgroundMenuItem is a cCJMenuItem
+                    Set psCaption to "Black Background"
+                    Set psDescription to "Use black as the background color"
+
+                    Procedure OnExecute Variant vCommandBarControl
+                        Boolean bChecked
+
+                        Get pbChecked to bChecked
+                        Move (not (bChecked)) to bChecked
+
+                        Send WriteDword of ghoApplication "Preferences" "BlackBackground" bChecked
+
+                        If (bChecked) Begin
+                            Send ChangeColor of oGalleryContainer clBlack
+                        End
+                        Else Begin
+                            Send ChangeColor of oGalleryContainer clBtnFace
+                        End
+                    End_Procedure
+
+                    Function IsChecked Returns Boolean
+                        Boolean bUseBlackBackground
+
+                        Get ReadDword of ghoApplication "Preferences" "BlackBackground" False to bUseBlackBackground
+
+                        Function_Return bUseBlackBackground
+                    End_Function
+                End_Object
+            End_Object
+
+            Object oHelpMenu is a cCJMenuItem
+                Set peControlType to xtpControlPopup
+                Set psCaption to "&Help"
+                Set psDescription to "Access Information for learning and using this DataFlex application."
+                Set psToolTip to "Help"
+
+                Object oAboutMenuItem is a cCJAboutMenuItem
+                    Procedure OnExecute Variant vCommandBarControl
+                        Send Activate_About
+                    End_Procedure
+                End_Object
+            End_Object
+        End_Object
+
+        Object oBrowseToolbar is a cCJToolbar
+            Set pbGripper to False
+            Set pbCloseable to False
+            Set pbShowExpandButton to False
+            Set pbEnableDocking to False
+            Set pbCustomizable to False
+            Set psTitle to "Browse ToolBar"
+            Set peStretched to stStretchShared
+
+            Object oFirstPageMenuItem is a cCJMenuItem
+                Set psImage to "ActionFirst.ico"
+                Set psDescription to "First Page"
+                Set psToolTip to "First Page"
+                Set pbActiveUpdate to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Set piCurrentPage to 1
+                    Send DisplayImagePage of oGalleryContainer 1
+                    Send ChangeListIndex of oPageSelectMenuItem 1
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Integer iCurrentPage
+
+                    Get piCurrentPage to iCurrentPage
+
+                    Function_Return (iCurrentPage > 1)
+                End_Function
+            End_Object
+
+            Object oPreviousPageMenuItem is a cCJMenuItem
+                Set psImage to "ActionPrevious.ico"
+                Set psDescription to "Previous Page"
+                Set psToolTip to "Previous Page"
+                Set pbActiveUpdate to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Integer iCurrentPage
+
+                    Get piCurrentPage to iCurrentPage
+                    If (iCurrentPage > 1) Begin
+                        Decrement iCurrentPage
+                        Set piCurrentPage to iCurrentPage
+                        Send DisplayImagePage of oGalleryContainer iCurrentPage
+                        Send ChangeListIndex of oPageSelectMenuItem iCurrentPage
+                    End
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Integer iCurrentPage
+
+                    Get piCurrentPage to iCurrentPage
+
+                    Function_Return (iCurrentPage > 1)
+                End_Function
+            End_Object
+
+            Object oPageSelectMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlComboBox
+                Set psCaption to "Page:"
+                Set peControlStyle to xtpButtonCaption
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoCombo
+                    Integer iIndex
+
+                    Get CreateProxyControl vCommandBarControl to hoCombo
+                    Get ComListIndex of hoCombo to iIndex
+                    If (iIndex > 0) Begin
+                        Set piCurrentPage to iIndex
+                        Send DisplayImagePage of oGalleryContainer iIndex
+                    End
+
+                    Send Destroy of hoCombo
+                End_Procedure
+
+                Procedure AddPages Integer iPages Boolean bChangeListIndex
+                    Integer iPage
+                    Handle hoCombo
+
+                    Get CreateFirstProxyControl to hoCombo
+                    If (hoCombo > 0) Begin
+                        Send ComClear of hoCombo
+
+                        For iPage from 1 to iPages
+                            Send ComAddItem of hoCombo ("Page" * String (iPage)) iPage
+                        Loop
+
+                        If (bChangeListIndex) Begin
+                            Set ComListIndex of hoCombo to 1
+                            Set ComWidth of hoCombo to 100
+                            Send Destroy of hoCombo
+
+                            Set piCurrentPage to 1
+                            Send DisplayImagePage of oGalleryContainer 1
+                        End
+                    End
+
+                    Set piPages to iPages
+                End_Procedure
+
+                Procedure ChangeListIndex Integer iPage
+                    Handle hoCombo
+
+                    Get CreateFirstProxyControl to hoCombo
+                    If (hoCombo > 0) Begin
+                        Set ComListIndex of hoCombo to iPage
+                        Send Destroy of hoCombo
+                    End
+                End_Procedure
+            End_Object
+
+            Object oNextPageMenuItem is a cCJMenuItem
+                Set psImage to "ActionNext.ico"
+                Set psDescription to "Next Page"
+                Set psToolTip to "Next Page"
+                Set pbActiveUpdate to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Integer iCurrentPage iPages
+
+                    Get piCurrentPage to iCurrentPage
+                    Get piPages to iPages
+                    If (iCurrentPage < iPages) Begin
+                        Increment iCurrentPage
+                        Set piCurrentPage to iCurrentPage
+                        Send DisplayImagePage of oGalleryContainer iCurrentPage
+                        Send ChangeListIndex of oPageSelectMenuItem iCurrentPage
+                    End
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Integer iCurrentPage iPages
+
+                    Get piCurrentPage to iCurrentPage
+                    Get piPages to iPages
+
+                    Function_Return (iCurrentPage < iPages)
+                End_Function
+            End_Object
+
+            Object oLastPageMenuItem is a cCJMenuItem
+                Set psImage to "ActionLast.ico"
+                Set psDescription to "Last Page"
+                Set psToolTip to "Last Page"
+                Set pbActiveUpdate to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Integer iCurrentPage iPages
+
+                    Get piPages to iPages
+                    Set piCurrentPage to iPages
+                    Send DisplayImagePage of oGalleryContainer iPages
+                    Send ChangeListIndex of oPageSelectMenuItem iPages
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Integer iCurrentPage iPages
+
+                    Get piCurrentPage to iCurrentPage
+                    Get piPages to iPages
+
+                    Function_Return (iCurrentPage < iPages)
+                End_Function
+            End_Object
+        End_Object
+
+        Object oActionsToolbar is a cCJToolbar
+            Set pbEnableDocking to False
+            Set pbCloseable to False
+            Set pbCustomizable to False
+            Set pbShowExpandButton to False
+            Set pbGripper to False
+            Set psTitle to "Actions ToolBar"
+
+            Object oDisplayImagePropertiesMenuItem is a cCJMenuItem
+                Set psCaption to "Image Properties"
+                Set psDescription to "Image Properties"
+                Set peControlStyle to xtpButtonIcon
+                Set psImage to "Property.Ico"
+                Set pbActiveUpdate to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoFocus
+                    Integer iOldDelegationMode
+                    String sImageName
+                    tImageProperty[] ImageProperties
+
+                    Get Focus of Desktop to hoFocus
+                    Get Delegation_Mode of hoFocus to iOldDelegationMode
+                    Set Delegation_Mode of hoFocus to No_Delegate_Or_Error
+                    Get psImage of hoFocus to sImageName
+                    If (sImageName <> "") Begin
+                        Get PropertyList of hoFocus to ImageProperties
+                        Send DisplayImageProperties of oImagePropertiesDialog ImageProperties sImageName
+                    End
+                    Set Delegation_Mode of hoFocus to iOldDelegationMode
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Handle hoFocus
+                    Integer iOldDelegationMode
+                    String sImageName
+
+                    Get Focus of Desktop to hoFocus
+                    Get Delegation_Mode of hoFocus to iOldDelegationMode
+                    Set Delegation_Mode of hoFocus to No_Delegate_Or_Error
+                    Get psImage of hoFocus to sImageName
+                    Set Delegation_Mode of hoFocus to iOldDelegationMode
+
+                    Function_Return (sImageName <> "")
+                End_Function
+            End_Object
+        End_Object
+
+        Object oOptionsToolbar is a cCJToolbar
+            Set pbEnableDocking to False
+            Set pbCloseable to False
+            Set pbCustomizable to False
+            Set pbShowExpandButton to False
+            Set pbGripper to False
+            Set psTitle to "Options ToolBar"
+
+            Object oDisplayOptionsMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlComboBox
+                Set psCaption to "Image Fit:"
+                Set peControlStyle to xtpButtonCaption
+                Set pbCloseable to False
+                Set pbShowExpandButton to False
+
+                Procedure FillComboList Handle hoCombo
+                    Integer eImageStyle
+
+                    Send ComClear of hoCombo
+
+                    Send ComAddItem of hoCombo "Original" 1
+                    Set ComItemData of hoCombo 1 to ifOriginal
+                    Send ComAddItem of hoCombo "Fit One Side" 2
+                    Set ComItemData of hoCombo 2 to ifFitOneSide
+                    Send ComAddItem of hoCombo "Fit Both Sides" 3
+                    Set ComItemData of hoCombo 3 to ifFitBothSides
+
+                    Get ReadDword of ghoApplication "Preferences" "ImageStyle" ifFitOneSide to eImageStyle
+
+                    Set ComListIndex of hoCombo to (eImageStyle - 3)
+                    Set ComWidth of hoCombo to 200
+                End_Procedure
+
+                Procedure ChangeImageFit Integer eImageStyle
+                    Handle hoCombo
+
+                    Get CreateFirstProxyControl to hoCombo
+
+                    Set ComListIndex of hoCombo to (eImageStyle - 3)
+                    Send ChangeImageStyle eImageStyle
+
+                    Send Destroy of hoCombo
+                End_Procedure
+
+                Procedure ChangeImageStyle Integer eImageStyle
+                    Send WriteDword of ghoApplication "Preferences" "ImageStyle" eImageStyle
+
+                    Send ChangeImageFit of oGalleryContainer eImageStyle
+                End_Procedure
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoCombo
+                    Integer iIndex eImageStyle
+
+                    Get CreateProxyControl vCommandBarControl to hoCombo
+                    Get ComListIndex of hoCombo to iIndex
+                    Get ComItemData of hoCombo iIndex to eImageStyle
+                    Send ChangeImageStyle eImageStyle
+                    Send Destroy of hoCombo
+                End_Procedure
+
+                Procedure OnCreateControl Handle hoObj
+                    Send FillComboList hoObj
+                End_Procedure
+            End_Object
+
+            Object oDropShadowMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlCheckBox
+                Set psCaption to "DropShadow"
+                Set psToolTip to "Use DropShadow"
+                Set psDescription to "Draw a shadow under the images"
+                Set pbActiveUpdate to True
+
+                Function IsChecked Returns Boolean
+                    Boolean bDropShadow
+
+                    Get ReadDword of ghoApplication "Preferences" "DropShadow" True to bDropShadow
+
+                    Function_Return bDropShadow
+                End_Function
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Boolean bChecked
+
+                    Forward Send OnExecute vCommandBarControl
+
+                    Get pbChecked to bChecked
+                    Move (not (bChecked)) to bChecked
+                    Set pbChecked to bChecked
+
+                    Send WriteDword of ghoApplication "Preferences" "DropShadow" bChecked
+
+                    Send ChangeDropShadow of oGalleryContainer bChecked
+                End_Procedure
+            End_Object
+
+            Object oSizeMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlEdit
+                Set psCaption to "Size:"
+                Set peControlStyle to xtpButtonCaption
+                Set pbControlBeginGroup to True
+                Set psToolTip to "Size of the images"
+                Set psDescription to "Size of the images"
+
+                Function MakeInteger String ByRef sIn Returns Boolean
+                    Integer iLength iPos
+                    String sChar sNew
+
+                    Move (Length (sIn)) to iLength
+                    For iPos from 1 to iLength
+                        Move (Mid (sIn, 1, iPos)) to sChar
+                        If ('0123456789' contains sChar) Begin
+                            Move (sNew - sChar) to sNew
+                        End
+                    Loop
+
+                    Move sNew to sIn
+
+                    Function_Return (sNew <> sIn)
+                End_Function
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Boolean bCreated bChanged
+                    Handle hoEdit
+                    Integer iPos
+                    String sText sWidth sHeight
+
+                    Get IsComObjectCreated to bCreated
+                    If bCreated Begin
+                        Get CreateFirstProxyControl to hoEdit
+                        If (hoEdit > 0) Begin
+                            Get ComText of hoEdit to sText
+                            Move (Pos ('x', Lowercase (sText))) to iPos
+                            If (iPos > 0) Begin
+                                Move (Left (sText, iPos - 1)) to sHeight
+                                Get MakeInteger (&sHeight) to bChanged
+                                Set piImageDisplayHeight of oGalleryContainer to sHeight
+
+                                Move (Right (sText, Length (sText) - iPos)) to sWidth
+                                Get MakeInteger (&sWidth) to bChanged
+                                Set piImageDisplayWidth of oGalleryContainer to sWidth
+
+                                Send WriteDword of ghoApplication "Preferences" "ImageDisplayHeight" sHeight
+                                Send WriteDword of ghoApplication "Preferences" "ImageDisplayWidth" sWidth
+
+                                Set pbEnabled of (oRepaintHandler (oGalleryContainer)) to True
+                            End
+                            Send Destroy of hoEdit
+                        End
+                    End
+                End_Procedure
+
+                Procedure OnCreateControl Handle hoEdit
+                    String sText
+                    Integer iImageDisplayWidth iImageDisplayHeight
+
+                    Get ReadDword of ghoApplication "Preferences" "ImageDisplayHeight" 50 to iImageDisplayHeight
+                    Get ReadDword of ghoApplication "Preferences" "ImageDisplayWidth" 50 to iImageDisplayWidth
+                    Move ((iImageDisplayHeight max 25) min 500) to iImageDisplayHeight
+                    Move ((iImageDisplayWidth max 25) min 500) to iImageDisplayWidth
+                    Move (SFormat ("%1 x %2", iImageDisplayHeight, iImageDisplayWidth)) to sText
+                    Set ComText of hoEdit to sText
+                End_Procedure
+            End_Object
+
+            Object oBlackBackgroundMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlCheckBox
+                Set psCaption to "Black background"
+                Set psDescription to "Use black as the background color"
+                Set psToolTip to "Use black as the background color"
+                Set pbActiveUpdate to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Boolean bChecked
+
+                    Get pbChecked to bChecked
+                    Move (not (bChecked)) to bChecked
+
+                    Send WriteDword of ghoApplication "Preferences" "BlackBackground" bChecked
+
+                    If (bChecked) Begin
+                        Send ChangeColor of oGalleryContainer clBlack
+                    End
+                    Else Begin
+                        Send ChangeColor of oGalleryContainer clBtnFace
+                    End
+                End_Procedure
+
+                Function IsChecked Returns Boolean
+                    Boolean bUseBlackBackground
+
+                    Get ReadDword of ghoApplication "Preferences" "BlackBackground" False to bUseBlackBackground
+
+                    Function_Return bUseBlackBackground
+                End_Function
+            End_Object
+
+            Object oShowThumbnailsMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlCheckBox
+                Set psCaption to "Thumbnails"
+                Set psDescription to "Show Thumbnails"
+                Set psToolTip to "Show Thumbnails"
+                Set pbActiveUpdate to True
+
+                Function IsChecked Returns Boolean
+                    Boolean bShowThumbnails
+
+                    Get ReadDword of ghoApplication "Preferences" "ShowThumbnails" False to bShowThumbnails
+
+                    Function_Return bShowThumbnails
+                End_Function
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Boolean bChecked
+
+                    Forward Send OnExecute vCommandBarControl
+
+                    Get pbChecked to bChecked
+                    Move (not (bChecked)) to bChecked
+
+                    Send WriteDword of ghoApplication "Preferences" "ShowThumbnails" bChecked
+
+                    Send ShowThumbnails of oGalleryContainer bChecked
+                End_Procedure
+            End_Object
+
+            Object oScrollBarsMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlCheckBox
+                Set psCaption to "ScrollBars"
+                Set psDescription to "Show ScrollBars"
+                Set psToolTip to "Show ScrollBars"
+                Set pbActiveUpdate to True
+
+                Function IsChecked Returns Boolean
+                    Boolean bShowThumbnails
+
+                    Get ReadDword of ghoApplication "Preferences" "ShowScrollBars" True to bShowThumbnails
+
+                    Function_Return bShowThumbnails
+                End_Function
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Boolean bChecked
+
+                    Forward Send OnExecute vCommandBarControl
+
+                    Get pbChecked to bChecked
+                    Move (not (bChecked)) to bChecked
+
+                    Send WriteDword of ghoApplication "Preferences" "ShowScrollBars" bChecked
+
+                    Send ShowScrollBars of oGalleryContainer bChecked
+                End_Procedure
+            End_Object
+        End_Object
+
+        Object oStatusBar is a cCJStatusBar
+            Object oStatusPane1 is a cCJStatusBarPane
+                Set piID to sbpIDIdlePane
+                Set pbStyleStretch to True
+            End_Object
+
+            Object oCurrentPaneStatusBarPane is a cCJStatusBarPane
+                Set psText to "Current Folder:"
+                Set pbStyleNoBorders to True
+            End_Object
+
+            Object oCurrentFolderNameStatusPane is a cCJStatusBarPane
+                Set pbStyleStretch to True
+                Set psToolTip to "Current Folder"
+            End_Object
+
+            Procedure DisplayFileName String sFileName
+                Set psText of oStatusPane1 to sFileName
+            End_Procedure
+
+            Procedure DisplayCurrentFolder String sFolder
+                Set psText of oCurrentFolderNameStatusPane to sFolder
+            End_Procedure
+        End_Object
+    End_Object
+
+    Object oFoldersTreeContainer is a Container3d
+        Set Location to 33 4
+        Set Size to 228 125
+        Set peAnchors to anTopBottomLeft
+        Set Border_Style to Border_Normal
+
+        Object oImageList is a cImageList32
+            Procedure OnCreate
+                Integer iImage
+
+                Get AddImage "Folder.Ico" to iImage
+                Get AddImage "NetworkDrive.Ico" to iImage
+                Get AddImage "Harddisk.Ico" to iImage
+                Get AddImage "CDRom.Ico" to iImage
+            End_Procedure
+
+            Enum_List
+                Define C_FOLDERBMP
+                Define C_NETWORKDRIVEBMP
+                Define C_HARRDISKBMP
+                Define C_CDROMBMP
+            End_Enum_List
+        End_Object
+
+        Function CurrentFolder Returns String
+            Handle hItem
+            String sItemFullPath
+
+            Get CurrentTreeItem of oFoldersTreeView to hItem
+            Get ItemFullPath of oFoldersTreeView hItem to sItemFullPath
+
+            Function_Return sItemFullPath
+        End_Function
+
+        Object oFoldersTreeView is a TreeView
+            Set Size to 214 113
+            Set Location to 5 5
+            Set TreeLinesState to False
+            Set ImageListObject to oImageList
+
+            Enum_List
+                Define C_HARDDISKITEM for 1
+                Define C_CDROMITEM
+                Define C_NETWORKDRIVEITEM
+                Define C_FOLDERITEM
+            End_Enum_List
+
+            Function LocateTreeItem String[] ByRef sPaths Returns Handle
+                Handle hItem
+                Integer iPaths iPath
+
+                Get LocateRootItem (Lowercase (sPaths[0])) to hItem
+                If (hItem > 0) Begin
+                    Move (SizeOfArray (sPaths)) to iPaths
+                    Decrement iPaths
+                    For iPath from 1 to iPaths
+                        Get LocateItem (Lowercase (sPaths[iPath])) hItem to hItem
+                        If (hItem = 0) Begin
+                            Function_Return 0
+                        End
+                    Loop
+                End
+
+                Function_Return hItem
+            End_Function
+
+            Function LocateItem String sValue Handle hItem Returns Handle
+                String sItemLabel
+
+                Get ChildItem hItem to hItem
+                While (hItem > 0)
+                    Get ItemLabel hItem to sItemLabel
+                    If (Lowercase (sItemLabel) = sValue) Begin
+                        Send DoExpandItem hItem
+                        Function_Return hItem
+                    End
+                    Get NextSiblingItem hItem to hItem
+                Loop
+
+                Function_Return 0
+            End_Function
+
+            Function LocateRootItem String sDrive Returns Handle
+                Handle hRootItem
+                String sItemLabel
+
+                Get RootItem to hRootItem
+                While (hRootItem > 0)
+                    Get ItemLabel hRootItem to sItemLabel
+                    If (Lowercase (sItemLabel) = sDrive) Begin
+                        Send DoExpandItem hRootItem
+                        Function_Return hRootItem
+                    End
+                    Get NextSiblingItem hRootItem to hRootItem
+                Loop
+
+                Function_Return 0
+            End_Function
+
+            Procedure LocateFolder String sCurrentFolder
+                Integer iPos
+                String sTreeLevelDelimeter
+                String[] sPaths
+                Handle hItem
+
+                Get TreeLevelDelimeter to sTreeLevelDelimeter
+                While (sCurrentFolder <> "")
+                    Move (Pos (sTreeLevelDelimeter, sCurrentFolder)) to iPos
+                    If (iPos > 0) Begin
+                        Move (Left (sCurrentFolder, iPos - 1)) to sPaths[SizeOfArray (sPaths)]
+                        Move (Right (sCurrentFolder, Length (sCurrentFolder) - iPos)) to sCurrentFolder
+                    End
+                    Else Begin
+                        Move sCurrentFolder to sPaths[SizeOfArray (sPaths)]
+                        Move "" to sCurrentFolder
+                    End
+                Loop
+
+                Get LocateTreeItem (&sPaths) to hItem
+                If (hItem > 0) Begin
+                    Set CurrentTreeItem to hItem
+                End
+            End_Procedure
+
+            Object oFilesIdleManager is a cIdleHandler
+                Set pbEnabled to False
+
+                Procedure OnIdle
+                    Handle hItem
+                    String sFolderPath
+                    Boolean bContainsFolders
+
+                    Set pbEnabled to False
+
+                    Delegate Get CurrentTreeItem to hItem
+
+                    Get ItemFullPath hItem to sFolderPath
+                    Get ReadPictureNames of oGalleryContainer sFolderPath to bContainsFolders
+                    Set ItemChildCount hItem to bContainsFolders
+
+                    Set pbEnabled of (oRepaintHandler (oGalleryContainer)) to True
+                End_Procedure
+            End_Object
+
+            Function FolderContainsFolders String sFolder Returns Boolean
+                tFileDateTime[] FileInfo
+                Integer iElements iElement
+
+                Move (FileDateTime (sFolder + "\*.*")) to FileInfo
+                Move (SizeOfArray (FileInfo)) to iElements
+                Decrement iElements
+                For iElement from 0 to iElements
+                    If (IsFlagIn (FILE_ATTRIBUTE_DIRECTORY, FileInfo[iElement].iAttributes) and (not (IsFlagIn (FILE_ATTRIBUTE_HIDDEN, FileInfo[iElement].iAttributes)))) Begin
+                        If (FileInfo[iElement].sFileName <> "." and FileInfo[iElement].sFileName <> "..") Begin
+                            Function_Return True
+                        End
+                    End
+                Loop
+
+                Function_Return False
+            End_Function
+
+            Procedure OnCreateTree
+                Handle hItem
+                Integer iDrive iDriveStatus
+                String sFolder sCurrentFolder
+                Boolean bExists bContainsFiles
+
+                Move (WindowsFolderPath (CSIDL_MYPICTURES, True)) to sFolder
+                Get AddTreeItem sFolder 0 C_FOLDERITEM C_FOLDERBMP C_FOLDERBMP to hItem
+                Get FolderContainsFolders sFolder to bContainsFiles
+                Set ItemChildCount hItem to bContainsFiles
+
+                If (SysConf (SYSCONF_OS_MAJOR_REV) >= 6) Begin
+                    Move (WindowsFolderPath (CSIDL_COMMON_PICTURES, True)) to sFolder
+                    Get AddTreeItem sFolder 0 C_FOLDERITEM C_FOLDERBMP C_FOLDERBMP to hItem
+                    Get FolderContainsFolders sFolder to bContainsFiles
+                    Set ItemChildCount hItem to bContainsFiles
+                End
+
+                For iDrive from 1 to 26
+                    GetDskInfo iDrive iDriveStatus
+                    If (iDriveStatus > Drive_root_not_exist) Begin
+                        Case Begin
+                            Case (iDriveStatus = Drive_fixed)
+                                Move (Character (iDrive + 64) + ":") to sFolder
+                                Get AddTreeItem sFolder 0 C_HARDDISKITEM C_HARRDISKBMP C_HARRDISKBMP to hItem
+                                Case Break
+                            Case (iDriveStatus = Drive_cdrom)
+                                Move (Character (iDrive + 64) + ":") to sFolder
+                                Get AddTreeItem sFolder 0 C_CDROMITEM C_CDROMBMP C_CDROMBMP to hItem
+                                Case Break
+                            Case (iDriveStatus = Drive_remote)
+                                Move (Character (iDrive + 64) + ":") to sFolder
+                                Get AddTreeItem sFolder 0 C_NETWORKDRIVEITEM C_NETWORKDRIVEBMP C_NETWORKDRIVEBMP to hItem
+                                Case Break
+                        Case End
+                        File_Exist sFolder bExists
+                        If (bExists) Begin
+                            Get FolderContainsFolders sFolder to bContainsFiles
+                            Set ItemChildCount hItem to bContainsFiles
+                        End
+                    End
+                Loop
+
+                Get ReadString of ghoApplication "Preferences" "CurrentFolder" "" to sCurrentFolder
+                If (sCurrentFolder <> "") Begin
+                    Send LocateFolder sCurrentFolder
+                End
+            End_Procedure
+
+            Procedure OnItemExpanding Handle hItem
+                String sFolderPath
+
+                Get ItemFullPath hItem to sFolderPath
+                Send ReadFolderData (sFolderPath + "\") hItem
+            End_Procedure
+
+            Procedure OnItemCollapsed Handle hItem
+                Handle hChildItem
+
+                Repeat
+                    Get ChildItem hItem to hChildItem
+                    If (hChildItem > 0) Begin
+                        Send DoDeleteItem hChildItem
+                    End
+                Until (hChildItem = 0)
+            End_Procedure
+
+            Procedure OnItemChanged Handle hItem Handle hItemOld
+                Integer iItemData
+                String sFolderPath
+                Handle hoStatusBar
+
+                Get ItemData hItem to iItemData
+                If (iItemData = C_FOLDERITEM) Begin
+                    Set pbEnabled of oFilesIdleManager to True
+                End
+
+                Get StatusBar_Id to hoStatusBar
+                If (hoStatusBar > 0) Begin
+                    Get ItemFullPath hItem to sFolderPath
+                    Send DisplayCurrentFolder of hoStatusBar sFolderPath
+                End
+            End_Procedure
+
+            Procedure ReadFolderData String sPath Handle hRootItem
+                tFileDateTime[] FileInfo
+                Integer iElements iElement
+                Handle hItem
+                Boolean bContainsFiles bContainsFolders
+                String sFolder
+
+                Move (FileDateTime (sPath + "*.*")) to FileInfo
+                Move (SizeOfArray (FileInfo)) to iElements
+                Decrement iElements
+                For iElement from 0 to iElements
+                    If (IsFlagIn (FILE_ATTRIBUTE_DIRECTORY, FileInfo[iElement].iAttributes) and (not (IsFlagIn (FILE_ATTRIBUTE_HIDDEN, FileInfo[iElement].iAttributes)))) Begin
+                        If (FileInfo[iElement].sFileName <> "." and FileInfo[iElement].sFileName <> "..") Begin
+                            Move FileInfo[iElement].sFileName to sFolder
+                            Get AddTreeItem sFolder hRootItem C_FOLDERITEM 0 0 to hItem
+                            Get FolderContainsFolders (sPath + sFolder) to bContainsFiles
+                            Set ItemChildCount hItem to bContainsFiles
+                            Move True to bContainsFolders
+                        End
+                    End
+                Loop
+
+                If (not (bContainsFolders)) Begin
+                    Set ItemChildCount hRootItem to False
+                End
+            End_Procedure
+        End_Object
+
+        Procedure ResizeTree
+            Integer iSize
+
+            Get GuiSize to iSize
+            Set GuiSize of oFoldersTreeView to (Hi (iSize) - 20) (Low (iSize) - 20)
+        End_Procedure
+    End_Object
+
+    Object oSplitter is a cSplitterControl
+        Set Location to 33 129
+        Set Size to 230 5
+        Set peAnchors to anTopBottomLeft
+    End_Object
+
+    Procedure OnResize
+        Forward Send OnResize
+
+        Send ResizeTree of oFoldersTreeContainer
+        Set pbEnabled of (oRepaintHandler (oGalleryContainer)) to True
+    End_Procedure
+
+    Procedure ResizeViewContents
+        tBarSize BarSize
+        Integer iTreeContainerSize iSplitterSize
+
+        Get BarClientSize of oCommandBarSystem to BarSize
+
+        Set GuiLocation of oFoldersTreeContainer to (BarSize.iTop + 5) (BarSize.iLeft + 5)
+        Get GuiSize of oFoldersTreeContainer to iTreeContainerSize
+        Set GuiSize of oFoldersTreeContainer to (BarSize.iBottom - BarSize.iTop - 10) (Low (iTreeContainerSize))
+        Send ResizeTree of oFoldersTreeContainer
+
+        Get GuiSize of oSplitter to iSplitterSize
+        Set GuiSize of oSplitter to (BarSize.iBottom - BarSize.iTop - 10) (Low (iSplitterSize))
+
+        Set GuiLocation of oGalleryContainer to (BarSize.iTop + 5) (BarSize.iLeft + Low (iTreeContainerSize) + 10)
+        Set GuiSize of oGalleryContainer to (BarSize.iBottom - BarSize.iTop - 10) (BarSize.iRight - BarSize.iLeft - Low (iTreeContainerSize) - 15)
+
+        Set pbEnabled of oRepaintHandler to True
+    End_Procedure
+
+    Procedure ResizeControls Integer iCxTrack
+        Integer iSize iLocation
+
+        Get GuiSize of oFoldersTreeContainer to iSize
+        Set GuiSize of oFoldersTreeContainer to (Hi (iSize)) (Low (iSize) + iCxTrack)
+        Send ResizeTree of oFoldersTreeContainer
+
+        Get GuiLocation of oSplitter to iLocation
+        Set GuiLocation of oSplitter to (Hi (iLocation)) (Low (iLocation) + iCxTrack)
+
+        Get GuiSize of oGalleryContainer to iSize
+        Set GuiSize of oGalleryContainer to (Hi (iSize)) (Low (iSize) - iCxTrack)
+        Get GuiLocation of oGalleryContainer to iLocation
+        Set GuiLocation of oGalleryContainer to (Hi (iLocation)) (Low (iLocation) + iCxTrack)
+
+        Set pbEnabled of oRepaintHandler to True
+    End_Procedure
+
+    Object oGalleryContainer is a cImageGallery
+        Set Size to 228 407
+        Set Location to 33 133
+        Set peAnchors to anAll
+
+        Property Handle phoZoomedDialog (oImageZoomedDialog)
+        { DesignTime = False }
+        Property Integer piCurrentRows
+        { DesignTime = False }
+        Property Integer piCurrentColumns
+        { DesignTime = False }
+        Property Handle phoCurrentImageContainer
+
+        Property Integer piImageDisplayWidth 50
+        Property Integer piImageDisplayHeight 50
+
+        Set Border_Style to Border_Normal
+
+        Procedure ShowScrollBars Boolean bShowScrollBars
+            Handle[] hoImageContainers
+            Integer iImageContainers iImageContainerElement
+
+            Get phoImageContainers to hoImageContainers
+            Move (SizeOfArray (hoImageContainers)) to iImageContainers
+            Decrement iImageContainers
+            For iImageContainerElement from 0 to iImageContainers
+                Set pbShowScrollBars of hoImageContainers[iImageContainerElement] to bShowScrollBars
+                Send RedisplayImage of hoImageContainers[iImageContainerElement]
+            Loop
+        End_Procedure
+
+        Procedure ShowThumbnails Boolean bShowThumbnails
+            Handle[] hoImageContainers
+            Integer iImageContainers iImageContainerElement
+
+            Get phoImageContainers to hoImageContainers
+            Move (SizeOfArray (hoImageContainers)) to iImageContainers
+            Decrement iImageContainers
+            For iImageContainerElement from 0 to iImageContainers
+                Set pbLoadThumbnail of hoImageContainers[iImageContainerElement] to bShowThumbnails
+                If (bShowThumbnails) Begin
+                    Send LoadThumbnail of hoImageContainers[iImageContainerElement]
+                End
+                Else Begin
+                    Send RedisplayImage of hoImageContainers[iImageContainerElement]
+                End
+            Loop
+        End_Procedure
+
+        Procedure ChangeColor Integer iColor
+            Handle[] hoImageContainers
+            Integer iImageContainers iImageContainerElement
+
+            Set Color to iColor
+
+            Get phoImageContainers to hoImageContainers
+            Move (SizeOfArray (hoImageContainers)) to iImageContainers
+            Decrement iImageContainers
+            For iImageContainerElement from 0 to iImageContainers
+                Set pcBackColor of hoImageContainers[iImageContainerElement] to iColor
+            Loop
+        End_Procedure
+
+        Procedure ChangeDropShadow Boolean bUseDropShadow
+            Handle[] hoImageContainers
+            Integer iImageContainers iImageContainerElement
+
+            Get phoImageContainers to hoImageContainers
+            Move (SizeOfArray (hoImageContainers)) to iImageContainers
+            Decrement iImageContainers
+            For iImageContainerElement from 0 to iImageContainers
+                Set pbDropShadow of hoImageContainers[iImageContainerElement] to bUseDropShadow
+            Loop
+        End_Procedure
+
+        Procedure ChangeImageFit Integer iImageFit
+            Handle[] hoImageContainers
+            Integer iImageContainers iImageContainerElement
+
+            Get phoImageContainers to hoImageContainers
+            Move (SizeOfArray (hoImageContainers)) to iImageContainers
+            Decrement iImageContainers
+            For iImageContainerElement from 0 to iImageContainers
+                Set peImageStyle of hoImageContainers[iImageContainerElement] to iImageFit
+            Loop
+        End_Procedure
+
+        Procedure DisplayImagePage Integer iPage
+            Handle[] hoImageContainers
+            tPictureNames PictureNames
+            Integer iImageContainers iImageContainerElement iPictureElement iPictures
+            String sSetImageName
+            Boolean bChangesMade
+
+            Get phoImageContainers to hoImageContainers
+            Get pPictureNames to PictureNames
+
+            Move (SizeOfArray (hoImageContainers)) to iImageContainers
+            Move (SizeOfArray (PictureNames.sPictureNames)) to iPictures
+            Move ((iPage - 1) * iImageContainers) to iPictureElement
+            Decrement iImageContainers
+
+            For iImageContainerElement from 0 to iImageContainers
+                If (iPictureElement < iPictures) Begin
+                    Set psImage of hoImageContainers[iImageContainerElement] to PictureNames.sPictureNames[iPictureElement]
+                    Get psImage of hoImageContainers[iImageContainerElement] to sSetImageName
+                    If (sSetImageName <> "") Begin
+                        Set pbVisible of hoImageContainers[iImageContainerElement] to True
+                        Increment iPictureElement
+                    End
+                    Else Begin
+                        Move (RemoveFromArray (PictureNames.sPictureNames, iPictureElement)) to PictureNames.sPictureNames
+                        Decrement iPictures
+                        Move True to bChangesMade
+                        Set pbVisible of hoImageContainers[iImageContainerElement] to False
+                        Decrement iImageContainerElement
+                    End
+                End
+                Else Begin
+                    Set psImage of hoImageContainers[iImageContainerElement] to ""
+                    Set pbVisible of hoImageContainers[iImageContainerElement] to False
+                End
+            Loop
+
+            If (bChangesMade) Begin
+                Set pPictureNames to PictureNames
+                Send CalculatePages False
+            End
+        End_Procedure
+
+        Procedure RemoveImageContainers
+            Handle[] hoImageContainers
+            Integer iElements iElement
+
+            Get phoImageContainers to hoImageContainers
+            Move (SizeOfArray (hoImageContainers)) to iElements
+            Decrement iElements
+            For iElement from 0 to iElements
+                Send Destroy of hoImageContainers[iElement]
+            Loop
+        End_Procedure
+
+        Procedure ShowImageContextMenu Handle hoImageContainer
+            Set phoImageContainer of oImageContextMenu to hoImageContainer
+
+            Send Popup of oImageContextMenu
+        End_Procedure
+
+        Procedure BuildDisplay
+            Integer iSize iWidth iHeight iColumns iRows iColumn iRow
+            Integer iElement iImageContainerSize iCurrentRows iCurrentColumns
+            Integer iImageDisplayWidth iImageDisplayHeight iBackColor
+            Handle[] hoImageContainers
+            Handle hWnd
+            Boolean bUseBlackBackground bShowThumbnails bShowScrollBars
+
+            Get Window_Handle to hWnd
+            If (hWnd = 0) Begin
+                Procedure_Return
+            End
+
+            Get Size to iSize
+            Get piImageDisplayHeight to iImageDisplayHeight
+            Get piImageDisplayWidth to iImageDisplayWidth
+
+            Move (Low (iSize)) to iWidth
+            Move (Hi (iSize)) to iHeight
+
+            Move ((iWidth - 10) / (iImageDisplayWidth + 5)) to iColumns
+            Move ((iHeight - 10) / (iImageDisplayHeight + 2)) to iRows
+
+            Get piCurrentColumns to iCurrentColumns
+            Get piCurrentRows to iCurrentRows
+
+            If (iCurrentColumns <> iColumns or iCurrentRows <> iRows) Begin
+                Set piCurrentColumns to iColumns
+                Set piCurrentRows to iRows
+                Get ReadDword of ghoApplication "Preferences" "BlackBackground" False to bUseBlackBackground
+                If (bUseBlackBackground) Begin
+                    Move clBlack to iBackColor
+                End
+                Else Begin
+                    Move clBtnFace to iBackColor
+                End
+
+                Set Color to iBackColor
+
+                Send RemoveImageContainers
+
+                Get ReadDword of ghoApplication "Preferences" "ShowThumbnails" False to bShowThumbnails
+                Get ReadDword of ghoApplication "Preferences" "ShowScrollBars" False to bShowScrollBars
+
+                For iRow from 1 to iRows
+                    For iColumn from 1 to iColumns
+                        Move (SizeOfArray (hoImageContainers)) to iElement
+                        Get CreateNamed (RefClass (cGalleryImageContainer)) (SFormat ("ImageContainer_Row_%1_Column_%2", iRow, iColumn)) to hoImageContainers[iElement]
+                        Set pbLoadThumbnail of hoImageContainers[iElement] to bShowThumbnails
+                        Set pbShowScrollBars of hoImageContainers[iElement] to bShowScrollBars
+                        Set Size of hoImageContainers[iElement] to iImageDisplayHeight iImageDisplayWidth
+                        Set pbSelectImage of hoImageContainers[iElement] to False
+                        Set pcBackColor of hoImageContainers[iElement] to iBackColor
+                        Set Location of hoImageContainers[iElement] to ((iRow - 1) * (iImageDisplayHeight + 2) + 5) ((iColumn - 1) * (iImageDisplayWidth + 5) + 5)
+                        Send Add_Focus of hoImageContainers[iElement] Self
+                    Loop
+                Loop
+
+                Set phoImageContainers to hoImageContainers
+            End
+        End_Procedure
+
+        Function ReadPictureNames String sFolderPath Returns Boolean
+            String sExtensions sExtension
+            tPictureNames PictureNames
+            tFileDateTime[] FileInfo
+            Integer iSeconds iElement iElements iPictureElement
+            Boolean bContainsFolders
+            DateTime dtNow
+            TimeSpan tsDiff
+
+            Get pPictureNames to PictureNames
+            Move (CurrentDateTime ()) to dtNow
+            If (not (IsNullDateTime (PictureNames.dtLastRead))) Begin
+                Move (dtNow - PictureNames.dtLastRead) to tsDiff
+                Move (SpanTotalSeconds (tsDiff)) to iSeconds
+            End
+            If ((PictureNames.sFolderName <> sFolderPath) or (iSeconds > 1 and PictureNames.sFolderName = sFolderPath)) Begin
+                Move (ResizeArray (PictureNames.sPictureNames, 0)) to PictureNames.sPictureNames
+                Move dtNow to PictureNames.dtLastRead
+                Move sFolderPath to PictureNames.sFolderName
+
+                Get ReadString of ghoApplication "Preferences" "GraphicExtensions" ".bmp;.gif;.jpg;.tif;.png;.rle" to sExtensions
+                Move (Lowercase (sExtensions)) to sExtensions
+                Move (FileDateTime (sFolderPath - "\*.*")) to FileInfo
+                Move (SizeOfArray (FileInfo)) to iElements
+                Decrement iElements
+                For iElement from 0 to iElements
+                    If (not (IsFlagIn (FILE_ATTRIBUTE_DIRECTORY, FileInfo[iElement].iAttributes))) Begin
+                        If (not (IsFlagIn (FILE_ATTRIBUTE_HIDDEN, FileInfo[iElement].iAttributes))) Begin
+                            Get PathFindExtension FileInfo[iElement].sFileName to sExtension
+                            If (sExtensions contains Lowercase (sExtension)) Begin
+                                Move (SizeOfArray (PictureNames.sPictureNames)) to iPictureElement
+                                Move (sFolderPath - "\" - FileInfo[iElement].sFileName) to PictureNames.sPictureNames[iPictureElement]
+                            End
+                        End
+                    End
+                    Else Begin
+                        If (FileInfo[iElement].sFileName <> "." and FileInfo[iElement].sFileName <> "..") Begin
+                            Move True to bContainsFolders
+                        End
+                    End
+                Loop
+
+                Move bContainsFolders to PictureNames.bContainsFolders
+
+                Set pPictureNames to PictureNames
+
+                Send CalculatePages True
+                Send DisplayImagePage 1
+            End
+            Else Begin
+                Move PictureNames.bContainsFolders to bContainsFolders
+            End
+
+            Function_Return bContainsFolders
+        End_Function
+
+        Procedure CalculatePages Boolean bChangeListIndex
+            Integer iImages iPages iImageContainers
+            Handle[] hoImageContainers
+            tPictureNames PictureNames
+
+            Get pPictureNames to PictureNames
+            Get phoImageContainers to hoImageContainers
+            Move (SizeOfArray (hoImageContainers)) to iImageContainers
+
+            Move (SizeOfArray (PictureNames.sPictureNames) - 1) to iImages
+            Move (iImages / iImageContainers) to iPages
+            If (Mod (iImages, iImageContainers) <> 0) Begin
+                Increment iPages
+            End
+
+            Send AddPages of (oPageSelectMenuItem (oBrowseToolbar (oCommandBarSystem))) iPages bChangeListIndex
+        End_Procedure
+
+        Procedure Activating Returns Integer
+            Integer iRetval iImageDisplayHeight iImageDisplayWidth
+
+            Forward Get Msg_Activating to iRetval
+            If (iRetval = 0) Begin
+                Send BuildDisplay
+
+                Get ReadDword of ghoApplication "Preferences" "ImageDisplayHeight" 50 to iImageDisplayHeight
+                Move ((iImageDisplayHeight max 25) min 500) to iImageDisplayHeight
+                Set piImageDisplayHeight to iImageDisplayHeight
+                Get ReadDword of ghoApplication "Preferences" "ImageDisplayWidth" 50 to iImageDisplayWidth
+                Move ((iImageDisplayWidth max 25) min 500) to iImageDisplayWidth
+                Set piImageDisplayWidth to iImageDisplayWidth
+            End
+
+            Procedure_Return iRetval
+        End_Procedure
+
+        Procedure Deactivating Returns Integer
+            Integer iRetval iImageDisplayHeight iImageDisplayWidth
+
+            Forward Get Msg_Deactivating to iRetval
+            If (iRetval = 0) Begin
+                Get piImageDisplayHeight to iImageDisplayHeight
+                Send WriteDword of ghoApplication "Preferences" "ImageDisplayHeight" iImageDisplayHeight
+                Get piImageDisplayWidth to iImageDisplayWidth
+                Send WriteDword of ghoApplication "Preferences" "ImageDisplayWidth" iImageDisplayWidth
+            End
+
+            Procedure_Return iRetval
+        End_Procedure
+
+        Object oRepaintHandler is a cIdleHandler
+            Set pbEnabled to False
+
+            Procedure OnIdle
+                Send Adjust_Logicals
+                Send BuildDisplay
+                Send CalculatePages True
+                Set pbEnabled to False
+            End_Procedure
+        End_Object
+
+        Object oImageContextMenu is a cCJContextMenu
+            { DesignTime = False }
+            Property Handle phoImageContainer
+
+            Object oImageDateTimeMenuItem is a cCJMenuItem
+                Set psCaption to "EXIF Datetime"
+                Set psImage to "ActionCalendar.Ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+                    String sImageName
+                    DateTime dtTaken
+
+                    Get phoImageContainer to hoImageContainer
+                    Get psImage of hoImageContainer to sImageName
+                    If (sImageName <> "") Begin
+                        Get EXIFDateTime of hoImageContainer to dtTaken
+                        Send Info_Box ("This picture was taken at:" * String (dtTaken))
+                    End
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Handle hoImageContainer
+                    String sImageName
+                    DateTime dtTaken
+
+                    Get phoImageContainer to hoImageContainer
+                    Get psImage of hoImageContainer to sImageName
+                    If (sImageName <> "") Begin
+                        Get EXIFDateTime of hoImageContainer to dtTaken
+                    End
+
+                    Function_Return (not (IsNullDateTime (dtTaken)))
+                End_Function
+            End_Object
+
+            Object oImagePropertiesMenuItem is a cCJMenuItem
+                Set psCaption to "Image Properties"
+                Set psImage to "Property.Ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+                    String sImageName
+                    tImageProperty[] ImageProperties
+
+                    Get phoImageContainer to hoImageContainer
+                    Get psImage of hoImageContainer to sImageName
+                    If (sImageName <> "") Begin
+                        Get PropertyList of hoImageContainer to ImageProperties
+                        Send DisplayImageProperties of oImagePropertiesDialog ImageProperties sImageName
+                    End
+                End_Procedure
+            End_Object
+
+            Object oLocationMenuItem is a cCJMenuItem
+                Set psCaption to "Location"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+                    String sImageName sURL
+                    Number nLatitude nLongitude
+                    Integer iDecSep
+
+                    Get phoImageContainer to hoImageContainer
+                    Get psImage of hoImageContainer to sImageName
+                    If (sImageName <> "") Begin
+                        Get GPSLatitude of hoImageContainer to nLatitude
+                        Get GPSLongitude of hoImageContainer to nLongitude
+                        Get_Attribute DF_DECIMAL_SEPARATOR to iDecSep
+                        Set_Attribute DF_DECIMAL_SEPARATOR to 46
+                        Move (SFormat("https://www.latlong.net/c/?lat=%1&long=%2", nLatitude, nLongitude)) to sURL
+//                        Move (Sformat("https://openstreetmap.org/?mlat=%1&mlong=%2", nLatitude, nLongitude)) to sURL
+                        Set_Attribute DF_DECIMAL_SEPARATOR to iDecSep
+                        Runprogram Shell Background sURL
+                    End
+                End_Procedure
+            End_Object
+
+            Object oDisplayLargeMenuItem is a cCJMenuItem
+                Set psCaption to "Display Large"
+                Set psImage to "ActionPrompt.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+
+                    Get phoImageContainer to hoImageContainer
+                    Send RequestDisplayLargeImage of hoImageContainer
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Boolean bEnabled
+                    Handle hoImageContainer hoZoomDialog
+                    String sImageName
+
+                    Get phoImageContainer to hoImageContainer
+                    Get CanDisplayLargeImage of hoImageContainer (&sImageName) (&hoZoomDialog) to bEnabled
+
+                    Function_Return bEnabled
+                End_Function
+            End_Object
+
+            Object oNextPageMenuItem is a cCJMenuItem
+                Set pbControlBeginGroup to True
+                Set psCaption to "Next Page"
+                Set psToolTip to "Next Page"
+                Set psDescription to "Next Page"
+                Set psImage to "actionNext.ico"
+
+                Function IsVisible Returns Boolean
+                    Boolean bVisible
+                    Handle hoImageContainer hoImage
+                    Integer eImageFormat iFrameCount iCurrentFrame
+
+                    Get phoImageContainer to hoImageContainer
+                    Get phoImage of hoImageContainer to hoImage
+
+                    Get ImageFileFormat of hoImage to eImageFormat
+                    If (eImageFormat = gpImageFormatTIFF) Begin
+                        Get piFrameCount of hoImage to iFrameCount
+                        Get piCurrentFrame of hoImage to iCurrentFrame
+                        Move ((iCurrentFrame + 1) < iFrameCount) to bVisible
+                    End
+
+                    Function_Return bVisible
+                End_Function
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+                    Boolean bHasNext
+
+                    Get phoImageContainer to hoImageContainer
+                    Get DisplayNextPage of hoImageContainer to bHasNext
+                    Set pbVisible to bHasNext
+                End_Procedure
+            End_Object
+
+            Object oPreviousPageMenuItem is a cCJMenuItem
+                Set pbControlBeginGroup to True
+                Set psCaption to "Previous Page"
+                Set psToolTip to "Previous Page"
+                Set psDescription to "Previous Page"
+                Set psImage to "actionPrevious.ico"
+
+                Function IsVisible Returns Boolean
+                    Boolean bVisible
+                    Handle hoImageContainer hoImage
+                    Integer eImageFormat iCurrentFrame
+
+                    Get phoImageContainer to hoImageContainer
+                    Get phoImage of hoImageContainer to hoImage
+
+                    Get ImageFileFormat of hoImage to eImageFormat
+                    If (eImageFormat = gpImageFormatTIFF) Begin
+                        Get piCurrentFrame of hoImage to iCurrentFrame
+                        Move (iCurrentFrame > 0) to bVisible
+                    End
+
+                    Function_Return bVisible
+                End_Function
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+                    Boolean bHasPrevious
+
+                    Get phoImageContainer to hoImageContainer
+                    Get DisplayPreviousPage of hoImageContainer to bHasPrevious
+                    Set pbVisible to bHasPrevious
+                End_Procedure
+            End_Object
+
+            Object oCopyMenuItem is a cCJMenuItem
+                Set pbControlBeginGroup to True
+                Set psCaption to C_$CaptionCopy
+                Set psToolTip to C_$ToolTipCopy
+                Set psDescription to C_$DescCopy
+                Set psImage to "actionCopy.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+
+                    Get phoImageContainer to hoImageContainer
+                    Send Copy of hoImageContainer
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Boolean bEnabled
+                    Handle hoImageContainer
+
+                    Get phoImageContainer to hoImageContainer
+                    Get CanCopy of hoImageContainer to bEnabled
+                    Function_Return bEnabled
+                End_Function
+            End_Object
+
+            Object oPasteMenuItem is a cCJMenuItem
+                Set psCaption to C_$CaptionPaste
+                Set psToolTip to C_$ToolTipPaste
+                Set psDescription to C_$DescPaste
+                Set psImage to "actionPaste.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImageContainer
+
+                    Get phoImageContainer to hoImageContainer
+                    Send Paste of hoImageContainer
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Boolean bEnabled
+                    Handle hoImageContainer
+
+                    Get phoImageContainer to hoImageContainer
+                    Get CanPaste of hoImageContainer to bEnabled
+                    Function_Return bEnabled
+                End_Function
+            End_Object
+
+            Object oRotateMenuItem is a cCJMenuItem
+                Set psCaption to "Rotate"
+                Set psImage to "Rotate.ico"
+                Set peControlType to xtpControlButtonPopup
+                Set pbControlBeginGroup to True
+                Set peControlStyle to xtpButtonIcon
+                Set pbActiveUpdate to True
+                Set psToolTip to "Rotate the image"
+
+                Function IsEnabled Returns Boolean
+                    Boolean bEnabled
+                    Handle hoImageContainer
+
+                    Get phoImageContainer to hoImageContainer
+                    Get CanCopy of hoImageContainer to bEnabled
+
+                    Function_Return bEnabled
+                End_Function
+
+                Procedure RotateImage Integer eRotateMode
+                    Integer iRetval
+                    String sStatusText
+                    Handle hoImageContainer
+
+                    Get phoImageContainer to hoImageContainer
+                    Get RotateImage of hoImageContainer eRotateMode to iRetval
+                    If (iRetval <> gpOk) Begin
+                        Get GpStatusText of ghoGDIPlusHandler iRetval to sStatusText
+                        Send Info_Box ("Could not rotate the image (" - sStatusText - ")")
+                    End
+                End_Procedure
+
+                Object oRotate90MenuItem is a cCJMenuItem
+                    Set psCaption to "90"
+                    Set psTooltip to "90"
+                    Set peControlType to xtpControlPopup
+
+                    Object oRotate90FlipNoneMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip None"
+                        Set psTooltip to "Flip None"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate90FlipNone
+                        End_Procedure
+                    End_Object
+
+                    Object oRotate90FlipXMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip X"
+                        Set psTooltip to "Flip X"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate90FlipX
+                        End_Procedure
+                    End_Object
+
+                    Object oRotate90FlipYMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip Y"
+                        Set psTooltip to "Flip Y"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate90FlipY
+                        End_Procedure
+                    End_Object
+                End_Object
+
+                Object o180MenuItem is a cCJMenuItem
+                    Set psCaption to "180"
+                    Set psTooltip to "180"
+                    Set peControlType to xtpControlPopup
+
+                    Object oRotate180FlipNoneMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip None"
+                        Set psTooltip to "Flip None"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate180FlipNone
+                        End_Procedure
+                    End_Object
+
+                    Object oRotate180FlipXMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip X"
+                        Set psTooltip to "Flip X"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate180FlipX
+                        End_Procedure
+                    End_Object
+
+                    Object oRotate180FlipYMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip Y"
+                        Set psTooltip to "Flip Y"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate180FlipY
+                        End_Procedure
+                    End_Object
+                End_Object
+
+                Object o270MenuItem is a cCJMenuItem
+                    Set psCaption to "270"
+                    Set psTooltip to "270"
+                    Set peControlType to xtpControlPopup
+
+                    Object oRotate270FlipNoneMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip None"
+                        Set psTooltip to "Flip None"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate270FlipNone
+                        End_Procedure
+                    End_Object
+
+                    Object oRotate270FlipXMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip X"
+                        Set psTooltip to "Flip X"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate270FlipX
+                        End_Procedure
+                    End_Object
+
+                    Object oRotate270FlipYMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip Y"
+                        Set psTooltip to "Flip Y"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotate270FlipY
+                        End_Procedure
+                    End_Object
+                End_Object
+
+                Object oFlipMenuItem is a cCJMenuItem
+                    Set psCaption to "Flip"
+                    Set psTooltip to "Flip"
+                    Set peControlType to xtpControlPopup
+
+                    Object oFlipXMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip X"
+                        Set psTooltip to "Flip X"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotateNoneFlipX
+                        End_Procedure
+                    End_Object
+
+                    Object oFlipYMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip Y"
+                        Set psTooltip to "Flip Y"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotateNoneFlipy
+                        End_Procedure
+                    End_Object
+
+                    Object oFlipXYMenuItem is a cCJMenuItem
+                        Set psCaption to "Flip X && Y"
+                        Set psTooltip to "Flip X && Y"
+
+                        Procedure OnExecute Variant vCommandBarControl
+                            Send RotateImage gpRotateNoneFlipXY
+                        End_Procedure
+                    End_Object
+                End_Object
+            End_Object
+        End_Object
+    End_Object
+
+    Procedure Page Integer iPageObject
+        Integer iSize iLocation
+
+        Forward Send Page iPageObject
+
+        If (iPageObject > 0) Begin
+            Get ReadDword of ghoApplication "Preferences" "MainPanelSize" -1 to iSize
+            If (iSize > 0) Begin
+                Set GuiSize to (Hi (iSize)) (Low (iSize))
+            End
+
+            Get ReadDword of ghoApplication "Preferences" "FoldersTreeContainerSize" -1 to iSize
+            If (iSize > 0) Begin
+                Set GuiSize of oFoldersTreeContainer to (Hi (iSize)) (Low (iSize))
+            End
+
+            Get ReadDword of ghoApplication "Preferences" "SplitterSize" -1 to iSize
+            If (iSize > 0) Begin
+                Set GuiSize of oSplitter to (Hi (iSize)) (Low (iSize))
+            End
+
+            Get ReadDword of ghoApplication "Preferences" "GalleryContainerSize" -1 to iSize
+            If (iSize > 0) Begin
+                Set GuiSize of oGalleryContainer to (Hi (iSize)) (Low (iSize))
+            End
+
+            Get ReadDword of ghoApplication "Preferences" "MainPanelLocation" -1 to iLocation
+            If (iLocation > 0) Begin
+                Set GuiLocation to (Hi (iLocation)) (Low (iLocation))
+            End
+
+            Get ReadDword of ghoApplication "Preferences" "FoldersTreeContainerLocation" -1 to iLocation
+            If (iLocation > 0) Begin
+                Set GuiLocation of oFoldersTreeContainer to (Hi (iLocation)) (Low (iLocation))
+            End
+
+            Get ReadDword of ghoApplication "Preferences" "SplitterLocation" -1 to iLocation
+            If (iLocation > 0) Begin
+                Set GuiLocation of oSplitter to (Hi (iLocation)) (Low (iLocation))
+            End
+
+            Get ReadDword of ghoApplication "Preferences" "GalleryContainerLocation" -1 to iLocation
+            If (iLocation > 0) Begin
+                Set GuiLocation of oGalleryContainer to (Hi (iLocation)) (Low (iLocation))
+            End
+
+            Send ResizeTree of oFoldersTreeContainer
+        End
+    End_Procedure
+
+    Procedure Save_Environment
+        Integer iSize iLocation
+        String sCurrentFolder
+
+        Forward Send Save_Environment
+
+        Get GuiSize to iSize
+        Send WriteDword of ghoApplication "Preferences" "MainPanelSize" iSize
+
+        Get GuiSize of oFoldersTreeContainer to iSize
+        Send WriteDword of ghoApplication "Preferences" "FoldersTreeContainerSize" iSize
+
+        Get GuiSize of oSplitter to iSize
+        Send WriteDword of ghoApplication "Preferences" "SplitterSize" iSize
+
+        Get GuiSize of oGalleryContainer to iSize
+        Send WriteDword of ghoApplication "Preferences" "GalleryContainerSize" iSize
+
+        Get GuiLocation to iLocation
+        Send WriteDword of ghoApplication "Preferences" "MainPanelLocation" iLocation
+
+        Get GuiLocation of oFoldersTreeContainer to iLocation
+        Send WriteDword of ghoApplication "Preferences" "FoldersTreeContainerLocation" iLocation
+
+        Get GuiLocation of oSplitter to iLocation
+        Send WriteDword of ghoApplication "Preferences" "SplitterLocation" iLocation
+
+        Get GuiLocation of oGalleryContainer to iLocation
+        Send WriteDword of ghoApplication "Preferences" "GalleryContainerLocation" iLocation
+
+        Get CurrentFolder of oFoldersTreeContainer to sCurrentFolder
+        Send WriteString of ghoApplication "Preferences" "CurrentFolder" sCurrentFolder
+    End_Procedure
+
+    Use Dialogs\GraphicsAbout.dg
+End_Object
+
+Start_UI

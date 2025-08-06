@@ -1,0 +1,405 @@
+﻿Use GlobalFunctionsProcedures.pkg
+Use cClipboard.h.pkg
+
+{ ClassLibrary = Common }
+{ HelpTopic = cClipboard }
+{ Description = "This class makes it possible to read from and write to the Windows Clipboard. The contents can be anything, including a self defined type." }
+Class cClipboard is a cObject
+    { MethodType = Event }
+    { Description = "Declares a property to keep track of the opened state of the Window clipboard" }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { Visibility = Private }
+        { Description = "Keeps the open state of the Windows Clipboard" }
+        Property Boolean pbIsOpen False
+    End_Procedure
+
+    { MethodType = Event }
+    { Description = "Closes the Windows clipboard if still opened during object destruction" }
+    Procedure Destroy_Object
+        Boolean bIsOpen
+
+        Get pbIsOpen to bIsOpen
+        If (bIsOpen) Begin
+            Send DoClose
+        End
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Register the passed window handle as a clipboard viewer object." }
+    { Description += "Adds the specified window to the chain of clipboard viewers. Clipboard viewer windows receive a WM_DRAWCLIPBOARD message whenever the content of the clipboard changes" }
+    { Description += "This technique is meant for backwards compatibility. Use the AddFormatListener / RemoveFormatListener methods instead." }
+    Procedure Set phViewer Handle hWnd
+        Handle hWndNext
+        Integer iError
+
+        Move (WinAPI_SetClipboardViewer (hWnd)) to hWndNext
+        If (hWndNext = 0) Begin
+            Move (ShowLastError ()) to iError
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Returns - if existing - the current clipboard viewer object window handle. This technique is meant for backwards compatibility. Use the AddFormatListener instead." }
+    Function phViewer Returns Handle
+        Handle hWnd
+        Integer iError
+
+        Move (WinAPI_GetClipboardViewer ()) to hWnd
+        If (hWnd = 0) Begin
+            Move (ShowLastError()) to iError
+        End
+
+        Function_Return hWnd
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Places data on the clipboard in a specified clipboard format." }
+    { Description += "The window must be the current clipboard owner, and the application must have called the DoOpen Procedure to Open the clipboard." }
+    Procedure Set ppData ClipboardFormat eFormat Handle hMem
+        Handle hResult
+        Integer iError
+
+        Move (WinAPI_SetClipboardData (eFormat, hMem)) to hResult
+        If (hResult = 0) Begin
+            Move (ShowLastError ()) to iError
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Retrieves data from the clipboard in a specified format. The clipboard must have been opened previously." }
+    Function ppData ClipboardFormat eFormat Returns Handle
+        Handle hResult
+        Integer iError
+        Boolean bAvailable
+
+        Get IsFormatAvailable eFormat to bAvailable
+        If (bAvailable) Begin
+            Move (WinAPI_GetClipboardData (eFormat)) to hResult
+            If (hResult = 0) Begin
+                Move (ShowLastError ()) to iError
+            End
+        End
+
+        Function_Return hResult
+    End_Function
+
+    { Description = "Enumerates the data formats currently available on the clipboard." }
+    { Description += "Clipboard data formats are stored in an ordered list." }
+    { Description += "Returns an array of available clipboard formats" }
+    { MethodType = Method }
+    Function AvailableFormats Returns ClipboardFormat[]
+        ClipboardFormat eFormat
+        ClipboardFormat[] eFormats
+        Integer iError
+
+        Move (WinAPI_EnumClipboardFormats (0)) to eFormat
+        While (eFormat <> 0)
+            Move eFormat to eFormats[SizeOfArray (eFormats)]
+            Move (WinAPI_EnumClipboardFormats (eFormat)) to eFormat
+        Loop
+
+        Move (ShowLastError ()) to iError
+        If (iError <> NO_ERROR) Begin
+            Move (ResizeArray (eFormats, 0)) to eFormats
+        End
+
+        Function_Return eFormats
+    End_Function
+
+    { Description = "Places the given window in the system-maintained clipboard format listener list." }
+    { Description += "After this, the window with handle hWnd will receive WM_CLIPBOARDUPDATE messages" }
+    { MethodType = Method }
+    Procedure AddFormatListener Handle hWnd
+        Boolean bSuccess
+        Integer iError
+
+        Move (WinAPI_AddClipboardFormatListener (hWnd)) to bSuccess
+        If (not (bSuccess)) Begin
+            Move (ShowLastError ()) to iError
+        End
+    End_Procedure
+
+    { Description = "Removes the given window from the system-maintained clipboard format listener list." }
+    { MethodType = Method }
+    Procedure RemoveFormatListener Handle hWnd
+        Boolean bSuccess
+        Integer iError
+
+        Move (WinAPI_RemoveClipboardFormatListener (hWnd)) to bSuccess
+        If (not (bSuccess)) Begin
+            Move (ShowLastError ()) to iError
+        End
+    End_Procedure
+
+    { Description = "Removes a specified window from the chain of clipboard viewers" }
+    { Description += "The result of this function is typically false unless there is only one listener." }
+    { MethodType = Method }
+    Function ChangeChain Handle hWndRemove Handle hWndNewNext Returns Boolean
+        Boolean bSuccess
+        Integer iError
+
+        Move (WinAPI_ChangeClipboardChain (hWndRemove, hWndNewNext)) to bSuccess
+        Move (ShowLastError ()) to iError
+
+        Function_Return bSuccess
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Opens and closes the clipboard. The bClear determines if the current contents needs to be removed or not." }
+    { Description += "The contents of the passed text string will be copied to the clipboard as text." }
+    Procedure CopyText String sText Boolean bClear
+        Boolean bIsOpen
+        Integer iSize iRetval
+        Handle hText
+        Pointer pText
+        WString wText
+
+        Send DoOpen
+        Get pbIsOpen to bIsOpen
+        If (bIsOpen) Begin
+            If (bClear) Begin
+                Send DoEmpty
+            End
+            Move sText to wText
+            Move (SizeOfWString (wText)) to iSize
+            If (iSize > 0) Begin
+                Move (GlobalAlloc (GMEM_MOVEABLE ior GMEM_ZEROINIT, iSize + 1)) to hText
+                If (hText <> 0) Begin
+                    Move (GlobalLock (hText)) to pText
+                    Move (CopyMemory (pText, AddressOf (wText), iSize)) to iRetval
+                    Move (GlobalUnlock (hText)) to iRetval
+                    Set ppData CF_UNICODETEXT to hText
+                End
+            End
+            Send DoClose
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Closes the clipboard and set the DataFlex property to keep track of the opened state to false" }
+    { Description += "When the window has finished examining or changing the clipboard, close the clipboard by calling this method." }
+    { Description += "This enables other windows to access the clipboard." }
+    Procedure DoClose
+        Boolean bSuccess
+        Integer iError
+
+        Move (WinAPI_CloseClipboard ()) to bSuccess
+        If (bSuccess) Begin
+            Set pbIsOpen to False
+        End
+        Else Begin
+            Move (ShowLastError ()) to iError
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Empties the clipboard and frees handles to data in the clipboard." }
+    { Description += "The Function then assigns ownership of the clipboard to the window that currently has the clipboard Open." }
+    Procedure DoEmpty
+        Boolean bSuccess
+        Integer iError
+
+        Move (WinAPI_EmptyClipboard ()) to bSuccess
+        If (not (bSuccess)) Begin
+            Move (ShowLastError()) to iError
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Opens the clipboard for examination and prevents other applications from modifying the clipboard content." }
+    { Description += "The method uses the desktop window if the window handle was omitted." }
+    { Description += "The desktop window covers the entire screen." }
+    { Description += "The desktop window is the area on top of which other windows are painted) is used as clipboard owner." }
+    { Description += "If the clipboard could be opened the pbIsOpen property keeping track of the opened state is updated." }
+    Procedure DoOpen Handle hWnd
+        Boolean bSuccess
+        Handle hWindow
+        Integer iError
+
+        If (num_arguments > 0) Begin
+            Move hWnd to hWindow
+        End
+        Else Begin
+            Move (GetDesktopWindow ()) to hWindow
+        End
+
+        Move (WinAPI_OpenClipboard (hWindow)) to bSuccess
+
+        If (bSuccess) Begin
+            Set pbIsOpen to True
+        End
+        Else Begin
+            Set pbIsOpen to False
+            Move (ShowLastError ()) to iError
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Retrieves the number of different data formats currently on the clipboard." }
+    Function FormatCount Returns Integer
+        Integer iResult iError
+
+        Move (WinAPI_CountClipboardFormats ()) to iResult
+        If (iResult = 0) Begin
+            Move (ShowLastError ()) to iError
+        End
+
+        Function_Return iResult
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Retrieves from the clipboard the name of the specified registered format" }
+    Function FormatName ClipboardFormat eFormat Returns String
+        Integer iError iResult
+        WString wBuffer
+        String sResult
+
+        Move (Repeat (Character (0), C_MAX_ClipboardFormatNameLength)) to wBuffer
+        Move (WinAPI_GetPredefinedClipboardFormatName (eFormat, AddressOf (wBuffer), SizeOfWString (wBuffer))) to iResult
+        If (iResult = 0) Begin
+            Move (WinAPI_GetClipboardFormatName (eFormat, AddressOf (wBuffer), SizeOfWString (wBuffer))) to iResult
+            If (iResult > 0) Begin
+                Move (CString (wBuffer)) to sResult
+            End
+            Else Begin
+                Move (ShowLastError ()) to iError
+            End
+        End
+        Else Begin
+            Move (CString (wBuffer)) to sResult
+        End
+
+        Function_Return sResult
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Returns true if the format can be considered displayable" }
+    Function IsDisplayableFormat ClipboardFormat eFormat Returns Boolean
+        Case Begin
+            Case (eFormat = CF_OWNERDISPLAY)
+            Case (eFormat = CF_TEXT)
+            Case (eFormat = CF_ENHMETAFILE)
+            Case (eFormat = CF_BITMAP)
+                Function_Return True
+        Case End
+
+        Function_Return False
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Retrieves the handle to the window that currently has the clipboard open" }
+    Function OpenClipboardWindow Returns Handle
+        Handle hWnd
+        Integer iError
+
+        Move (WinAPI_GetOpenClipboardWindow ()) to hWnd
+        If (hWnd = 0) Begin
+            Move (ShowLastError()) to iError
+        End
+
+        Function_Return hWnd
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Retrieves the window handle of the current owner of the clipboard." }
+    { Description += "The clipboard can still contain data even If the clipboard is not currently owned." }
+    Function Owner Returns Handle
+        Handle hWnd
+        Integer iError
+
+        Move (WinAPI_GetClipboardOwner ()) to hWnd
+        If (hWnd = 0) Begin
+            Move (ShowLastError()) to iError
+        End
+
+        Function_Return hWnd
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Retrieves the first available clipboard format in the specified list." }
+    { Description += "Returns -1 upon error" }
+    Function PriorityFormat ClipboardFormat[] eFormats Returns ClipboardFormat
+        ClipboardFormat eFormat
+        Integer iError
+
+        Move (WinAPI_GetPriorityClipboardFormat (AddressOf (eFormats), SizeOfArray (eFormats))) to eFormat
+        If (eFormat = -1) Begin
+            Move (ShowLastError()) to iError
+        End
+
+        Function_Return eFormat
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Retrieves the clipboard sequence number for the current window station." }
+    { Description += "The system keeps a serial Number for the clipboard for each window station." }
+    { Description += "This Number increments whenever the contents of the clipboard change or the clipboard is emptied." }
+    { Description += "You can track this value to determine whether the clipboard contents have changed and optimize creating DataObjects." }
+    { Description += "If clipboard rendering is delayed, the sequence Number is not incremented Until the changes are rendered." }
+    Function SequenceNumber Returns UInteger
+        UInteger uiSequenceNumber
+
+        Move (WinAPI_GetClipboardSequenceNumber ()) to uiSequenceNumber
+
+        Function_Return uiSequenceNumber
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Determines whether the clipboard contains data in the specified format." }
+    Function IsFormatAvailable ClipboardFormat eFormat Returns Boolean
+        Boolean bResult
+
+        Move (WinAPI_IsClipboardFormatAvailable (eFormat)) to bResult
+
+        Function_Return bResult
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Retrieves the currently supported clipboard formats." }
+    Function CurrentlySupportedFormats ClipboardFormat[] eFormatsSupported Returns ClipboardFormat[]
+        Boolean bResult
+        ClipboardFormat[] eFormatsAvailable
+        UInteger uiFormatsOut
+        Integer iError
+
+        Move eFormatsSupported to eformatsAvailable
+        Move 0 to uiFormatsOut
+        Move (WinAPI_GetUpdatedClipboardFormats (AddressOf (eformatsAvailable), SizeOfArray (eformatsAvailable), AddressOf (uiFormatsOut))) to bResult
+        If (not (bResult)) Begin
+            Move (ShowLastError()) to iError
+        End
+
+        If (bResult) Begin
+            Move (ResizeArray (eFormatsSupported, uiFormatsOut)) to eFormatsAvailable
+        End
+        Else Begin
+            Move (ResizeArray (eFormatsSupported, 0)) to eFormatsAvailable
+        End
+
+        Function_Return eformatsAvailable
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Registers a new clipboard format. This format can then be used as a valid clipboard format." }
+    { Description += "If a registered format with the specified name already exists, a new format is not registered and the return value identifies the existing format." }
+    { Description += "This enables more than one application to copy and paste data using the same registered clipboard format." }
+    { Description += "Note that the format name comparison is Case-insensitive." }
+    { Description += "Registered clipboard formats are identified by values in the range 0xC000 through 0xFFFF." }
+    Function RegisterFormat WString sFormatName Returns ClipboardFormat
+        ClipboardFormat eFormat
+        Integer iError
+
+        Move (sFormatName + Character(0)) to sFormatName
+        Move (WinAPI_RegisterClipboardFormat (sFormatName)) to eFormat
+        If (eFormat = 0) Begin
+            Move (ShowLastError()) to iError
+        End
+
+        Function_Return eFormat
+    End_Function
+End_Class

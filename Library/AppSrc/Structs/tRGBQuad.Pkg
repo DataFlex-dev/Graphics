@@ -1,0 +1,8 @@
+Use VdfBase.pkg
+
+Struct tRGBQuad
+    UChar rgbBlue
+    UChar rgbGreen
+    UChar rgbRed
+    UChar rgbReserved
+End_Struct

@@ -1,0 +1,16 @@
+Use VdfBase.pkg
+
+// The CreateStreamOnHGlobalfunction creates a stream Object that uses an HGLOBAL memory Handle to store
+// the stream contents. This Object is the OLE-provided implementation of the IStream interface.
+External_Function Ole32_CreateStreamOnHGlobal "CreateStreamOnHGlobal" ole32.dll ;
+    Handle hGlobal ;
+    Integer fDeleteOnRelease ;
+    Pointer ppstm ;
+    Returns Handle
+
+// The GetHGlobalFromStream function retrieves the global memory handle to a stream that was created
+// through a call to the CreateStreamOnHGlobal Function.
+External_Function Ole32_GetHGlobalFromStream "GetHGlobalFromStream" ole32.dll ;
+    Pointer ppstm ;
+    Pointer hGlobal ;
+    Returns Integer

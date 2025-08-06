@@ -1,0 +1,22 @@
+﻿Use Windows.pkg
+Use Structs\tPictureNames.pkg
+
+{ ClassLibrary = Windows }
+{ Description = "The properties of this class are used to keep track of two things:" }
+{ Description += "- The image container objects (usually created from the cGalleryImageContainer Class). Having a reference makes it possible to Add/remove scrollbars, change how images should fit etc." }
+{ Description += "- The filenames and folder where the images displayed were found." }
+Class cImageGallery is a Container3d
+    { MethodType = Event }
+    { Description = "Creation of the phoImageContainers and pPictureNames properties" }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { DesignTime = False }
+        { Description = "Holds a the DataFlex Object IDs of image container objects" }
+        Property Handle[] phoImageContainers
+        { DesignTime = False }
+        { Description = "Holds the picture filenames in one folder including datetime of last read and whether the folder contains sub-folders" }
+        Property tPictureNames pPictureNames
+    End_Procedure
+End_Class
+

@@ -1,0 +1,8 @@
+﻿Use Dll.pkg
+
+External_Function GdiGetObject "GetObjectW" Gdi32.dll ;
+    Handle hgdiobj ;
+    Integer cbBuffer ;
+    Pointer lpvObject ;
+    Returns Integer
+

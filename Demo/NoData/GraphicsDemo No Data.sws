@@ -1,0 +1,16 @@
+[Properties]
+Version=25.0
+[WorkspacePaths]
+ConfigFile=.\Programs\Config.ws
+[Libraries]
+Lib1=..\..\Library\Graphics.sws
+[Conditionals]
+Is$WebApp=False
+Is$Win64=False
+[Projects]
+Project0=EditImage.src
+Project1=Shapes.src
+Project2=ImageGallery.src
+Project3=ResizeImageDemo.src
+Project4=CreateThumbnailFromImageDemo.src
+Project5=FileToClipboard.src

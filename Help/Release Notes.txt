@@ -1,0 +1,300 @@
+==================================================================
+Welcome to the DataFlex Graphics Library 3.5.0 release! 
+==================================================================
+
+This release is for the DataFlex 2025 (v25.0).
+
+Release date: 2025, February
+
+- Calculation correction / Signed Int support
+
+==================================================================
+Welcome to the DataFlex Graphics Library 3.4.1 release! 
+==================================================================
+
+This release is for the DataFlex 2024 (v24.0).
+
+Release date: 2024, April
+
+- Readme correction
+- Support for SQL Server 2022
+
+==================================================================
+Welcome to the DataFlex Graphics Library 3.4 release! 
+==================================================================
+
+This release is for the DataFlex 2024 (v24.0).
+
+Release date: 2024, March
+
+- Forgotten psVersion changes in 23.0 now updated
+
+==================================================================
+Welcome to the DataFlex Graphics Library 3.3 release! 
+==================================================================
+
+This release is for the DataFlex 2023 (v23.0).
+
+Release date: 2023, July
+
+- Fixes for CodeJock 22.0
+- Removed image conversion to WMF/EMF/Icon as it is never available
+- New functions in the cGDIGraphicsPath class
+- New demo application to copy file names to the Windows clipboard
+- Removed error checking in Clipboard class IsFormatAvailable as it may cause errors
+
+==================================================================
+Welcome to the DataFlex Graphics Library 3.2 release! 
+==================================================================
+
+This release is for the DataFlex 2022 (v20.1).
+
+Release date: 2022, April 14
+
+See the help for a full list of changes
+
+==================================================================
+Welcome to the DataFlex Graphics Library 3.1 release! 
+==================================================================
+
+This release is for the DataFlex 2021 (v20.0).
+
+Release date: 2021, September 15
+
+Made the library fully 64 bit and unicode proof. Extended the 
+classes with new string functions, font and font family classes.
+
+See the help for a full list of changes
+
+==================================================================
+Welcome to the DataFlex Graphics Library 3.0.4 release! 
+==================================================================
+
+This release is for the DataFlex 2019 (v19.1).
+
+Release date: 2020, April 29
+
+Extended the cImageContainer class with two new methods named
+DisplayNextPage and DisplayPreviousPage. These methods can be used
+to advance to the next or previous page in a multi page TIFF file.
+
+==================================================================
+Welcome to the DataFlex Graphics Library 3.0 release! 
+==================================================================
+
+This release is for the DataFlex 2019 (v19.1).
+
+Release date: 2019, March 14
+
+Major update of the library and demo programs. The number of classes
+have been extended a lot as well as the number of methods per class.
+
+One of the goals of this update was to get it ready for DataFlex 19.1
+and cleaning up classes so that windows GUI only code would not cause
+problems with the web applications.
+
+Where the old library came with one demo application the new library
+comes with 3 optional to be installed demo applications. There is a 
+database aware demo workspace using the DataFlex embedded database
+and one that uses the MSSQL database for the images. Finally there is
+a non-data demo workspace where 4 applications show the usage of the
+graphics library without any database interaction or need. Not ready
+in time for v3 is a web based workspace with graphics library example
+code. Will come with v3.1
+
+The documentation got a huge overhaul as well and all classes that
+should be documented are included a new help file that can be copied
+to the DataFlex 19.1 Studio Help folder where it is picked up by the 
+dataflex help file.
+
+==================================================================
+
+This release is for the DataFlex 2014 (v18.0).
+
+Release date: 2014, February 18
+
+The Graphics library consists of two parts
+- a DataFlex Library folder that can be attached to any 
+  v18.0 workspace.
+- an example workspace folder, which uses the above library
+  and contains two demo programs named GraphicsDemo and 
+  ImageGallery. 
+  
+With ImageGallery you can browse your diskdrives and look at 
+images stored. Size of images, dropshadow, black blackground etc 
+can be configured.
+
+GraphicsDemo is a database aware program to store persons, 
+products and their images (products and persons). Different kind
+of images are provided in the bitmaps folder.
+
+Both of the demo programs contain many source code samples which
+you can use in your own programs.
+
+The software is licensed for DataFlex 2014 (v18.0). Downgrade to
+older versions is not allowed.
+
+==================================================================
+Changes between 2.5 and 2.6
+==================================================================
+Library:
+- cdbImageContainer can now load and save an image from / to a database column (tested with Microsoft SQL)
+- Images can now be rotated
+  - cGDIImage class extended with a RotateImage function (private function, called by RotateImage procedure)
+  - cImageContainer class extended with a RotateImage procedure
+- cImageContainer extended with a SaveImageToFile and a SaveImageToStream method
+- tUUID struct added
+- UUID.h.pkg file added with a string to GUID conversion function and two GUID compare function
+- cHistogramContainer class added. Can be used to display image histograms
+- Dftimer usage replaced with cPaintNextFrameTimer (based on cTimer) usage
+- DefineGuid private function replaced by real GUID conversion function
+- Added cGDIImageEncoders class
+- Added meta data tags to separate classes between Windows and Web (most classes are Windows classes)
+- DrawLineReal function added to cGDIGraphics class (to be used with histograms)
+- Added Ole32.h.pkg for support to save and load from an image stream
+Example workspace:
+- Demodata example now available for Microsoft SQL to show image from record. 
+  - You need to create the database via the GraphicsDemo.sql script file
+  - You need to copy int-filelist.cfg over filelist.cfg (make a copy of filelist.cfg)
+  - You need to change the connectionstring in MSSQLDRV.INT 
+  - The photo displayer object replaces the reference to the image column automatically based on the database driver
+- Datademo toolbar rotated and extended with option to save the image, rotate the image, get a histogram of the image
+- Added a histogram.dg component
+
+==================================================================
+Changes between 2.4 and 2.5
+==================================================================
+Library:
+- Added functions DPIX and DPIY to the cGDIGraphics class. They can be used to convert a value in pixels to a value in inches
+
+==================================================================
+Changes between 2.3 and 2.4
+==================================================================
+Library:
+- New property pbShowScrollBars for the cImageContainer class. You
+can use this property to turn off the scroll-bars
+- New key assignments for zoom-in/out (ctrl+minus/ctrl+plus)
+- Removed the need for the conversions library by copying the cHexHandler.Pkg in the Graphics Libary
+- Included shift.pkg for RShift and LShift functions
+- Removed the packages RECT, POINT and SCROLLINFO as there struct definitions are in tWinStructs.Pkg
+- Renamed BitmapInfo to tWinBitmapInfo, BitmapInfoHeader to tWinBitmapInfoHeader, RGBQuad to tRGBQuad, PaintStruct to tWinPaint
+Example workspace:
+- Image Gallery:
+  - Added a checkbox to apply the scroll-bar to the images
+- DataDemo:
+  - Productview
+    - Set the pbShowScrollBars to false
+  - Personview 
+    - Replaced dbGrid with cdbCJGrid
+	- Removed the save_header function
+   
+==================================================================
+Changes between 2.2 and 2.3
+==================================================================
+Library:
+- Multi-page TIF files triggered the animated GIF code to execute. 
+  That caused an error; fixed
+- Library sws renamed from GraphicsLibrary.sws to Graphics.sws; 
+  in line with other libraries
+- ImagePixelFormat function with support functions and constants 
+  added. For usage check the ImageZoomedDialog.dg
+- Updated the SWS file for 17.0
+Example workspace:
+- Updated ImageZoomedDialog.dg
+- Updated the CFG files for 16.1
+- Update SWS file for 16.1
+
+==================================================================
+Changes between 2.1 and 2.2
+==================================================================
+Library:
+- External references in cImageContainer fixed. It used definitions 
+  from Cursor.pkg and missed File_Dlg.pkg
+- cDbImageContainer: When the changed_state of the object is changed 
+  and the object is properly connected to a DDO the changed state 
+  of the field will be set to the same changed state
+- Updated the SWS file for 16.0
+Example Workspace:
+- Updated the SWS file for 16.0
+- Updated the CFG files for 16.0
+
+==================================================================
+Changes between 2.0 and 2.1
+==================================================================
+Library:
+- Moved ImageProperty.pkg to the right location
+- Updated the SWS file for 15.1
+Example Workspace:
+- Updated the SWS file for 15.1
+- Updated the CFG files for 15.1
+
+==================================================================
+Changes between 1.0 and 2.0
+==================================================================
+Library:
+- All .h files renamed in .h.pkg
+- Support for animated gifs
+- Support for tooltips. You can set this manually or automatic. With automatic the tooltip is the filename
+  plus size of the file
+- ImageProperties information available
+- Loading bitmaps from executable resource now supported, for usage see about dialog in graphicsdemo.src
+- Thumbnail support added
+- PixelColor function added
+- ImageFileFormat function changed
+- New structure definitions
+
+Example Workspace:
+- Image painting in ImageGallery faster
+- ImageGallery.Src
+  - Automatic tooltip based on filename, size and resolution
+  - Zoomdialog extended with resolution information
+  - Image properties retrievable and configurable
+  - GraphicsAbout.dg shows the usage of a cImageContainer where the image is loaded from the embedded images
+- GraphicsDemo.Src
+  - Tooltips support build into the application
+- CodeJock Property Grid OCX
+  - Required for image properties
+
+==================================================================
+Changes between 0.9 and 1.0
+==================================================================
+Library:
+- Bugfixes
+  - GDI.h
+    - Removed the duplicated / conflict settings with 
+      CharTranslate.Pkg
+    - Added Use CharTranslate.pkg
+  - cGDIPlus.h
+    - Changed StrToWStr and WStrToStr now use the WideChar* 
+      functions from CharTranslate.Pkg
+  - cImageContainer.Pkg
+    - psImage retrieval on line 1141 moved to its own line
+
+Example Workspace:
+- Bugfixes: 
+  - Support for folders and file with high ASCII characters such 
+    as o+umlaut
+  - pbGripper setting in oDisplayOtionsMenuItem delegates to parent 
+    (=toolbar). Setting removed
+- Additions: 
+  - ImageGallery.Src
+    - Your and the common pictures folder in the files treeview
+    - Remember last folder and restore on reload
+    - If you turn on the Grippers of the toolbars and Enable the 
+      docking of them the treeview and pictures containers will 
+      resize and relocate relative to the new location of the
+      toolbars. If you turn on the saving of the commandbar layout 
+      this will save the new location of the toolbars
+  - Added a package named WindowsFolders.Pkg to get the new special 
+    folder names
+  - Added a package name tBarSize.Pkg which contains the struct 
+    definition for BarClientSize
+  - ImageZoomedDialog.Dg
+    - Added ESC as on_key to do the same as the close button
+
+==================================================================
+Please report any bugs or suggestions to via the Data Access
+forums at http://support.dataaccess.com/forums
+==================================================================
+We hope you enjoy the use of the Graphics Library!
+==================================================================

@@ -1,0 +1,61 @@
+﻿Use cApplication.pkg
+Use cConnection.pkg
+
+Object oApplication is a cApplication
+    Set pbPreserveEnvironment to False
+    Set peHelpType to htNoHelp
+
+    Object oConnection is a cConnection
+        Use LoginEncryption.pkg
+        Use DatabaseLoginDialog.dg
+    End_Object
+
+    Set psProduct to "DataFlex Graphics Library Examples"
+    Set psVersion to "25.0"
+End_Object
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// This project demonstrates the use of GDI+ without GUI. It can be used to create and manipulate
+// image files in memory, which can be very useful in many projects, including web apps.
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Use cGDIPlus.pkg
+Use cGDIImage.pkg
+
+Procedure CreateThumbnailFromImage Global String sFileNameSrc String sFileNameDest String sMimeDest Integer iWidth Integer iHeight
+    gpStatus eStatus    
+    Handle hoImageSrc
+    Handle hoThumbNailImage
+
+    Get CreateImageFromFile of ghoGDIPlusHandler sFileNameSrc to hoImageSrc
+    If (hoImageSrc = 0) Procedure_Return
+    
+    Get CreateThumbnail of hoImageSrc iWidth iHeight to hoThumbNailImage
+    If (hoThumbNailImage = 0) Begin
+        Send Destroy of hoImageSrc
+        Procedure_Return
+    End
+    Get SaveImageToFile of hoThumbNailImage sFileNameDest sMimeDest to eStatus
+
+    Send Destroy of hoImageSrc
+    Send Destroy of hoThumbNailImage
+End_Procedure
+
+Procedure Main Global
+    Handle hoWorkspace
+    String sBitmapPaths
+    String sFileNameDest
+    String sFileNameSrc
+    String sPath
+
+    Get phoWorkspace of ghoApplication to hoWorkspace
+    Get psBitmapPath of hoWorkspace to sBitmapPaths
+    Get PathAtIndex of hoWorkspace sBitmapPaths 1 to sPath
+
+    Move (sPath - "\China _DSC_ 01.jpg") to sFileNameSrc
+    Move (sPath - "\China _DSC_ 01 Thumbnail.jpg") to sFileNameDest
+
+    Send CreateThumbnailFromImage sFileNameSrc sFileNameDest CS_JPG_Mimetype 100 100
+End_Procedure
+
+Send Main

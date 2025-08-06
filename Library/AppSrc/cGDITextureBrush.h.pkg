@@ -1,0 +1,119 @@
+Use cGDIPlus.h.pkg
+Use gpWrapMode.h.pkg
+Use gpMatrixOrder.h.pkg
+
+// GpStatus WINGDIPAPI GdipCreateTexture(GpImage *image, GpWrapMode wrapmode, GpTexture **texture)
+External_Function GdipCreateTexture "GdipCreateTexture" gdiplus.dll ;
+    Pointer image ;
+    gpWrapMode wrapMode ;
+    Pointer texture ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateTexture2(GpImage *image, GpWrapMode wrapmode, Real x, Real y, Real width, Real height, GpTexture **texture)
+External_Function GdipCreateTexture2 "GdipCreateTexture2" gdiplus.dll ;
+    Pointer image ;
+    gpWrapMode wrapMode ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Pointer texture ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateTextureIA(GpImage *image, GDIPCONST GpImageAttributes *imageAttributes, Real x, Real y, Real width, Real height, GpTexture **texture)
+External_Function GdipCreateTextureIA "GdipCreateTextureIA" gdiplus.dll ;
+    Pointer image ;
+    Pointer imageAttributes ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Pointer texture ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateTexture2I(GpImage *image, GpWrapMode wrapmode, INT x, INT y, INT width, INT height, GpTexture **texture)
+External_Function GdipCreateTexture2I "GdipCreateTexture2I" gdiplus.dll ;
+    Pointer image ;
+    gpWrapMode wrapMode ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Pointer texture ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateTextureIAI(GpImage *image, GDIPCONST GpImageAttributes *imageAttributes, INT x, INT y, INT width, INT height, GpTexture **texture)
+External_Function GdipCreateTextureIAI "GdipCreateTextureIAI" gdiplus.dll ;
+    Pointer image ;
+    Pointer imageAttributes ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Pointer texture ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetTextureTransform(GpTexture *brush, GpMatrix *matrix)
+External_Function GdipGetTextureTransform "GdipGetTextureTransform" gdiplus.dll ;
+    Pointer brush ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetTextureTransform(GpTexture *brush, GDIPCONST GpMatrix *matrix)
+External_Function GdipSetTextureTransform "GdipSetTextureTransform" gdiplus.dll ;
+    Pointer brush ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipResetTextureTransform(GpTexture* brush)
+External_Function GdipResetTextureTransform "GdipResetTextureTransform" gdiplus.dll ;
+    Pointer brush ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMultiplyTextureTransform(GpTexture* brush, GDIPCONST GpMatrix *matrix, GpMatrixOrder order)
+External_Function GdipMultiplyTextureTransform "GdipMultiplyTextureTransform" gdiplus.dll ;
+    Pointer brush ;
+    Pointer matrix ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslateTextureTransform(GpTexture* brush, Real dx, Real dy, GpMatrixOrder order)
+External_Function GdipTranslateTextureTransform "GdipTranslateTextureTransform" gdiplus.dll ;
+    Pointer brush ;
+    Float dx ;
+    Float dy ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipScaleTextureTransform(GpTexture* brush, Real sx, Real sy, GpMatrixOrder order)
+External_Function GdipScaleTextureTransform "GdipScaleTextureTransform" gdiplus.dll ;
+    Pointer brush ;
+    Float sx ;
+    Float sy ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipRotateTextureTransform(GpTexture* brush, Real angle, GpMatrixOrder order)
+External_Function GdipRotateTextureTransform "GdipRotateTextureTransform" gdiplus.dll ;
+    Pointer brush ;
+    Float angle ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetTextureWrapMode(GpTexture *brush, GpWrapMode wrapmode)
+External_Function GdipSetTextureWrapMode "GdipSetTextureWrapMode" gdiplus.dll ;
+    Pointer brush ;
+    gpWrapMode wrapMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetTextureWrapMode(GpTexture *brush, GpWrapMode *wrapmode)
+External_Function GdipGetTextureWrapMode "GdipGetTextureWrapMode" gdiplus.dll ;
+    Pointer brush ;
+    gpWrapMode wrapMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetTextureImage(GpTexture *brush, GpImage **image)
+External_Function GdipGetTextureImage "GdipGetTextureImage" gdiplus.dll ;
+    Pointer brush ;
+    Pointer image ;
+    Returns gpStatus

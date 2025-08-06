@@ -1,0 +1,2065 @@
+﻿Use cGDIPlus.pkg
+Use Wingdi.pkg
+Use Structs\tImageProperty.pkg
+Use Structs\tRational.pkg
+Use Structs\tWinBitmapInfo.pkg
+Use Structs\tuRational.Pkg
+Use Structs\tDIBSection.pkg
+Use Structs\tBitmap.pkg
+Use Structs\tWinBitmapInfoHeader.pkg
+Use Structs\tEncoderParameters.pkg
+Use cGDIImage.h.pkg
+Use cGDIImageEncoders.pkg
+Use cHexHandler.pkg
+Use Ole32.h.pkg
+Use PropertyTagNames.h.pkg
+Use UUID.h.pkg
+Use globmem.pkg
+Use GdiGetObject.pkg
+Use BitmapCompression.h.pkg
+Use CreateDIBitmap.pkg
+Use cClipboard.pkg
+Use Structs\tColorPalette.pkg
+Use Structs\tARGBColor.pkg
+Use Structs\tImageValuePair.pkg
+Use gpImageFormat.h.pkg
+
+{ Description = "Wraps the GDI+ Image class as well as parts of the GDI+ Bitmap class." }
+{ Description += "All functionality in this class should be generic, so that it can be used in Windows as well as" }
+{ Description += "Web Applications." }
+{ HelpTopic = cGDIImage }
+{ ClassLibrary = Common }
+Class cGDIImage is a cObject
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Creates properties to store an image handle, how to handle a multi-frame image" }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { Visibility = Private }
+        { Description = "Contains a handle to the image" }
+        Property Pointer ppImage
+
+        { DesignTime = False }
+        { Description = "Keep track of the image encoder parameters" }
+        Property tEncoderParameters pEncoderParameters
+
+        // Properties to support frames in an animated GIF and multi page TIFF
+        { DesignTime = False }
+        { Description = "Total number of frames/pages in the GIF or TIFF" }
+        Property Integer piFrameCount
+        { DesignTime = False }
+        { Description = "the number of times to rotate through the frames/pages. A value of 0 specifies that the animation should be displayed infinitely." }
+        Property Integer[] piImageRepeats
+        { DesignTime = False }
+        { Description = "Current frame/page number being displayed" }
+        Property Integer piCurrentFrame
+        { DesignTime = False }
+        { Description = "Array with delay times per frame/page" }
+        Property Integer[] piFrameDelays
+
+        { Visibility = Private }
+        { Description = "Internally used property for a resource that must be cleaned up when deleting the image" }
+        Property Handle phImageMemory
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "During object destruction, remove the image from memory" }
+    Procedure Destroy_Object
+        Send DeleteImage
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "Releases the memory for the image" }
+    Procedure DeleteImage
+        Handle hImageMemory
+        Integer eStatus
+        Pointer pImage
+
+        Get phImageMemory to hImageMemory
+        If (hImageMemory <> 0) Begin
+            Move (Globalfree (hImageMemory)) to eStatus
+            Set phImageMemory to 0
+        End
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move (GdipDisposeImage (pImage)) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppImage to 0
+            End
+        End
+    End_Procedure
+
+    { Description = "Saves an image to a IStream" }
+    { Description += "Returns the GDI+ status code, gpOk when all fine or an error status code." }
+    { Description += "Handle this status If needed." }
+    { MethodType = Method }
+    { Visibility = Private }
+    Function SaveImageToStream Pointer pStream String sMimeType Returns gpStatus
+        Handle hoImageEncoders
+        Boolean bIsNil
+        gpStatus eStatus
+        Pointer pImage
+        tUUID clsIdEncoder
+        tEncoderParameters EncoderParameters
+
+        Get Create of ghoGDIPlusHandler (RefClass (cGDIImageEncoders)) to hoImageEncoders
+        Get CodecCLSID of hoImageEncoders sMimeType to clsIdEncoder
+        Move 0 to eStatus
+        Move (WinAPI_UuidIsNil (AddressOf (clsIdEncoder), AddressOf (eStatus))) to bIsNil
+        If (not (bIsNil)) Begin
+            Get ppImage to pImage
+            If (pImage <> 0) Begin
+                Get pEncoderParameters to EncoderParameters
+                Move (GdipSaveImageToStream (pImage, pStream, AddressOf (clsIdEncoder), AddressOf (EncoderParameters))) to eStatus
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MimeTypeToClsEncoderFailed
+        End
+        Send Destroy of hoImageEncoders
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Saves the current image using the passed mimetype to the passed filename." }
+    { Description += "Returns the GDI+ status code, gpOk when all fine or an error status code." }
+    { Description += "Handle this status If needed." }
+    { MethodType = Method }
+    Function SaveImageToFile String sFileName String sMimeType Returns gpStatus
+        Handle hoImageEncoders
+        Integer iStatus
+        gpStatus eStatus
+        Pointer pImage
+        tUUID clsIdEncoder
+        WString wFileName
+
+        Get Create (RefClass (cGDIImageEncoders)) to hoImageEncoders
+        Get CodecCLSID of hoImageEncoders sMimeType to clsIdEncoder
+        Move 0 to iStatus
+        Move (WinAPI_UuidIsNil (AddressOf (clsIdEncoder), AddressOf (iStatus))) to eStatus
+        If (eStatus = S_OK) Begin
+            Get ppImage to pImage
+            If (pImage <> 0 and sFileName <> "") Begin
+                Move sFileName to wFileName
+                Move (GdipSaveImageToFile (pImage, AddressOf (wFileName), AddressOf (clsIdEncoder), 0)) to eStatus
+            End
+        End
+        Else Begin
+            Move gpGenericError to eStatus
+        End
+        Send Destroy of hoImageEncoders
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Saves the current image using the passed mimetype to an UChar array." }
+    { Description += "Sends HandleGDIResult when GDI+ function to save the information fails" }
+    { Description += "Sends HandleWinAPIError when the creation of the stream handler failed." }
+    { MethodType = Method }
+    Function SaveImageToUCharArray String sMimeType Returns UChar[]
+        Boolean bOk
+        Handle hMem
+        Integer eStatus iSize
+        Pointer pMem pStream
+        UChar[] ucaData
+
+        Move 0 to pStream
+        Move (Ole32_CreateStreamOnHGlobal (0, 1, AddressOf (pStream))) to eStatus
+        If (eStatus = S_OK) Begin
+            Get SaveImageToStream pStream sMimeType to eStatus
+            If (eStatus = gpOk) Begin
+                Move 0 to hMem
+                Move (Ole32_GetHGlobalFromStream (pStream, AddressOf (hMem))) to eStatus
+                If (eStatus = S_OK) Begin
+                    Move (GlobalLock (hMem)) to pMem
+                    Move (GlobalSize (pMem)) to iSize
+                    If (iSize > 0) Begin
+                        Move (ResizeArray (ucaData, iSize, 0)) to ucaData
+                        Move (MemCopy (AddressOf (ucaData), pMem, iSize)) to bOk
+                    End
+                    Move (GlobalUnlock (hMem)) to eStatus
+                    Move (Globalfree (hMem)) to eStatus
+                End
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Saving Image to UChar Array"
+            End
+            Send ReleaseStream of ghoGDIPlusHandler pStream
+        End
+        Else Begin
+            Send HandleWinAPIError of ghoGDIPlusHandler eStatus "Saving Image to UChar Array"
+        End
+
+        Function_Return ucaData
+    End_Function
+
+    { Description = "Test if the current image supports animation." }
+    { Description += "If it supports animation retrieve the number of frames and the frame delay per frame." }
+    { Description += "Sets the piImageRepeats, piFrameDelays and piFrameCount properties." }
+    { Description += "In Windows GUI applications this method gets send after creating an image object." }
+    { Description += "Sends HandleGDIResult when one or more of the various GDI+ functions fail." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Method }
+    Procedure ConfigureMultiFrameImageDisplay
+        Integer iFrameDimensionsCount iFrameCount iSize
+        gpStatus eStatus
+        Pointer pImage pPropertyItem
+        UShort usLoopCount
+        Boolean bOk
+        tUUID[] FrameDimensionList
+        tPropertyItem gdiPropertyItem
+        Integer[] iFrameDelays iImageRepeats
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to iFrameDimensionsCount
+            Move (GdipImageGetFrameDimensionsCount (pImage, AddressOf (iFrameDimensionsCount))) to eStatus
+            If (eStatus = gpOk and iFrameDimensionsCount > 0) Begin
+                Move (ResizeArray (FrameDimensionList, iFrameDimensionsCount)) to FrameDimensionList
+                Move (GdipImageGetFrameDimensionsList (pImage, AddressOf (FrameDimensionList), iFrameDimensionsCount)) to eStatus
+                If (eStatus = gpOk) Begin
+                    Move 0 to iFrameCount
+                    Move (GdipImageGetFrameCount (pImage, AddressOf (FrameDimensionList[0]), AddressOf (iFrameCount))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        If (iFrameCount > 1) Begin // This means it is a animate GIF
+                            Move 0 to iSize
+                            Move (GdipGetPropertyItemSize (pImage, gpPropertyTagFrameDelay, AddressOf (iSize))) to eStatus
+                            If (eStatus = gpOk) Begin
+                                Move (Alloc (iSize)) to pPropertyItem
+                                Move (GdipGetPropertyItem (pImage, gpPropertyTagFrameDelay, iSize, pPropertyItem)) to eStatus
+                                If (eStatus = gpOk) Begin
+                                    Move (ResizeArray (iFrameDelays, iFrameCount)) to iFrameDelays
+                                    Move (MemCopy (AddressOf (gdiPropertyItem), pPropertyItem, SizeOfType (tPropertyItem))) to bOk
+                                    If (bOk) Begin
+                                        Move (MemCopy (AddressOf (iFrameDelays), gdiPropertyItem.value, SizeOfType (Integer) * iFrameCount)) to bOk
+                                    End
+                                End
+                                Else Begin
+                                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Frame Delay Property Item"
+                                End
+                                Move (Free (pPropertyItem)) to eStatus
+                                Move (GdipGetPropertyItemSize (pImage, gpPropertyTagLoopCount, AddressOf (iSize))) to eStatus
+                                If (eStatus = gpOk) Begin
+                                    Move (Alloc (iSize)) to pPropertyItem
+                                    Move (GdipGetPropertyItem (pImage, gpPropertyTagLoopCount, iSize, pPropertyItem)) to eStatus
+                                    If (eStatus = gpOk) Begin
+                                        Move (MemCopy (AddressOf (gdiPropertyItem), pPropertyItem, SizeOfType (tPropertyItem))) to bOk
+                                        If (bOk) Begin
+                                            Move 0 to usLoopCount
+                                            Move (MemCopy (AddressOf (usLoopCount), gdiPropertyItem.value, SizeOfType (UShort))) to bOk
+                                        End
+                                    End
+                                    Else Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Loop Count Property Item"
+                                    End
+                                    Move (Free (pPropertyItem)) to eStatus
+                                End
+                                Else Begin
+                                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Loop Count Property Item Size"
+                                End
+                            End
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Frame Count"
+                    End
+                End
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Set piCurrentFrame to 0
+        Move usLoopCount to iImageRepeats[0]
+        Move 0 to iImageRepeats[1]
+        Set piImageRepeats to iImageRepeats
+        Set piFrameDelays to iFrameDelays
+        Set piFrameCount to iFrameCount
+    End_Procedure
+
+    Function CreateImageFromBitmap Handle hBitmap Returns Handle
+    End_Function
+
+    { Description = "Creates HBITMAP from current image and returns this handle. The handle is not a DataFlex object." }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Method }
+    Function CreateHBITMAPFromImage Returns Handle
+        Handle hBitmap
+        UInteger uiColor
+        gpStatus eStatus
+        Pointer pImage
+
+        Move 0 to hBitmap
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Get ARGB of ghoGDIPlusHandler 255 0 0 0 to uiColor
+            Move (GdipCreateHBITMAPFromBitmap (pImage, AddressOf (hBitmap), uiColor)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Creating HBitmap from Image"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return hBitmap
+    End_Function
+
+    { Description = "Create a thumbnail image version of the current image with the passed width and height." }
+    { Description += "Returns a DataFlex object handle when succesful." }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Method }
+    Function CreateThumbnail Integer iImageWidth Integer iImageHeight Returns Handle
+        Pointer pImage pThumbNail
+        gpStatus eStatus
+        Handle hoImage hClass
+        String sObjectName
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to pThumbNail
+            Move (GdipGetImageThumbnail (pImage, iImageWidth, iImageHeight, AddressOf (pThumbNail), 0, 0)) to eStatus
+            If (eStatus = gpOk) Begin
+                Get ObjectClass to hClass
+                Get Name to sObjectName
+                Move (sObjectName - "_Thumbnail") to sObjectName
+                Get CreateNamed of ghoGDIPlusHandler hClass sObjectName to hoImage
+                Set ppImage of hoImage to pThumbNail
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Creating Thumbnail"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { Description = "Checks if passed GUIDs (one in GUID format and the other in string format) are the same" }
+    { Visibility = Private }
+    { MethodType = Method }
+    Procedure CheckImageFormat tUUID ImageRawFormatGUID WString wGuid Integer eFormat Integer ByRef eImageFormat
+        tUUID ImageFormatGUID
+        Integer eStatus
+
+        If (eImageFormat = 0) Begin
+            Move (WinAPI_UuidFromString (AddressOf (wGuid), AddressOf (ImageFormatGUID))) to eStatus
+            If (eStatus = S_OK) Begin
+                If (WinAPI_UuidEqual (AddressOf (ImageRawFormatGUID), AddressOf (ImageFormatGUID), AddressOf (eStatus))) Begin
+                    Move eFormat to eImageFormat
+                End
+            End
+        End
+    End_Procedure
+
+    { Description = "Returns the RAW FileFormat of the image." }
+    { Description += "Calls GDI+ function that gets a globally unique identifier ( GUID) that identifies the format of this Image object." }
+    { Description += "GUIDs that identify various file formats are defined in GdiImage.h.pkg." }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { EnumList = "gpImageFormatUndefined, gpImageFormatMemoryBMP, gpImageFormatBMP, gpImageFormatEMF" }
+    { EnumList += "gpImageFormatWMF, gpImageFormatJPEG, gpImageFormatPNG, gpImageFormatGIF, gpImageFormatTIFF" }
+    { EnumList += "gpImageFormatEXIF, gpImageFormatIcon, gpImageFormatHEIF, gpImageFormatWEBP, gpImageFormatPHOTOCD" }
+    { EnumList += "gpImageFormatFLASHPIX, gpImageFormatTIFFEP, gpImageFormatCIFF, gpImageFormatJFIF, gpImageFormatPICT" }
+    { EnumList += "gpImageFormatTIFFIT, gpImageFormatJPEG2K, gpImageFormatJPEG2KX" }
+    { MethodType = Property }
+    Function ImageFileFormat Returns Integer
+        Pointer pImage
+        tUUID ImageRawFormat
+        gpStatus eStatus
+        gpImageFormat eImageFormat
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move (GdipGetImageRawFormat (pImage, AddressOf (ImageRawFormat))) to eStatus
+            If (eStatus = gpOk) Begin
+                Send CheckImageFormat ImageRawFormat guidImageFormatBMP gpImageFormatBMP (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatJPEG gpImageFormatJPEG (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatPNG gpImageFormatPNG (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatTIFF gpImageFormatTIFF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatGIF gpImageFormatGIF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatIcon gpImageFormatIcon (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatMemoryBMP gpImageFormatMemoryBMP (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatEMF gpImageFormatEMF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatWMF gpImageFormatWMF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatEXIF gpImageFormatEXIF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatHEIF gpImageFormatHEIF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatWEBP gpImageFormatWEBP (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatUndefined gpImageFormatUndefined (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatPHOTOCD gpImageFormatPHOTOCD (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatFLASHPIX gpImageFormatFLASHPIX (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatTIFFEP gpImageFormatTIFFEP (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatCIFF gpImageFormatCIFF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatJFIF gpImageFormatJFIF (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatPICT gpImageFormatPICT (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatTIFFIT gpImageFormatTIFFIT (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatJPEG2K gpImageFormatJPEG2K (&eImageFormat)
+                Send CheckImageFormat ImageRawFormat guidImageFormatJPEG2KX gpImageFormatJPEG2KX (&eImageFormat)
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Image RAW File Format"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eImageFormat
+    End_Function
+
+    { Description = "Returns a text variant from the result of ImageFileFormat. Calls ImageFileFormat." }
+    { EnumList = "image/bmp, image/jpeg, image/gif, image/tiff,image/png, image/x-icon, image/wmf, image/emf, image/exif" }
+    { MethodType = Property }
+    Function ImageMimeType Returns String
+        gpImageFormat eImageFormat
+        String sMimeType
+
+        Get ImageFileFormat to eImageFormat
+        Case Begin
+            Case (eImageFormat = gpImageFormatBMP)
+            Case (eImageFormat = gpImageFormatMemoryBMP)
+                Move CS_BMP_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatJPEG)
+                Move CS_JPG_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatPNG)
+                Move CS_PNG_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatTIFF)
+                Move CS_TIF_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatIcon)
+                Move CS_ICO_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatWMF)
+                Move CS_WMF_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatGIF)
+                Move CS_GIF_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatEMF)
+                Move CS_EMF_Mimetype to sMimeType
+                Case Break
+            Case (eImageFormat = gpImageFormatEXIF)
+                Move CS_EXIF_Mimetype to sMimeType
+                Case Break
+        Case End
+
+        Function_Return sMimeType
+    End_Function
+
+    { Description = "Returns the horizontal resolution of the image" }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Property }
+    Function ImageHorizontalResolution Returns Float
+        gpStatus eStatus
+        Float fResolution
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to fResolution
+            Move (GdipGetImageHorizontalResolution (pImage, AddressOf (fResolution))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Image Horizontal Resolution"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return fResolution
+    End_Function
+
+    { Description = "Returns the vertical resolution of the image." }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Property }
+    Function ImageVerticalResolution Returns Float
+        gpStatus eStatus
+        Float fResolution
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to fResolution
+            Move (GdipGetImageVerticalResolution (pImage, AddressOf (fResolution))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Vertical Image Resolution"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return fResolution
+    End_Function
+
+    { Description = "Returns the flags of the image" }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Property }
+    Function ImageFlags Returns Integer
+        gpStatus eStatus
+        Integer iFlags
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to iFlags
+            Move (GdipGetImageFlags (pImage, AddressOf (iFlags))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get ImageFlags"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return iFlags
+    End_Function
+
+    { Description = "Returns the type of the image (Bitmap (BMP,PNG,GIF,JPEG,TIFF,ICO,EXIF), Metafile (EMF, WMF) or Unidentified)" }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Property }
+    Function ImageType Returns gpImageType
+        gpStatus eStatus
+        gpImageType eType
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to eType
+            Move (GdipGetImageType (pImage, AddressOf (eType))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get ImageType"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eType
+    End_Function
+
+    { Description = "Returns the width of the image (in pixels)" }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Property }
+    Function ImageWidth Returns Integer
+        gpStatus eStatus
+        Integer iWidth
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to iWidth
+            Move (GdipGetImageWidth (pImage, AddressOf (iWidth))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get ImageWidth"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return iWidth
+    End_Function
+
+    { Description = "Returns the height of the image (in pixels)" }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Property }
+    Function ImageHeight Returns Integer
+        gpStatus eStatus
+        Integer iHeight
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to iHeight
+            Move (GdipGetImageHeight (pImage, AddressOf (iHeight))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get ImageHeight"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return iHeight
+    End_Function
+
+    { Description = "Returns number of image properties" }
+    { Description += "Sends HandleGDIResult when the GDI+ function fails." }
+    { Description += "Sends HandleGDIError when there is no image loaded." }
+    { MethodType = Property }
+    Function PropertyCount Returns UInteger
+        gpStatus eStatus
+        UInteger uiCount
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to uiCount
+            Move (GdipGetPropertyCount (pImage, AddressOf (uiCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get PropertyCount"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return uiCount
+    End_Function
+
+    { Description = "Returns list of properties" }
+    { MethodType = Property }
+    Function ImagePropertyList Returns tImageProperty[]
+        gpStatus eStatus
+        Integer iItem iElements iElement iResult
+        Integer[] iValues
+        Boolean bMemCopyOk
+        UInteger uiBuffer uiCount uiValue
+        UInteger[] uiValues
+        tuRational uratEmptyValue
+        tuRational[] uratValues
+        tRational ratEmptyValue
+        tRational[] ratValues
+        tPropertyItem[] PropertyItems
+        tImageProperty[] ImageProperties
+        Pointer pPropertyItems pImage pData
+        WString wValue
+        String sValue
+        String[] sValues
+        UShort[] usValues
+        UShort usValue
+        UChar[] ucValues
+        Handle hoHexHandler hoThumbnailImage
+        tImageValuePair[] ImageValuePairs
+
+        Get ppImage to pImage
+        If (pImage = 0) Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            Function_Return ImageProperties
+        End
+
+        Move 0 to uiCount
+        Move 0 to uiBuffer
+        Move (GdipGetPropertySize (pImage, AddressOf (uiBuffer), AddressOf (uiCount))) to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get Property Size'
+            Function_Return ImageProperties
+        End
+        Else Begin
+            If (uiCount = 0) Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_NoImagePropertiesAvailable
+                Function_Return ImageProperties
+            End
+        End
+
+        Move (Alloc (uiBuffer)) to pPropertyItems
+        Move (GdipGetAllPropertyItems (pImage, uiBuffer, uiCount, pPropertyItems)) to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get All Property Items'
+            Move (Free (pPropertyItems)) to bMemCopyOk
+            Function_Return ImageProperties
+        End
+
+        Move (ResizeArray (PropertyItems, uiCount)) to PropertyItems
+        Move (MemCopy (AddressOf (PropertyItems), pPropertyItems, SizeOfType (tPropertyItem) * uiCount)) to bMemCopyOk
+        If (bMemCopyOk) Begin
+            Get Create (RefClass (cHexHandler)) to hoHexHandler
+            Decrement uiCount
+            For iItem from 0 to uiCount
+                Get PropertyName PropertyItems[iItem].id to ImageProperties[iItem].sName
+                Move PropertyItems[iItem].id to ImageProperties[iItem].iId
+                Move PropertyItems[iItem].type to ImageProperties[iItem].iDataType
+
+                Case Begin
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeASCII)
+                        Move (Repeat (Character (0), PropertyItems[iItem].length + 1)) to sValue
+                        Move (MemCopy (AddressOf (sValue), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                        Case Begin
+                            Case (PropertyItems[iItem].id = gpPropertyTagInkNames)
+                                Move (Replaces (Character (0), sValue, Character (13) + Character (10))) to ImageProperties[iItem].vValue
+                                Case Break
+                            Case Else
+                                Move sValue to ImageProperties[iItem].vValue
+                                Case Break
+                        Case End
+                        Case Break
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeUndefined)
+                        Case Begin
+                            Case (PropertyItems[iItem].id = gpPropertyTagExifFileSource)
+                                Move 0 to uiValue
+                                Move (MemCopy (AddressOf (uiValue), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                Move uiValue to ImageProperties[iItem].vValue
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagExifCompConfig)
+                                Move (PropertyItems[iItem].length / SizeOfType (UChar)) to iElements
+                                Move (ResizeArray (ucValues, PropertyItems[iItem].length)) to ucValues
+                                Move (FillArray (0, ucValues, 0, iElements)) to ucValues
+                                Move (MemCopy (AddressOf (ucValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                Decrement iElements
+                                Move "" to sValue
+                                For iElement from 0 to iElements
+                                    Move (sValue * String (ucValues[iElement])) to wValue
+                                Loop
+                                Move sValue to ImageProperties[iItem].vValue
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagExifFPXVer)
+                            Case (PropertyItems[iItem].id = gpPropertyTagExifVer)
+                                Move (Repeat (Character (0), PropertyItems[iItem].length + 1)) to sValue
+                                Move (MemCopy (AddressOf (sValue), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                Move sValue to ImageProperties[iItem].vValue
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagExifSceneType)
+                                Move (Repeat (Character (0), PropertyItems[iItem].length + 1)) to wValue
+                                Move (MemCopy (AddressOf (wValue), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                Move wValue to ImageProperties[iItem].vValue
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagExifUserComment)
+                                Move (Repeat (Character (0), PropertyItems[iItem].length + 1)) to wValue
+                                Move (MemCopy (AddressOf (wValue), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                Move wValue to ImageProperties[iItem].vValue
+                                Case Break
+                            Case Else
+                                Move (Base64Encode (PropertyItems[iItem].value, PropertyItems[iItem].length)) to pData
+                                Move (PointerToString (pData)) to ImageProperties[iItem].vValue
+                                Move (Free (pData)) to iResult
+                                Case Break
+                        Case End
+                        Case Break
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeShort)
+                        Case Begin
+                            Case (PropertyItems[iItem].id = gpPropertyTagExifFlash)
+                                Move 0 to usValue
+                                Move (MemCopy (AddressOf (usValue), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                If (IsFlagIn (|CI$0000001, usValue)) Begin
+                                    Move "Flash Fired" to sValue
+                                    Case Begin
+                                        Case (usValue iand $00000001)
+                                            Move (sValue * C_$NoStrobeReturnDetectionFunction) to sValue
+                                            Case Break
+                                        Case (usValue iand $00000011)
+                                            // Reserved
+                                            Case Break
+                                        Case (usValue iand $00000101)
+                                            Move (sValue * C_$StrobReturnLightNotDetected) to sValue
+                                            Case Break
+                                        Case (usValue iand $00000111)
+                                            Move (sValue * C_$StrobeReturnLightDetected) to sValue
+                                            Case Break
+                                    Case End
+                                    Move sValue to ImageProperties[iItem].vValue
+                                End
+                                Else Begin
+                                    Move C_$FlashDidNotFire to ImageProperties[iItem].vValue
+                                End
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagChrominanceTable)
+                            Case (PropertyItems[iItem].id = gpPropertyTagLuminanceTable)
+                                Move (PropertyItems[iItem].length / SizeOfType (UShort)) to iElements
+                                Move (ResizeArray (usValues, iElements)) to usValues
+                                Move (FillArray (0, usValues, 0, iElements)) to usValues
+                                Move (MemCopy (AddressOf (usValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                If (iElements > 1) Begin
+                                    Decrement iElements
+                                    Move '' to sValue
+                                    For iElement from 0 to iElements
+                                        Move (sValue * String (usValues[iElement])) to sValue
+                                    Loop
+                                    Move sValue to ImageProperties[iItem].vValue
+                                End
+                                Else Begin
+                                    Move usValues[0] to ImageProperties[iItem].vValue
+                                End
+                                Case Break
+                            Case Else
+                                Move (PropertyItems[iItem].length / SizeOfType (UShort)) to iElements
+                                Move (ResizeArray (usValues, iElements)) to usValues
+                                Move (FillArray (0, usValues, 0, iElements)) to usValues
+                                Move (MemCopy (AddressOf (usValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                If (iElements > 1) Begin
+                                    Decrement iElements
+                                    Move '' to sValue
+                                    For iElement from 0 to iElements
+                                        Move (sValue * StrToHex (hoHexHandler, usValues[iElement])) to sValue
+                                    Loop
+                                    Move sValue to ImageProperties[iItem].vValue
+                                End
+                                Else Begin
+                                    Move usValues[0] to ImageProperties[iItem].vValue
+                                End
+                        Case End
+                        Case Break
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeLong)
+                        Move (PropertyItems[iItem].length / SizeOfType (UInteger)) to iElements
+                        Move (ResizeArray (uiValues, iElements)) to uiValues
+                        Move (FillArray (0, uiValues, 0, iElements)) to uiValues
+                        Move (MemCopy (AddressOf (uiValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                        If (iElements > 1) Begin
+                            Decrement iElements
+                            Move '' to sValue
+                            For iElement from 0 to iElements
+                                Move (sValue * StrToHex (hoHexHandler, uiValues[iElement])) to sValue
+                            Loop
+                            Move sValue to ImageProperties[iItem].vValue
+                        End
+                        Else Begin
+                            Move uiValues[0] to uiValue
+                            Move uiValue to ImageProperties[iItem].vValue
+                        End
+                        Case Break
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeByte)
+                        Case Begin
+                            Case (PropertyItems[iItem].id = gpPropertyTagGpsVer)
+                                Move (PropertyItems[iItem].length / SizeOfType (UChar)) to iElements
+                                Move (ResizeArray (ucValues, PropertyItems[iItem].length)) to ucValues
+                                Move (FillArray (0, ucValues, 0, iElements)) to ucValues
+                                Move (MemCopy (AddressOf (ucValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                Move (SFormat ("%1.%2.%3.%4", ucValues[0], ucValues[1], ucValues[2], ucValues[3])) to ImageProperties[iItem].vValue
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagThumbnailFormat)
+                                // Skip
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagICCProfile)
+                                Move (Base64Encode (PropertyItems[iItem].value, PropertyItems[iItem].length)) to pData
+                                Move (PointerToString (pData)) to ImageProperties[iItem].vValue
+                                Move (Free (pData)) to iResult
+                                Case Break
+                            Case (PropertyItems[iItem].id = gpPropertyTagThumbnailData)
+                                Move (PropertyItems[iItem].length / SizeOfType (UChar)) to iElements
+                                Move (ResizeArray (ucValues, PropertyItems[iItem].length)) to ucValues
+                                Move (FillArray (0, ucValues, 0, iElements)) to ucValues
+                                Move (MemCopy (AddressOf (ucValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                If (iElements > 1) Begin
+                                    Get CreateImageFromUCharArray of ghoGDIPlusHandler ucValues to hoThumbnailImage
+                                    Send Copy of hoThumbnailImage // Copies thumbnail data to clipboard
+                                    Send Destroy of hoThumbnailImage
+                                    Move ucValues to ImageProperties[iItem].vValue
+                                End
+                                Case Break
+                            Case Else
+                                Move (PropertyItems[iItem].length / SizeOfType (UChar)) to iElements
+                                Move (ResizeArray (ucValues, PropertyItems[iItem].length)) to ucValues
+                                Move (FillArray (0, ucValues, 0, iElements)) to ucValues
+                                Move (MemCopy (AddressOf (ucValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                                If (iElements > 1) Begin
+                                    Move ucValues to ImageProperties[iItem].vValue
+                                End
+                                Else Begin
+                                    Move ucValues[0] to ImageProperties[iItem].vValue
+                                End
+                                Case Break
+                        Case End
+                        Case Break
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeRational)
+                        Move (PropertyItems[iItem].length / SizeOfType (tuRational)) to iElements
+                        Move (ResizeArray (uratValues, iElements)) to uratValues
+                        Move (FillArray (uratEmptyValue, uratValues, 0, iElements)) to uratValues
+                        Move (MemCopy (AddressOf (uratValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                        If (bMemCopyOk) Begin
+                            Case Begin
+                                Case (PropertyItems[iItem].id = gpPropertyTagGpsLatitude)
+                                Case (PropertyItems[iItem].id = gpPropertyTagGpsLongitude)
+                                    If (iElements = 3) Begin // Should be for this type of property
+                                        Move (ResizeArray (ImageValuePairs, iElements)) to ImageValuePairs
+                                        Move C_$PropertyTagDegrees to ImageValuePairs[0].sName
+                                        Move (uratValues[0].uiValue1 / uratValues[0].uiValue2) to ImageValuePairs[0].vValue
+                                        Move C_$PropertyTagMinutes to ImageValuePairs[1].sName
+                                        Move (uratValues[1].uiValue1 / uratValues[1].uiValue2) to ImageValuePairs[1].vValue
+                                        Move C_$PropertyTagSeconds to ImageValuePairs[2].sName
+                                        Move (uratValues[2].uiValue1 / uratValues[2].uiValue2) to ImageValuePairs[2].vValue
+                                        Move ImageValuePairs to ImageProperties[iItem].vValue
+                                    End
+                                    Case Break
+                                Case (PropertyItems[iItem].id = gpPropertyTagGpsGpsTime)
+                                    If (iElements = 3) Begin // Should be for this type of property
+                                        Move (SFormat ("%1:%2:%3", (uratValues[0].uiValue1 / uratValues[0].uiValue2), (uratValues[1].uiValue1 / uratValues[1].uiValue2), (uratValues[2].uiValue1 / uratValues[2].uiValue2))) to ImageProperties[iItem].vValue
+                                    End
+                                    Else Begin
+                                        Move "" to ImageProperties[iItem].vValue
+                                    End
+                                    Case Break
+                                Case Else
+                                    Move (ResizeArray (ImageValuePairs, iElements)) to ImageValuePairs
+                                    Decrement iElements
+                                    For iElement from 0 to iElements
+                                        Get PropertyName PropertyItems[iItem].id to ImageValuePairs[iElement].sName
+                                        Move (uratValues[iElement].uiValue1 / uratValues[iElement].uiValue2) to ImageValuePairs[iElement].vValue
+                                    Loop
+                                    Move ImageValuePairs to ImageProperties[iItem].vValue
+                                    Case Break
+                            Case End
+                        End
+                        Case Break
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeSLONG)
+                        Move (PropertyItems[iItem].length / SizeOfType (Integer)) to iElements
+                        Move (ResizeArray (iValues, iElements)) to iValues
+                        Move (FillArray (0, iValues, 0, iElements)) to iValues
+                        Move (MemCopy (AddressOf (iValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                        If (iElements > 1) Begin
+                            Decrement iElements
+                            Move '' to sValue
+                            For iElement from 0 to iElements
+                                Move (sValue * StrToHex (hoHexHandler, iValues[iElement])) to sValue
+                            Loop
+                            Move sValue to ImageProperties[iItem].vValue
+                        End
+                        Else Begin
+                            Move iValues[0] to ImageProperties[iItem].vValue
+                        End
+                        Case Break
+                    Case (PropertyItems[iItem].type = gpPropertyTagTypeSRational)
+                        Move (PropertyItems[iItem].length / SizeOfType (tRational)) to iElements
+                        Move (ResizeArray (ratValues, iElements)) to ratValues
+                        Move (FillArray (ratEmptyValue, ratValues, 0, iElements)) to ratValues
+                        Move (MemCopy (AddressOf (ratValues), PropertyItems[iItem].value, PropertyItems[iItem].length)) to bMemCopyOk
+                        If (iElements > 1) Begin
+                            Decrement iElements
+                            For iElement from 0 to iElements
+                                Move (String (ratValues[iElement].iValue1) - "/" - String (ratValues[iElement].iValue2)) to sValues[iElement]
+                            Loop
+                            Move sValues to ImageProperties[iItem].vValue
+                        End
+                        Else Begin
+                            Move (String (ratValues[0].iValue1) - "/" - String (ratValues[0].iValue2)) to ImageProperties[iItem].vValue
+                        End
+                        Case Break
+                    Case Else
+                        Move ("Unsupported Datatype:" * String (PropertyItems[iItem].type)) to ImageProperties[iItem].vValue
+                        Case Break
+                Case End
+            Loop
+            Send Destroy of hoHexHandler
+        End
+
+        Move (Free (pPropertyItems)) to bMemCopyOk
+
+        Function_Return ImageProperties
+    End_Function
+
+    { Description = "Retrieves the image property data for the passed property type (enumerated value)." }
+    { Description += "If the property is present in the image data the function returns true and the data via the byref parameter." }
+    { MethodType = Property }
+    Function PropertyItem Integer eProperty tPropertyItem ByRef gdiPropertyItem Returns Boolean
+        Pointer pImage pPropertyItem
+        gpStatus eStatus
+        Integer iSize
+        Boolean bOk
+
+        Get ppImage to pImage
+        If (pImage) Begin
+            Move 0 to iSize
+            Move (GdipGetPropertyItemSize (pImage, eProperty, AddressOf (iSize))) to eStatus
+            If (eStatus = gpOk) Begin
+                Move (Alloc (iSize)) to pPropertyItem
+                Move (GdipGetPropertyItem (pImage, eProperty, iSize, pPropertyItem)) to eStatus
+                If (eStatus = gpOk) Begin
+                    Move (MemCopy (AddressOf (gdiPropertyItem), pPropertyItem, SizeOfType (tPropertyItem))) to bOk
+                End
+                Move (Free (pPropertyItem)) to eStatus
+            End
+            // No else here as when the property is not present it should not give an error
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return bOk
+    End_Function
+
+    { Description = "Returns the value of the enumerated property as DateTime value." }
+    { Description += "Note: eProperty must be a DateTime value Property " }
+    { MethodType = Property }
+    Function DateTimeProperty Integer eProperty Returns DateTime
+        DateTime dtValue
+        tPropertyItem gdiPropertyItem
+        Boolean bOk
+        String sDateTime
+
+        Move (NullDateTime ()) to dtValue
+        Get PropertyItem eProperty (&gdiPropertyItem) to bOk
+        If (bOk) Begin
+            Move (Repeat (Character (0), 20)) to sDateTime
+            Move (MemCopy (AddressOf (sDateTime), gdiPropertyItem.value, 20)) to bOk
+            Move (DateSetYear (dtValue, Left (sDateTime, 4))) to dtValue
+            Move (DateSetMonth (dtValue, Mid (sDateTime, 2, 6))) to dtValue
+            Move (DateSetDay (dtValue, Mid (sDateTime, 2, 9))) to dtValue
+            Move (DateSetHour (dtValue, Mid (sDateTime, 2, 12))) to dtValue
+            Move (DateSetMinute (dtValue, Mid (sDateTime, 2, 15))) to dtValue
+            Move (DateSetSecond (dtValue, Mid (sDateTime, 2, 18))) to dtValue
+        End
+
+        Function_Return dtValue
+    End_Function
+
+    { Description = "Returns the ARGB color of a pixel in the image." }
+    { MethodType = Property }
+    Function PixelColor Integer iX Integer iY Returns tARGColor
+        Pointer pImage
+        tARGColor argbColor
+        gpStatus eStatus
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move (GdipBitmapGetPixel (pImage, iX, iY, AddressOf (argbColor))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get PixelColor'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return argbColor
+    End_Function
+
+    { Description = "Returns the Size of the pixelformat of the image" }
+    { MethodType = Method }
+    Function PixelFormatSize gpPixelFormat eImagePixelFormat Returns Integer
+        Integer iPixelFormatSize
+
+        Move (RShift (eImagePixelFormat, 8) iand |CI$FF) to iPixelFormatSize
+
+        Function_Return iPixelFormatSize
+    End_Function
+
+    { Description = "Returns if pixelformat of the image is indexed" }
+    { MethodType = Method }
+    Function IsIndexedPixelFormat gpPixelFormat eImagePixelFormat Returns Boolean
+        Boolean bIsIndexed
+
+        Move (IsFlagIn (gpPixelFormatIndexed, eImagePixelFormat)) to bIsIndexed
+
+        Function_Return bIsIndexed
+    End_Function
+
+    { Description = "Returns if the pixel format is Alpha" }
+    { MethodType = Method }
+    Function IsAlphaPixelFormat gpPixelFormat eImagePixelFormat Returns Boolean
+        Boolean bIsAlphaPixelFormat
+
+        Move (IsFlagIn (gpPixelFormatAlpha, eImagePixelFormat)) to bIsAlphaPixelFormat
+
+        Function_Return bIsAlphaPixelFormat
+    End_Function
+
+    { Description = "Returns if the pixel format is extended" }
+    { MethodType = Method }
+    Function IsExtendedPixelFormat gpPixelFormat eImagePixelFormat Returns Boolean
+        Boolean bIsExtendedPixelFormat
+
+        Move (IsFlagIn (gpPixelFormatExtended, eImagePixelFormat)) to bIsExtendedPixelFormat
+
+        Function_Return bIsExtendedPixelFormat
+    End_Function
+
+    { Description = "Determine if the Pixel Format is Canonical format" }
+    { MethodType = Method }
+    Function IsCanonicalPixelFormat gpPixelFormat eImagePixelFormat Returns Boolean
+        Boolean bIsCanonicalPixelFormat
+
+        Move (IsFlagIn (gpPixelFormatCanonical, eImagePixelFormat)) to bIsCanonicalPixelFormat
+
+        Function_Return bIsCanonicalPixelFormat
+    End_Function
+
+    { Description = "Returns the description (name) of a property" }
+    { Visibility = Private }
+    { MethodType = Method }
+    Function PropertyName Integer ePropertyID Returns String
+        String sName
+
+        Case Begin
+            Case (ePropertyID = gpPropertyTagExifIFD)
+                Move C_$PropertyTagExifIFD to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsIFD)
+                Move C_$PropertyTagGpsIFD to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagNewSubfileType)
+                Move C_$PropertyTagNewSubfileType to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagSubfileType)
+                Move C_$PropertyTagSubfileType to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagImageWidth)
+                Move C_$PropertyTagImageWidth to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagImageHeight)
+                Move C_$PropertyTagImageHeight to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagBitsPerSample)
+                Move C_$PropertyTagBitsPerSample to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagCompression)
+                Move C_$PropertyTagCompression to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPhotometricInterp)
+                Move C_$PropertyTagPhotometricInterp to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThreshHolding)
+                Move C_$PropertyTagThreshHolding to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagCellWidth)
+                Move C_$PropertyTagCellWidth to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagCellHeight)
+                Move C_$PropertyTagCellHeight to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagFillOrder)
+                Move C_$PropertyTagFillOrder to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagDocumentName)
+                Move C_$PropertyTagDocumentName to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagImageDescription)
+                Move C_$PropertyTagImageDescription to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagEquipMake)
+                Move C_$PropertyTagEquipMake to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagEquipModel)
+                Move C_$PropertyTagEquipModel to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagStripOffsets)
+                Move C_$PropertyTagStripOffsets to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagOrientation)
+                Move C_$PropertyTagOrientation to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagSamplesPerPixel)
+                Move C_$PropertyTagSamplesPerPixel to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagRowsPerStrip)
+                Move C_$PropertyTagRowsPerStrip to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagStripBytesCount)
+                Move C_$PropertyTagStripBytesCount to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagMinSampleValue)
+                Move C_$PropertyTagMinSampleValue to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagMaxSampleValue)
+                Move C_$PropertyTagMaxSampleValue to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagXResolution)
+                Move C_$PropertyTagXResolution to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagYResolution)
+                Move C_$PropertyTagYResolution to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPlanarConfig)
+                Move C_$PropertyTagPlanarConfig to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPageName)
+                Move C_$PropertyTagPageName to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagXPosition)
+                Move C_$PropertyTagXPosition to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagYPosition)
+                Move C_$PropertyTagYPosition to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagFreeOffset)
+                Move C_$PropertyTagFreeOffset to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagFreeByteCounts)
+                Move C_$PropertyTagFreeByteCounts to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGrayResponseUnit)
+                Move C_$PropertyTagGrayResponseUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGrayResponseCurve)
+                Move C_$PropertyTagGrayResponseCurve to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagT4Option)
+                Move C_$PropertyTagT4Option to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagT6Option)
+                Move C_$PropertyTagT6Option to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagResolutionUnit)
+                Move C_$PropertyTagResolutionUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPageNumber)
+                Move C_$PropertyTagPageNumber to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagTransferFuncition)
+                Move C_$PropertyTagTransferFuncition to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagSoftwareUsed)
+                Move C_$PropertyTagSoftwareUsed to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagDateTime)
+                Move C_$PropertyTagDateTime to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagArtist)
+                Move C_$PropertyTagArtist to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHostComputer)
+                Move C_$PropertyTagHostComputer to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPredictor)
+                Move C_$PropertyTagPredictor to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagWhitePoint)
+                Move C_$PropertyTagWhitePoint to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPrimaryChromaticities)
+                Move C_$PropertyTagPrimaryChromaticities to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagColorMap)
+                Move C_$PropertyTagColorMap to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHalftoneHints)
+                Move C_$PropertyTagHalftoneHints to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagTileWidth)
+                Move C_$PropertyTagTileWidth to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagTileLength)
+                Move C_$PropertyTagTileLength to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagTileOffset)
+                Move C_$PropertyTagTileOffset to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagTileByteCounts)
+                Move C_$PropertyTagTileByteCounts to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagInkSet)
+                Move C_$PropertyTagInkSet to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagInkNames)
+                Move C_$PropertyTagInkNames to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagNumberOfInks)
+                Move C_$PropertyTagNumberOfInks to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagDotRange)
+                Move C_$PropertyTagDotRange to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagTargetPrinter)
+                Move C_$PropertyTagTargetPrinter to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExtraSamples)
+                Move C_$PropertyTagExtraSamples to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagSampleFormat)
+                Move C_$PropertyTagSampleFormat to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagSMinSampleValue)
+                Move C_$PropertyTagSMinSampleValue to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagSMaxSampleValue)
+                Move C_$PropertyTagSMaxSampleValue to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagTransferRange)
+                Move C_$PropertyTagTransferRange to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGProc)
+                Move C_$PropertyTagJPEGProc to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGInterFormat)
+                Move C_$PropertyTagJPEGInterFormat to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGInterLength)
+                Move C_$PropertyTagJPEGInterLength to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGRestartInterval)
+                Move C_$PropertyTagJPEGRestartInterval to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGLosslessPredictors)
+                Move C_$PropertyTagJPEGLosslessPredictors to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGPointTransforms)
+                Move C_$PropertyTagJPEGPointTransforms to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGQTables)
+                Move C_$PropertyTagJPEGQTables to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGDCTables)
+                Move C_$PropertyTagJPEGDCTables to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGACTables)
+                Move C_$PropertyTagJPEGACTables to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagYCbCrCoefficients)
+                Move C_$PropertyTagYCbCrCoefficients to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagYCbCrSubsampling)
+                Move C_$PropertyTagYCbCrSubsampling to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagYCbCrPositioning)
+                Move C_$PropertyTagYCbCrPositioning to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagREFBlackWhite)
+                Move C_$PropertyTagREFBlackWhite to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagICCProfile)
+                Move C_$PropertyTagICCProfile to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGamma)
+                Move C_$PropertyTagGamma to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagICCProfileDescriptor)
+                Move C_$PropertyTagICCProfileDescriptor to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagSRGBRenderingIntent)
+                Move C_$PropertyTagSRGBRenderingIntent to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagImageTitle)
+                Move C_$PropertyTagImageTitle to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagCopyright)
+                Move C_$PropertyTagCopyright to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagResolutionXUnit)
+                Move C_$PropertyTagResolutionXUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagResolutionYUnit)
+                Move C_$PropertyTagResolutionYUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagResolutionXLengthUnit)
+                Move C_$PropertyTagResolutionXLengthUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagResolutionYLengthUnit)
+                Move C_$PropertyTagResolutionYLengthUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPrintFlags)
+                Move C_$PropertyTagPrintFlags to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPrintFlagsVersion)
+                Move C_$PropertyTagPrintFlagsVersion to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPrintFlagsCrop)
+                Move C_$PropertyTagPrintFlagsCrop to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPrintFlagsBleedWidth)
+                Move C_$PropertyTagPrintFlagsBleedWidth to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPrintFlagsBleedWidthScale)
+                Move C_$PropertyTagPrintFlagsBleedWidthScale to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHalftoneLPI)
+                Move C_$PropertyTagHalftoneLPI to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHalftoneLPIUnit)
+                Move C_$PropertyTagHalftoneLPIUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHalftoneDegree)
+                Move C_$PropertyTagHalftoneDegree to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHalftoneShape)
+                Move C_$PropertyTagHalftoneShape to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHalftoneMisc)
+                Move C_$PropertyTagHalftoneMisc to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagHalftoneScreen)
+                Move C_$PropertyTagHalftoneScreen to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagJPEGQuality)
+                Move C_$PropertyTagJPEGQuality to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGridSize)
+                Move C_$PropertyTagGridSize to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailFormat)
+                Move C_$PropertyTagThumbnailFormat to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailWidth)
+                Move C_$PropertyTagThumbnailWidth to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailHeight)
+                Move C_$PropertyTagThumbnailHeight to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailColorDepth)
+                Move C_$PropertyTagThumbnailColorDepth to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailPlanes)
+                Move C_$PropertyTagThumbnailPlanes to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailRawBytes)
+                Move C_$PropertyTagThumbnailRawBytes to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailSize)
+                Move C_$PropertyTagThumbnailSize to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailCompressedSize)
+                Move C_$PropertyTagThumbnailCompressedSize to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagColorTransferFunction)
+                Move C_$PropertyTagColorTransferFunction to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailData)
+                Move C_$PropertyTagThumbnailData to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailImageWidth)
+                Move C_$PropertyTagThumbnailImageWidth to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailImageHeight)
+                Move C_$PropertyTagThumbnailImageHeight to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailBitsPerSample)
+                Move C_$PropertyTagThumbnailBitsPerSample to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailCompression)
+                Move C_$PropertyTagThumbnailCompression to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailPhotometricInterp)
+                Move C_$PropertyTagThumbnailPhotometricInterp to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailImageDescription)
+                Move C_$PropertyTagThumbnailImageDescription to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailEquipMake)
+                Move C_$PropertyTagThumbnailEquipMake to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailEquipModel)
+                Move C_$PropertyTagThumbnailEquipModel to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailStripOffsets)
+                Move C_$PropertyTagThumbnailStripOffsets to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailOrientation)
+                Move C_$PropertyTagThumbnailOrientation to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailSamplesPerPixel)
+                Move C_$PropertyTagThumbnailSamplesPerPixel to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailRowsPerStrip)
+                Move C_$PropertyTagThumbnailRowsPerStrip to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailStripBytesCount)
+                Move C_$PropertyTagThumbnailStripBytesCount to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailResolutionX)
+                Move C_$PropertyTagThumbnailResolutionX to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailResolutionY)
+                Move C_$PropertyTagThumbnailResolutionY to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailPlanarConfig)
+                Move C_$PropertyTagThumbnailPlanarConfig to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailResolutionUnit)
+                Move C_$PropertyTagThumbnailResolutionUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailTransferFunction)
+                Move C_$PropertyTagThumbnailTransferFunction to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailSoftwareUsed)
+                Move C_$PropertyTagThumbnailSoftwareUsed to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailDateTime)
+                Move C_$PropertyTagThumbnailDateTime to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailArtist)
+                Move C_$PropertyTagThumbnailArtist to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailWhitePoint)
+                Move C_$PropertyTagThumbnailWhitePoint to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailPrimaryChromaticities)
+                Move C_$PropertyTagThumbnailPrimaryChromaticities to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailYCbCrCoefficients)
+                Move C_$PropertyTagThumbnailYCbCrCoefficients to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailYCbCrSubsampling)
+                Move C_$PropertyTagThumbnailYCbCrSubsampling to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailYCbCrPositioning)
+                Move C_$PropertyTagThumbnailYCbCrPositioning to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailRefBlackWhite)
+                Move C_$PropertyTagThumbnailRefBlackWhite to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagThumbnailCopyRight)
+                Move C_$PropertyTagThumbnailCopyRight to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagLuminanceTable)
+                Move C_$PropertyTagLuminanceTable to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagChrominanceTable)
+                Move C_$PropertyTagChrominanceTable to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagFrameDelay)
+                Move C_$PropertyTagFrameDelay to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagLoopCount)
+                Move C_$PropertyTagLoopCount to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPixelUnit)
+                Move C_$PropertyTagPixelUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPixelPerUnitX)
+                Move C_$PropertyTagPixelPerUnitX to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPixelPerUnitY)
+                Move C_$PropertyTagPixelPerUnitY to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagPaletteHistogram)
+                Move C_$PropertyTagPaletteHistogram to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifExposureTime)
+                Move C_$PropertyTagExifExposureTime to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFNumber)
+                Move C_$PropertyTagExifFNumber to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifExposureProg)
+                Move C_$PropertyTagExifExposureProg to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifSpectralSense)
+                Move C_$PropertyTagExifSpectralSense to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifISOSpeed)
+                Move C_$PropertyTagExifISOSpeed to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifOECF)
+                Move C_$PropertyTagExifOECF to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifVer)
+                Move C_$PropertyTagExifVer to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifDTOrig)
+                Move C_$PropertyTagExifDTOrig to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifDTDigitized)
+                Move C_$PropertyTagExifDTDigitized to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifCompConfig)
+                Move C_$PropertyTagExifCompConfig to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifCompBPP)
+                Move C_$PropertyTagExifCompBPP to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifShutterSpeed)
+                Move C_$PropertyTagExifShutterSpeed to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifAperture)
+                Move C_$PropertyTagExifAperture to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifBrightness)
+                Move C_$PropertyTagExifBrightness to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifExposureBias)
+                Move C_$PropertyTagExifExposureBias to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifMaxAperture)
+                Move C_$PropertyTagExifMaxAperture to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifSubjectDist)
+                Move C_$PropertyTagExifSubjectDist to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifMeteringMode)
+                Move C_$PropertyTagExifMeteringMode to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifLightSource)
+                Move C_$PropertyTagExifLightSource to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFlash)
+                Move C_$PropertyTagExifFlash to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFocalLength)
+                Move C_$PropertyTagExifFocalLength to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifMakerNote)
+                Move C_$PropertyTagExifMakerNote to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifUserComment)
+                Move C_$PropertyTagExifUserComment to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifDTSubsec)
+                Move C_$PropertyTagExifDTSubsec to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifDTOrigSS)
+                Move C_$PropertyTagExifDTOrigSS to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifDTDigSS)
+                Move C_$PropertyTagExifDTDigSS to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFPXVer)
+                Move C_$PropertyTagExifFPXVer to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifColorSpace)
+                Move C_$PropertyTagExifColorSpace to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifPixXDim)
+                Move C_$PropertyTagExifPixXDim to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifPixYDim)
+                Move C_$PropertyTagExifPixYDim to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifRelatedWav)
+                Move C_$PropertyTagExifRelatedWav to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifInterop)
+                Move C_$PropertyTagExifInterop to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFlashEnergy)
+                Move C_$PropertyTagExifFlashEnergy to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifSpatialFR)
+                Move C_$PropertyTagExifSpatialFR to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFocalXRes)
+                Move C_$PropertyTagExifFocalXRes to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFocalYRes)
+                Move C_$PropertyTagExifFocalYRes to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFocalResUnit)
+                Move C_$PropertyTagExifFocalResUnit to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifSubjectLoc)
+                Move C_$PropertyTagExifSubjectLoc to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifExposureIndex)
+                Move C_$PropertyTagExifExposureIndex to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifSensingMethod)
+                Move C_$PropertyTagExifSensingMethod to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifFileSource)
+                Move C_$PropertyTagExifFileSource to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifSceneType)
+                Move C_$PropertyTagExifSceneType to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagExifCfaPattern)
+                Move C_$PropertyTagExifCfaPattern to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsVer)
+                Move C_$PropertyTagGpsVer to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsLatitudeRef)
+                Move C_$PropertyTagGpsLatitudeRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsLatitude)
+                Move C_$PropertyTagGpsLatitude to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsLongitudeRef)
+                Move C_$PropertyTagGpsLongitudeRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsLongitude)
+                Move C_$PropertyTagGpsLongitude to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsAltitudeRef)
+                Move C_$PropertyTagGpsAltitudeRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsAltitude)
+                Move C_$PropertyTagGpsAltitude to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsGpsTime)
+                Move C_$PropertyTagGpsGpsTime to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsGpsSatellites)
+                Move C_$PropertyTagGpsGpsSatellites to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsGpsStatus)
+                Move C_$PropertyTagGpsGpsStatus to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsGpsMeasureMode)
+                Move C_$PropertyTagGpsGpsMeasureMode to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsGpsDop)
+                Move C_$PropertyTagGpsGpsDop to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsSpeedRef)
+                Move C_$PropertyTagGpsSpeedRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsSpeed)
+                Move C_$PropertyTagGpsSpeed to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsTrackRef)
+                Move C_$PropertyTagGpsTrackRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsTrack)
+                Move C_$PropertyTagGpsTrack to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsImgDirRef)
+                Move C_$PropertyTagGpsImgDirRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsImgDir)
+                Move C_$PropertyTagGpsImgDir to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsMapDatum)
+                Move C_$PropertyTagGpsMapDatum to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestLatRef)
+                Move C_$PropertyTagGpsDestLatRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestLat)
+                Move C_$PropertyTagGpsDestLat to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestLongRef)
+                Move C_$PropertyTagGpsDestLongRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestLong)
+                Move C_$PropertyTagGpsDestLong to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestBearRef)
+                Move C_$PropertyTagGpsDestBearRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestBear)
+                Move C_$PropertyTagGpsDestBear to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestDistRef)
+                Move C_$PropertyTagGpsDestDistRef to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDestDist)
+                Move C_$PropertyTagGpsDestDist to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsProcessingMethod)
+                Move C_$PropertyTagGpsDestProcessingMethod to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsAreaInformation)
+                Move C_$PropertyTagGpsAreaInformation to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDate)
+                Move C_$PropertyTagGpsDate to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGpsDifferential)
+                Move C_$PropertyTagGpsDifferential to sName
+                Case Break
+            Case (ePropertyID = gpPropertyTagGlobalPalette)
+                Move C_$PropertyTagGlobalPalette to sName
+                Case Break
+            Case Else
+                Move ("Unknown Property Tag Value, ID=" * String (ePropertyID)) to sName
+                Case Break
+        Case End
+
+        Function_Return sName
+    End_Function
+
+    { Visibility = Private }
+    { Description = "Returns the color palette on the image." }
+    { Description += "Sends HandleGDIError when no image has been loaded." }
+    { Description += "Send HandleGDIResult when the GDI+ function fails" }
+    { MethodType = Property }
+    Function ImagePalette Returns tColorPalette
+        UInteger uiSize uiOffset
+        gpStatus eStatus
+        Pointer pColorPalette pImage
+        tColorPalette ColorPalette
+
+        Get ppImage to pImage
+        If (pImage = 0) Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            Function_Return ColorPalette
+        End
+
+        Move 0 to uiSize
+        Move (GdipGetImagePaletteSize (pImage, AddressOf (uiSize))) to eStatus
+        If (eStatus = gpOk) Begin
+            Move (Alloc (uiSize)) to pColorPalette
+            Move (GdipGetImagePalette (pImage, pColorPalette, uiSize)) to eStatus
+            If (eStatus = gpOk) Begin
+                // copy base struct fields
+                Move (2 * SizeOfType (UInteger)) to uiSize
+                Move (MemCopy (AddressOf (ColorPalette), pColorPalette, uiSize)) to eStatus
+                // copy palette entries
+                Move uiSize to uiOffset
+                Move (ColorPalette.Count * SizeOfType (UInteger)) to uiSize
+                Move (ResizeArray (ColorPalette.Entries, ColorPalette.Count)) to ColorPalette.Entries
+                Move (MemCopy (AddressOf (ColorPalette.Entries), pColorPalette + uiOffset, uiSize)) to eStatus
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get Image Palette"
+            End
+
+            Move (Free (pColorPalette)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get Image Palette Size"
+        End
+
+        Function_Return ColorPalette
+    End_Function
+
+    { Description = "Returns the pixelformat" }
+    { Description += "Sends HandleGDIError when no image has been loaded." }
+    { Description += "Send HandleGDIResult when the GDI+ function fails" }
+    { MethodType = Property }
+    Function ImagePixelFormat Returns gpPixelFormat
+        gpStatus eStatus
+        gpPixelFormat iFormat
+        Pointer pImage
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move 0 to iFormat
+            Move (GdipGetImagePixelFormat (pImage, AddressOf (iFormat))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get Image Pixel Format"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return iFormat
+    End_Function
+
+    { Description = "Rotates the image using the passed rotation type. Returns non-zero value if unsuccesful" }
+    { Description += "Sends HandleGDIError when no image has been loaded." }
+    { Description += "Send HandleGDIResult when the GDI+ function fails" }
+    { MethodType = Method }
+    Function RotateImage gpRotateFlipType eType Returns gpStatus
+        Pointer pImage
+        gpStatus eStatus
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move (GdipImageRotateFlip (pImage, eType)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Image Rotate Flip"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Selects the next frame if there is one. When the last frame is selected and the maximum" }
+    { Description += "Number of repeats is reached no action is performed." }
+    { Description += "Returns True when there are more frames, and False if not." }
+    { Description += "Sends HandleGDIError when no image has been loaded." }
+    { Description += "Send HandleGDIResult when the GDI+ function fails" }
+    { MethodType = Method }
+    Function SelectNextFrame Returns Boolean
+        Boolean bHasNext bRepeat
+        WString wGuid
+        tUUID Guid
+        Integer iCurrentFrame iFrameCount
+        gpStatus eStatus
+        Pointer pImage
+        Integer[] iImageRepeats
+
+        Move guidFrameDimensionTime to wGuid
+        Move (WinAPI_UuidFromString (AddressOf (wGuid), AddressOf (Guid))) to eStatus
+
+        Get piCurrentFrame to iCurrentFrame
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Move (GdipImageSelectActiveFrame (pImage, AddressOf (Guid), iCurrentFrame)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Image Select Active Frame"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Get piFrameCount to iFrameCount
+        If ((iCurrentFrame + 1) < iFrameCount) Begin
+            Increment iCurrentFrame
+            Move True to bHasNext
+        End
+        Else Begin
+            Get piImageRepeats to iImageRepeats
+            If (iImageRepeats[0] = 0) Begin
+                Move True to bRepeat
+            End
+            Else Begin
+                Increment iImageRepeats[1]
+                Move (iImageRepeats[1] < iImageRepeats[0]) to bRepeat
+            End
+
+            If (bRepeat) Begin
+                Set piImageRepeats to iImageRepeats
+                Move 0 to iCurrentFrame
+                Move True to bHasNext
+            End
+        End
+
+        Set piCurrentFrame to iCurrentFrame
+
+        Function_Return bHasNext
+    End_Function
+
+    { Description = "Converts a bitmap to a specified pixel format." }
+    { Description += "The original pixel data in the bitmap is replaced by the new pixel data" }
+    { Description += "Sends HandleGDIError when no image has been loaded." }
+    { Description += "Send HandleGDIResult when the GDI+ function fails" }
+    { MethodType = Method }
+    Function ConvertBitmapFormat gpPixelFormat ePixelformat gpDitherType eDithertype gpPaletteType ePalettetype Handle hoPalette Float fAlphaThresholdPercent Returns gpStatus
+        Pointer pImage pPalette
+        gpStatus eStatus
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            // ToDo: Add class support for hoPalette and get ppPalette of this object
+            Move (GdipBitmapConvertFormat (pImage, ePixelformat, eDithertype, ePalettetype, pPalette, fAlphaThresholdPercent)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Bitmap Convert Format"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Copies the content of the image into the Windows Clipboard" }
+    { Description += "Sends HandleGDIError when no image has been loaded." }
+    { Description += "Send HandleGDIResult when the GDI+ function fails" }
+    { MethodType = Method }
+    Procedure Copy
+        tDIBSection ds
+        gpStatus eStatus
+        Handle hBitmap hoClipboard hDC hDDB
+        Pointer pImage
+        UInteger uiBackGroundColor
+        Void_Type iVoid
+        tARGColor PixelColorInfo
+
+        // Get a handle for a 32bpp DIB from gdiplus
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Get PixelColor 0 0 to PixelColorInfo
+            Move 0 to hBitmap
+            Get ARGB of ghoGDIPlusHandler PixelColorInfo.Alpha PixelColorInfo.Red PixelColorInfo.Green PixelColorInfo.Blue to uiBackGroundColor
+            Move (GdipCreateHBITMAPFromBitmap (pImage, AddressOf (hBitmap), uiBackGroundColor)) to eStatus
+            If (eStatus = gpOk) Begin
+                Move (GdiGetObject (hBitmap, SizeOfType (tDIBSection), AddressOf (ds))) to iVoid
+                Move BI_RGB to ds.dsBmih.biCompression
+
+                // Convert the DIB to a device dependent bitmap(i.e., DDB)
+                Move (GetDC (0)) to hDC
+                Move (CreateDIBitmap (hDC, AddressOf (ds.dsBmih), CBM_INIT, ds.dsBm.bmBits, AddressOf (ds.dsBmih), DIB_RGB_COLORS)) to hDDB
+                Move (ReleaseDC (0, hDC)) to iVoid
+
+                // put it on the clipboard
+                Get Create (RefClass (cClipboard)) to hoClipboard
+                Move False to Err
+                Send DoOpen of hoClipboard
+                Send DoEmpty of hoClipboard
+                Set ppData of hoClipboard CF_BITMAP to hDDB
+                // Do not delete the hDDB handle, the clipboard owns it
+                Send Doclose of hoClipboard
+                Send Destroy of hoClipboard
+
+                Move (DeleteObject (hBitmap)) to iVoid
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Create HBitmap from Bitmap"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Checks if the image can be copied to the clipboard." }
+    { Description += "Returns true when the function can copy the image." }
+    { MethodType = Method }
+    Function CanCopy Returns Boolean
+        Handle hBitmap
+        Pointer pImage
+        gpStatus eStatus
+        Void_Type iVoid
+        UInteger uiColor
+
+        Move -1 to eStatus
+        Get ppImage to pImage
+        If (pImage <> 0) Begin
+            Get ARGB of ghoGDIPlusHandler 255 0 0 0 to uiColor
+            Move 0 to hBitmap
+            Move (GdipCreateHBITMAPFromBitmap (pImage, AddressOf (hBitmap), uiColor)) to eStatus
+            If (eStatus = gpOk) Begin
+                Move (DeleteObject (hBitmap)) to iVoid
+            End
+        End
+
+        Function_Return (eStatus = gpOk)
+    End_Function
+
+    { Description = "If the image properties contain GPS Latitude / Longitude information this function returns the values as decimal value." }
+    { Description += "If either Latitude or Longitude could not be retrieved the status member for the value will be false." }
+    { MethodType = Method }
+    { Visibility = Private }
+    Function GPSLatitudeLongitude Integer eValueProperty Integer eValueReferenceProperty Returns Number
+        tPropertyItem ImagePropertyItem
+        Boolean bOk
+        String sReference
+        Integer iElements
+        tuRational[] uratValues
+        tuRational uratEmptyValue
+        tRational[] ratValues
+        tRational ratEmptyValue
+        Number nValue
+
+        Get PropertyItem eValueProperty (&ImagePropertyItem) to bOk
+        If (bOk) Begin
+            If (ImagePropertyItem.type = gpPropertyTagTypeRational) Begin
+                Move (ImagePropertyItem.length / SizeOfType (tuRational)) to iElements
+                If (iElements = 3) Begin
+                    Move (ResizeArray (uratValues, iElements)) to uratValues
+                    Move (FillArray (uratEmptyValue, uratValues, 0, iElements)) to uratValues
+                    Move (MemCopy (AddressOf (uratValues), ImagePropertyItem.value, ImagePropertyItem.length)) to bOk
+                    Move uratValues[0].uiValue1 to nValue
+                    Move (nValue + ((uratValues[1].uiValue1 / uratValues[1].uiValue2) / 60.0)) to nValue
+                    Move (nValue + ((uratValues[2].uiValue1 / uratValues[2].uiValue2) / 3600.0)) to nValue
+                End                
+            End
+            Else Begin
+                If (ImagePropertyItem.type = gpPropertyTagTypeSRational) Begin
+                    Move (ImagePropertyItem.length / SizeOfType (tRational)) to iElements
+                    If (iElements = 3) Begin
+                        Move (ResizeArray (ratValues, iElements)) to ratValues
+                        Move (FillArray (ratEmptyValue, ratValues, 0, iElements)) to ratValues
+                        Move (MemCopy (AddressOf (ratValues), ImagePropertyItem.value, ImagePropertyItem.length)) to bOk
+                        Move ratValues[0].iValue1 to nValue
+                        Move (nValue + ((ratValues[1].iValue1 / ratValues[1].iValue2) / 60.0)) to nValue
+                        Move (nValue + ((ratValues[2].iValue1 / ratValues[2].iValue2) / 3600.0)) to nValue
+                    End                                    
+                End
+            End
+        End
+
+        Get PropertyItem eValueReferenceProperty (&ImagePropertyItem) to bOk
+        If (bOk) Begin
+            Move (Repeat (Character (0), ImagePropertyItem.length + 1)) to sReference
+            Move (MemCopy (AddressOf (sReference), ImagePropertyItem.value, ImagePropertyItem.length)) to bOk
+            If (bOk) Begin
+                Move (CString (sReference)) to sReference
+                If (sReference = 'S' or sReference = 'W') Begin
+                    Move (-nValue) to nValue
+                End
+            End
+        End
+
+        Function_Return nValue
+    End_Function
+End_Class

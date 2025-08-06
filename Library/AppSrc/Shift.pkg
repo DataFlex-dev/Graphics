@@ -1,0 +1,28 @@
+Use VdfBase.pkg
+
+{ Description = "Binary left shifts (<<) the integer iVal by iPositions." }
+Function LShift Global Integer iVal Integer iPositions Returns Integer
+    Integer iPos
+    BigInt bVal
+
+    For iPos from 1 to iPositions
+        Move (iVal * 2) to bVal
+        If (bVal >= 2147483648) Begin
+            Move (bVal - 2147483648) to iVal
+        End
+        Else Begin
+            Move bVal to iVal
+        End
+    Loop
+
+    Function_Return iVal
+End_Function
+
+{ Description = "Binary right shifts (>>) the integer iVal by iPositions." }
+Function RShift Global Integer iVal Integer iPositions Returns Integer
+    Integer iRetval
+
+    Move (iVal / (2 ^ iPositions)) to iRetval
+
+    Function_Return iRetval
+End_Function

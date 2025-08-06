@@ -1,0 +1,234 @@
+﻿Use cGDIPlus.pkg
+Use cGDIFont.h.pkg
+Use tWinStructs.pkg
+Use cGDIFontFamily.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIFont }
+{ Description = "The Font class encapsulates the characteristics, such as family, height, size, and style (or combination of styles), of a specific font." }
+{ Description += "a Font Object is used when drawing strings." }
+Class cGDIFont is a cObject
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Creates a property to hold a reference to the GDI+ Font object" }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { DesignTime = False }
+        { Description = "Can hold a pointer of the GDI+ Font object" }
+        Property Pointer ppFont
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Send a message to delete the GDI+ Font object when the DataFlex object gets destroyed" }
+    Procedure Destroy_Object
+        Send DeleteFont
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Creates a new Font object that is a copy of this Font object."}
+    { Description += "Return value is a new cGDIFont Object or zero when the operation fails." }
+    { MethodType = Method }
+    Function CloneFont Returns Handle
+        gpStatus eStatus
+        Pointer pSourceFont pClonedFont
+        Handle hoFont
+
+        Get ppFont to pSourceFont
+        If (pSourceFont <> 0) Begin
+            Move 0 to pClonedFont
+            Move (GdipCloneFont (pSourceFont, AddressOf (pClonedFont))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIFont)) "ClonedFont" to hoFont
+                Set ppFont of hoFont to pClonedFont
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontObjectNotAvailable
+        End
+
+        Function_Return hoFont
+    End_Function
+
+    { Description = "Releases resources used by the Font object." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    { MethodType = Method }
+    Procedure DeleteFont
+        gpStatus eStatus
+        Pointer pFont
+
+        Get ppFont to pFont
+        If (pFont <> 0) Begin
+            Move (GdipDeleteFont (pFont)) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppFont to 0
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Deleting Font"
+            End
+        End
+    End_Procedure
+
+    { Description = "Creates a Font object indirectly from a Windows Graphics Device Interface (GDI) logical font by using a handle to a GDI LOGFONT structure." }
+    { Description += "The font object pointer is stored in the DataFlex property pFont" }
+    { MethodType = Method }
+    Function CreateFontFromDC Handle hDC Returns gpStatus
+        gpStatus eStatus
+        Pointer pFont
+
+        // Deletes an old font definition if it exists
+        Send DeleteFont
+
+        Move 0 to pFont
+        Move (GdipCreateFontFromDC (hDC, AddressOf (pFont))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppFont to pFont
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a Font object directly from a Windows Graphics Device Interface (GDI) logical font." }
+    { Description += "The GDI logical font is a LOGFONTW structure, which is the wide character version of a logical font." }
+    { Description += "This constructor is provided for compatibility with GDI." }
+    { MethodType = Method }
+    Function CreateFontFromLOGFONT Handle hDC tWinLogFontW LogFont Returns gpStatus
+        gpStatus eStatus
+        Pointer pFont
+
+        // Deletes an old font definition if it exists
+        Send DeleteFont
+
+        Move 0 to pFont
+        Move (GdipCreateFontFromLogfontW (hDC, AddressOf (LogFont), AddressOf (pFont))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppFont to pFont
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a Font object based on a FontFamily object, a size, a font style, and a unit of measurement." }
+    { Description += "Calls HandleGDIError when the FontFamily object is not available." }
+    { MethodType = Method }
+    Function CreateFont Handle hoFamily Float fSize gpFontStyle eStyle gpUnit iUnit Returns gpStatus
+        gpStatus eStatus
+        Pointer pFont pFontFamily
+
+        Get ppFontFamily of hoFamily to pFontFamily
+        If (pFontFamily <> 0) Begin
+            Move 0 to pFont
+            Move (GdipCreateFont (pFontFamily, fSize, eStyle, iUnit, AddressOf (pFont))) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppFont to pFont
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontFamilyObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Gets the font family on which this font is based." }
+    { Description += "Returns a new cGDIFontFamily object or zero when the function failed" }
+    { Description += "Calls HandleGDIError when the Font object is not available." }
+    { MethodType = Method }
+    Function FontFamily Returns Handle
+        gpStatus eStatus
+        Pointer pFont pFontFamily
+        Handle hoFontFamily
+
+        Get ppFont to pFont
+        If (pFont <> 0) Begin
+            Move 0 to pFontFamily
+            Move (GdipGetFamily (pFont, AddressOf (pFontFamily))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIFontFamily)) "ClonedFontFamily" to hoFontFamily
+                Set ppFontFamily of hoFontFamily to pFontFamily
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontObjectNotAvailable
+        End
+
+        Function_Return hoFontFamily
+    End_Function
+
+    { Description = "Returns the font size (commonly called the em size) of this Font object." }
+    { Description += "The size is in the units of this Font Object." }
+    { Description += "Calls HandleGDIError when the Font object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ GetFontSize function fails" }
+    { MethodType = Method }
+CompilerLevelWarning AmbiguousFunctions Off // Suppress the ambigious function declaration of FontSize
+    Function FontSize Returns Float
+CompilerLevelWarning AmbiguousFunctions On
+        gpStatus eStatus
+        Pointer pFont
+        Float fSize
+
+        Get ppFont to pFont
+        If (pFont <> 0) Begin
+            Move 0 to fSize
+            Move (GdipGetFontSize (pFont, AddressOf (fSize))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting FontSize"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontObjectNotAvailable
+        End
+
+        Function_Return fSize
+    End_Function
+
+    { Description = "Returns the the style of this font's typeface." }
+    { Description += "Calls HandleGDIError when the Font object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ GetFontStyle function fails" }
+    { MethodType = Method }
+    Function FontStyle Returns gpFontStyle
+        gpStatus eStatus
+        Pointer pFont
+        gpFontStyle eStyle
+
+        Get ppFont to pFont
+        If (pFont <> 0) Begin
+            Move 0 to eStyle
+            Move (GdipGetFontStyle (pFont, AddressOf (eStyle))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting FontStyle"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontObjectNotAvailable
+        End
+
+        Function_Return eStyle
+    End_Function
+
+    { Description = "Returns the the style of this font's typeface." }
+    { Description += "Calls HandleGDIError when the Font object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ GetFontUnit function fails" }
+    { MethodType = Method }
+    Function FontUnit Returns gpUnit
+        gpStatus eStatus
+        Pointer pFont
+        gpUnit eUnit
+
+        Get ppFont to pFont
+        If (pFont <> 0) Begin
+            Move 0 to eUnit
+            Move (GdipGetFontUnit (pFont, AddressOf (eUnit))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting FontUnit"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontObjectNotAvailable
+        End
+
+        Function_Return eUnit
+    End_Function
+End_Class

@@ -1,0 +1,197 @@
+﻿Use cGDIPlus.h.pkg
+
+//---------------------------------------------------------------------------
+// String Format Flags
+//---------------------------------------------------------------------------
+Define gpStringFormatFlags for Integer
+    Define StringFormatFlagsDirectionRightToLeft            for |CI$00000001
+    Define StringFormatFlagsDirectionVertical               for |CI$00000002
+    Define StringFormatFlagsNoFitBlackBox                   for |CI$00000004
+    Define StringFormatFlagsDisplayFormatControl            for |CI$00000020
+    Define StringFormatFlagsNoFontFallback                  for |CI$00000400
+    Define StringFormatFlagsMeasureTrailingSpaces           for |CI$00000800
+    Define StringFormatFlagsNoWrap                          for |CI$00001000
+    Define StringFormatFlagsLineLimit                       for |CI$00002000
+    Define StringFormatFlagsNoClip                          for |CI$00004000
+    Define StringFormatFlagsBypassGDI                       for |CI$80000000
+
+//---------------------------------------------------------------------------
+// String alignment flags
+//---------------------------------------------------------------------------
+Define gpStringAlignment for Integer
+Enum_List
+    Define StringAlignmentNear
+    Define StringAlignmentCenter
+    Define StringAlignmentFar
+End_Enum_List
+
+//---------------------------------------------------------------------------
+// StringTrimming
+//---------------------------------------------------------------------------
+Define gpStringTrimming for Integer
+Enum_List
+    Define StringTrimmingNone
+    Define StringTrimmingCharacter
+    Define StringTrimmingWord
+    Define StringTrimmingEllipsisCharacter
+    Define StringTrimmingEllipsisWord
+    Define StringTrimmingEllipsisPath
+End_Enum_List
+
+//---------------------------------------------------------------------------
+// National language digit substitution
+//---------------------------------------------------------------------------
+Define gpStringDigitSubstitute for Integer
+Enum_List
+    Define StringDigitSubstituteUser        // As NLS setting
+    Define StringDigitSubstituteNone
+    Define StringDigitSubstituteNational
+    Define StringDigitSubstituteTraditional
+End_Enum_List
+
+//---------------------------------------------------------------------------
+// Hotkey prefix interpretation
+//---------------------------------------------------------------------------
+Define gpHotkeyPrefix for Integer
+Enum_List
+    Define HotkeyPrefixNone
+    Define HotkeyPrefixShow
+    Define HotkeyPrefixHide
+End_Enum_List
+
+// GpStatus WINGDIPAPI GdipCreateStringFormat(INT formatAttributes, LANGID language, GpStringFormat **format);
+External_Function GdipCreateStringFormat "GdipCreateStringFormat" gdiplus.dll ;
+    Integer formatAttributes ;
+    Short language ;
+    Pointer format ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipStringFormatGetGenericDefault(GpStringFormat **format);
+External_Function GdipStringFormatGetGenericDefault "GdipStringFormatGetGenericDefault" gdiplus.dll ;
+    Pointer format ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipStringFormatGetGenericTypographic(GpStringFormat **format);
+External_Function GdipStringFormatGetGenericTypographic "GdipStringFormatGetGenericTypographic" gdiplus.dll ;
+    Pointer format ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeleteStringFormat(GpStringFormat *format);
+External_Function GdipDeleteStringFormat "GdipDeleteStringFormat" gdiplus.dll ;
+    Pointer format ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCloneStringFormat(GDIPCONST GpStringFormat *format, GpStringFormat **newFormat);
+External_Function GdipCloneStringFormat "GdipCloneStringFormat" gdiplus.dll ;
+    Pointer format ;
+    Pointer newFormat ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatFlags(GpStringFormat *format, INT flags);
+External_Function GdipSetStringFormatFlags "GdipSetStringFormatFlags" gdiplus.dll ;
+    Pointer format ;
+    Integer flags ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatFlags(GDIPCONST GpStringFormat *format, INT *flags);
+External_Function GdipGetStringFormatFlags "GdipGetStringFormatFlags" gdiplus.dll ;
+    Pointer format ;
+    Pointer flags ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatAlign(GpStringFormat *format, StringAlignment align);
+External_Function GdipSetStringFormatAlign "GdipSetStringFormatAlign" gdiplus.dll ;
+    Pointer format ;
+    gpStringAlignment align ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatAlign(GDIPCONST GpStringFormat *format, StringAlignment *align);
+External_Function GdipGetStringFormatAlign "GdipGetStringFormatAlign" gdiplus.dll ;
+    Pointer format ;
+    Pointer align ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatLineAlign(GpStringFormat *format, StringAlignment align);
+External_Function GdipSetStringFormatLineAlign "GdipSetStringFormatLineAlign" gdiplus.dll ;
+    Pointer format ;
+    gpStringAlignment align ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatLineAlign(GDIPCONST GpStringFormat *format, StringAlignment *align);
+External_Function GdipGetStringFormatLineAlign "GdipGetStringFormatLineAlign" gdiplus.dll ;
+    Pointer format ;
+    Pointer align ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatTrimming(GpStringFormat *format, StringTrimming trimming);
+External_Function GdipSetStringFormatTrimming "GdipSetStringFormatTrimming" gdiplus.dll ;
+    Pointer format ;
+    gpStringTrimming trimming ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatTrimming(GDIPCONST GpStringFormat *format, StringTrimming *trimming);
+External_Function GdipGetStringFormatTrimming "GdipGetStringFormatTrimming" gdiplus.dll ;
+    Pointer format ;
+    Pointer trimming ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatHotkeyPrefix(GpStringFormat *format, INT hotkeyPrefix);
+External_Function GdipSetStringFormatHotkeyPrefix "GdipSetStringFormatHotkeyPrefix" gdiplus.dll ;
+    Pointer format ;
+    Integer hotkeyPrefix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatHotkeyPrefix(GDIPCONST GpStringFormat *format, INT *hotkeyPrefix);
+External_Function GdipGetStringFormatHotkeyPrefix "GdipGetStringFormatHotkeyPrefix" gdiplus.dll ;
+    Pointer format ;
+    Pointer hotkeyPrefix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatTabStops(GpStringFormat *format, Real firstTabOffset, INT count, GDIPCONST Real *tabStops);
+External_Function GdipSetStringFormatTabStops "GdipSetStringFormatTabStops" gdiplus.dll ;
+    Pointer format ;
+    Float firstTabOffset ;
+    Integer count ;
+    Pointer tabStops ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatTabStops(GDIPCONST GpStringFormat *format, INT count, Real *firstTabOffset, Real *tabStops);
+External_Function GdipGetStringFormatTabStops "GdipGetStringFormatTabStops" gdiplus.dll ;
+    Pointer format ;
+    Integer count ;
+    Pointer firstTabOffset ;
+    Pointer tabStops ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatTabStopCount(GDIPCONST GpStringFormat *format, INT * count);
+External_Function GdipGetStringFormatTabStopCount "GdipGetStringFormatTabStopCount" gdiplus.dll ;
+    Pointer format ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatDigitSubstitution(GpStringFormat *format, LANGID language, StringDigitSubstitute substitute);
+External_Function GdipSetStringFormatDigitSubstitution "GdipSetStringFormatDigitSubstitution" gdiplus.dll ;
+    Pointer format ;
+    Short language ;
+    gpStringDigitSubstitute substitute ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatDigitSubstitution(GDIPCONST GpStringFormat *format, LANGID *language, StringDigitSubstitute *substitute);
+External_Function GdipGetStringFormatDigitSubstitution "GdipGetStringFormatDigitSubstitution" gdiplus.dll ;
+    Pointer format ;
+    Pointer language ;
+    Pointer substitute ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetStringFormatMeasurableCharacterRangeCount(GDIPCONST GpStringFormat *format, INT *count);
+External_Function GdipGetStringFormatMeasurableCharacterRangeCount "GdipGetStringFormatMeasurableCharacterRangeCount" gdiplus.dll ;
+    Pointer format ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetStringFormatMeasurableCharacterRanges(GpStringFormat *format, INT rangeCount, GDIPCONST CharacterRange *ranges);
+External_Function GdipSetStringFormatMeasurableCharacterRanges "GdipSetStringFormatMeasurableCharacterRanges" gdiplus.dll ;
+    Pointer format ;
+    Integer rangeCount ;
+    Pointer ranges ;
+    Returns gpStatus

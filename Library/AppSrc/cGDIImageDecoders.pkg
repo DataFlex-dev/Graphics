@@ -1,0 +1,60 @@
+﻿Use VdfBase.pkg
+Use cGDIPlus.pkg
+Use cGDIImageDecoders.h.pkg
+
+Use Structs\tImageCodecInfo.pkg
+Use Structs\tImageCodec.pkg
+
+{ ClassLibrary = Common }
+{ HelpTopic = cGDIImageDecoders }
+{ Description = "This class can be used to return the Codec CLSID (GUID) belonging to a certain mimetype, a mimetype" }
+{ Description += "belonging to a file extension or a file extension belonging to a mimetype" }
+Class cGDIImageDecoders is a cObject
+    { Description = "Enumerates through the available decoders installed on the PC and" }
+    { Description += "returns an array of decoder name info." }
+    Function ImageDecoders Returns tImageCodec[]
+        tImageCodec[] ImageDecoders
+        tImageCodecInfo[] ImageCodecInfos
+        UInteger uiDecoders uiSize uiDecoder
+        Pointer pImageCodecInfo
+        gpStatus eStatus
+        Boolean bOk bRetval
+
+        Move 0 to uiSize
+        Move 0 to uiDecoders
+
+        // In some situations this functions returns all zeroes, but a second call is correct :-S
+        // How many decoders are there? How big (in bytes) is the array of all ImageCodecInfo objects?
+        Move (GdipGetImageDecodersSize (AddressOf (uiDecoders), AddressOf (uiSize))) to eStatus
+        If (eStatus = gpOk and uiSize = 0) Begin
+            Move (GdipGetImageDecodersSize (AddressOf (uiDecoders), AddressOf (uiSize))) to eStatus
+        End
+
+        If (eStatus = gpOk and uiSize > 0 and uiDecoders > 0) Begin
+            // Create a buffer large enough to hold the array of ImageCodecInfo
+            // objects that will be returned by GetImageDecoders.
+            Move (Alloc (uiSize)) to pImageCodecInfo
+            // GetImageDecoders creates an array of ImageCodecInfo objects
+            // and copies that array into a previously allocated buffer.
+            Move (GdipGetImageDecoders (uiDecoders, uiSize, pImageCodecInfo)) to eStatus
+            If (eStatus = gpOK) Begin
+                Move (ResizeArray (ImageCodecInfos, uiDecoders)) to ImageCodecInfos
+                Move (MemCopy (AddressOf (ImageCodecInfos), pImageCodecInfo, uiDecoders * SizeOfType (tImageCodecInfo))) to bOk
+                If (not (bOk)) Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MemcopyDecoderCodecFailed
+                End
+                Decrement uiDecoders
+                For uiDecoder from 0 to uiDecoders
+                    Move (PointerToWString (ImageCodecInfos[uiDecoder].pszwCodecName)) to ImageDecoders[uiDecoder].sCodecName
+                    Move (PointerToWString (ImageCodecInfos[uiDecoder].pszwDllName)) to ImageDecoders[uiDecoder].sDllName
+                    Move (PointerToWString (ImageCodecInfos[uiDecoder].pszwFormatDescription)) to ImageDecoders[uiDecoder].sFormatDescription
+                    Move (PointerToWString (ImageCodecInfos[uiDecoder].pszwFileNameExtension)) to ImageDecoders[uiDecoder].sFileNameExtension
+                    Move (PointerToWString (ImageCodecInfos[uiDecoder].pszwMimeType)) to ImageDecoders[uiDecoder].sMimeType
+                Loop
+            End
+            Move (Free (pImageCodecInfo)) to bRetval
+        End
+
+        Function_Return ImageDecoders
+    End_Function
+End_Class

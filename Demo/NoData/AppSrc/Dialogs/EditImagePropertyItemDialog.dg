@@ -1,0 +1,460 @@
+﻿Use Windows.pkg
+Use cTextEdit.pkg
+Use cCJGrid.pkg
+Use cCJGridColumn.pkg
+
+Object oEditImagePropertyItemDialog is a ModalPanel
+    Set Size to 188 258
+    Set Label to "Edit Image Property Item Information"
+    Set piMinSize to 68 200
+    Set Locate_Mode to CENTER_ON_PARENT
+    Set Border_Style to Border_Thick
+
+    { DesignTime = False }
+    Property Handle phoElement
+
+    Procedure Page_Object Boolean bPage
+        Forward Send Page_Object bPage
+
+        If (bPage) Begin
+            Set Icon to "Default.Ico"
+        End
+    End_Procedure
+
+    Object oHelpTextEdit is a cTextEdit
+        Set Size to 58 150
+        Set Location to 5 50
+        Set Label to "Help Text:"
+        Set Label_col_offset to 2
+        Set Label_Justification_Mode to JMode_Right
+        Set peAnchors to anLeftRight
+    End_Object
+
+    Object oCaptionForm is a Form
+        Set Size to 13 150
+        Set Location to 65 50
+        Set Label to "Caption:"
+        Set Label_col_offset to 2
+        Set Label_Justification_Mode to JMode_Right
+        Set peAnchors to anLeftRight
+    End_Object
+
+    Object oCategoryComboForm is a ComboForm
+        Set Size to 13 150
+        Set Location to 80 50
+        Set Label to "Category"
+        Set Label_Col_Offset to 2
+        Set peAnchors to anLeftRight
+        Set Label_Justification_Mode to JMode_Right
+
+        Procedure MoveToSelectedCategory Handle hoTagElement
+            Handle hoCategoryElement hoDocumentElement
+            String sTitle sNewCategoryTitle
+
+            Get Value to sNewCategoryTitle
+
+            Get ParentNode of hoTagElement to hoCategoryElement
+            Get ParentNode of hoCategoryElement to hoDocumentElement
+
+            Send Destroy of hoCategoryElement
+
+            Get FirstChild of hoDocumentElement to hoCategoryElement
+            While (hoCategoryElement <> 0)
+                Get AttributeValue of hoCategoryElement "Title" to sTitle
+                If (sTitle = sNewCategoryTitle) Begin
+                    Get AppendNode of hoCategoryElement hoTagElement to hoTagElement
+                    Send Destroy of hoCategoryElement
+                    Send Destroy of hoDocumentElement
+                    Procedure_Return
+                End
+                Get NextNode of hoCategoryElement to hoCategoryElement
+            Loop
+
+            // If we did not find the catergory element the user entered a new one
+            Get AddElement of hoDocumentElement "Category" "" to hoCategoryElement
+            If (hoCategoryElement <> 0) Begin
+                Set AttributeValue of hoCategoryElement "Title" to sNewCategoryTitle
+                Get AppendNode of hoCategoryElement hoTagElement to hoTagElement
+                Send Destroy of hoCategoryElement
+            End
+
+            Send Destroy of hoDocumentElement
+        End_Procedure
+
+        Procedure EnumerateCategories Handle hoTagElement
+            Handle hoCategoryElement hoDocumentElement
+            String sCurrentTitle sTitle
+
+            Send Combo_Delete_Data
+
+            Get ParentNode of hoTagElement to hoCategoryElement
+            Get AttributeValue of hoCategoryElement "Title" to sCurrentTitle
+            Get ParentNode of hoCategoryElement to hoDocumentElement
+
+            Send Destroy of hoCategoryElement
+
+            Get FirstChild of hoDocumentElement to hoCategoryElement
+            While (hoCategoryElement <> 0)
+                Get AttributeValue of hoCategoryElement "Title" to sTitle
+                If (sTitle <> "") Begin
+                    Send Combo_Add_Item sTitle
+                End
+                Get NextNode of hoCategoryElement to hoCategoryElement
+            Loop
+
+            Send Destroy of hoDocumentElement
+
+            Set Value to sCurrentTitle
+        End_Procedure
+    End_Object
+
+    Object oIDForm is a Form
+        Set Size to 13 150
+        Set Location to 95 50
+        Set Label to "ID:"
+        Set Label_col_offset to 2
+        Set Label_Justification_Mode to JMode_Right
+        Set Form_Datatype to 0
+        Set peAnchors to anLeftRight
+    End_Object
+
+    Object oFormatForm is a Form
+        Set Size to 13 150
+        Set Location to 110 50
+        Set Label to "Format:"
+        Set Label_col_offset to 2
+        Set Label_Justification_Mode to JMode_Right
+        Set peAnchors to anLeftRight
+    End_Object
+
+    Object oDataTypeComboForm is a ComboForm
+        Set Size to 13 150
+        Set Location to 125 50
+        Set Label to "Datatype:"
+        Set Label_col_offset to 2
+        Set Label_Justification_Mode to JMode_Right
+        Set Entry_State to False
+        Set Combo_Sort_State to False
+        Set peAnchors to anLeftRight
+
+        Procedure ComboAddItem Integer iId String sText
+            Send Combo_Add_Item (String (iId) - ":" * sText)
+        End_Procedure
+
+        Procedure AddData
+            Send ComboAddItem OLEPropertyItemString "String"
+            Send ComboAddItem OLEPropertyItemNumber "Number"
+            Send ComboAddItem OLEPropertyItemBool "Boolean"
+            Send ComboAddItem OLEPropertyItemColor "Color"
+            Send ComboAddItem OLEPropertyItemFont "Font"
+            Send ComboAddItem OLEPropertyItemDouble "Double"
+            Send ComboAddItem OLEPropertyItemDate "Date"
+            Send ComboAddItem OLEPropertyItemPicture "Picture"
+            Send ComboAddItem OLEPropertyItemEnum "Enum"
+            Send ComboAddItem OLEPropertyItemEnumFlags "EnumFlags"
+            Send ComboAddItem OLEPropertyItemCategory "Category"
+            Send ComboAddItem OLEPropertyItemMultilineString "Multi Line String"
+        End_Procedure
+
+        Procedure AssignDataType Handle hoElement
+            String sValue
+            Integer iType
+
+            Get Value to sValue
+            Move (Left (sValue, Pos (":", sValue) - 1)) to iType
+            Set AttributeValue of hoElement "Type" to iType
+        End_Procedure
+
+        Procedure FindComboItem Integer iType
+            Integer iItems iItem
+            String sValue
+
+            Get Combo_Item_Count to iItems
+            If (iItems = 0) Begin
+                Send AddData
+                Get Combo_Item_Count to iItems
+            End
+            Decrement iItems
+            For iItem from 0 to iItems
+                Get Combo_Value iItem to sValue
+                If (Left (sValue, Pos (":", sValue) - 1) = iType) Begin
+                    Set Value to sValue
+                    Procedure_Return
+                End
+            Loop
+        End_Procedure
+    End_Object
+
+    Object oValuesGrid is a cCJGrid
+        Set Location to 140 50
+        Set Size to 42 150
+        Set peAnchors to anAll
+
+        Object oCodeColumn is a cCJGridColumn
+            Set piWidth to 41
+            Set psCaption to "Code"
+        End_Object
+
+        Object oValueColumn is a cCJGridColumn
+            Set piWidth to 104
+            Set psCaption to "Value"
+        End_Object
+
+        Procedure Activating
+            Forward Send Activating
+
+            Send EnumerateValues
+        End_Procedure
+
+        Procedure EnumerateValues
+            Integer iCodeColumnID iValueColumnID iRow
+            Handle hoElement hoValuesElement hoValueElement
+            String sData
+            tDataSourceRow[] PropertyValues
+
+            Get phoElement to hoElement
+
+            Get piColumnId of oCodeColumn to iCodeColumnID
+            Get piColumnId of oValueColumn to iValueColumnID
+
+            Move 0 to iRow
+
+            Get FirstChild of hoElement to hoValuesElement
+            If (hoValuesElement <> 0) Begin
+                Get FirstChild of hoValuesElement to hoValueElement
+                While (hoValueElement <> 0)
+                    Get AttributeValue of hoValueElement "Code" to sData
+                    Move sData to PropertyValues[iRow].sValue[iCodeColumnID]
+
+                    Get psText of hoValueElement to sData
+                    Move sData to PropertyValues[iRow].sValue[iValueColumnID]
+
+                    Increment iRow
+
+                    Get NextNode of hoValueElement to hoValueElement
+                Loop
+                Send Destroy of hoValuesElement
+            End
+
+            Send InitializeData PropertyValues
+        End_Procedure
+
+        Procedure StoreValues Handle hoElement
+            Handle hoDataSource hoValuesElement hoValueElement
+            Integer iCodeColumnID iValueColumnID iElements iElement
+            String sValueCode sValue
+            tDataSourceRow[] PropertyValues
+
+            Get FirstChild of hoElement to hoValuesElement
+            If (hoValuesElement <> 0) Begin
+                Get RemoveNode of hoElement hoValuesElement to hoValuesElement
+                Send Destroy of hoValuesElement
+            End
+
+            Get phoDataSource to hoDataSource
+            Get DataSource of hoDataSource to PropertyValues
+
+            Get piColumnId of oCodeColumn to iCodeColumnID
+            Get piColumnId of oValueColumn to iValueColumnID
+
+            Move (SizeOfArray (PropertyValues)) to iElements
+            If (iElements > 0) Begin
+                Get AddElement of hoElement "Values" "" to hoValuesElement
+                If (hoValuesElement <> 0) Begin
+                    Decrement iElements
+                    For iElement from 0 to iElements
+                        Get AddElement of hoValuesElement "Value" PropertyValues[iElement].sValue[iValueColumnID] to hoValueElement
+                        Set AttributeValue of hoValueElement "Code" to PropertyValues[iElement].sValue[iCodeColumnID]
+                        Send Destroy of hoValueElement
+                    Loop
+                    Send Destroy of hoValuesElement
+                End
+            End
+        End_Procedure
+
+        On_Key Key_Ctrl+Key_D Send Request_Delete
+        On_Key Key_Ctrl+Key_N Send Request_AppendRow
+    End_Object
+
+    Object oOKButton is a Button
+        Set Label to "&OK"
+        Set Location to 5 205
+        Set peAnchors to anTopRight
+
+        Procedure OnClick
+            Set pbAcceptChanges to True
+            Send Close_Panel
+        End_Procedure
+    End_Object
+
+    Object oCancelButton is a Button
+        Set Label to "&Cancel"
+        Set Location to 21 205
+        Set peAnchors to anTopRight
+
+        Procedure OnClick
+            Send Close_Panel
+        End_Procedure
+    End_Object
+
+    Object oDeleteRowButton is a Button
+        Set Location to 151 205
+        Set Label to "Delete Row"
+        Set peAnchors to anBottomRight
+        Set Enabled_State to False
+
+        Procedure OnClick
+            Send Request_Delete of oValuesGrid
+        End_Procedure
+    End_Object
+
+    Object oAppendRowButton is a Button
+        Set Location to 167 205
+        Set Label to "Append Row"
+        Set peAnchors to anBottomRight
+        Set Enabled_State to False
+
+        Procedure OnClick
+            Send Request_AppendRow of oValuesGrid
+        End_Procedure
+    End_Object
+
+    Object oValuesLabel is a TextBox
+        Set Size to 50 9
+        Set Location to 150 20
+        Set Label to "Values:"
+        Set psToolTip to "Values that usually are used with the ENUM datatype"
+    End_Object
+
+    { DesignTime = False }
+    { Description = "Tells us if the user OK'ed the dialog or not" }
+    Property Boolean pbAcceptChanges
+
+    Function EditPropertyItem Handle hoElement Returns Boolean
+        Boolean bAcceptChanges bChanged
+        String sTagName sData
+
+        Set pbAcceptChanges to False
+        Set phoElement to hoElement
+
+        Get psTagName of hoElement to sTagName
+        If (sTagName = "Tag") Begin
+            Get AttributeValue of hoElement "Title" to sData
+            Set Value of oCaptionForm to sData
+
+            Set Enabled_State of oCaptionForm to True
+            Set Enabled_State of oIDForm to True
+            Set Enabled_State of oFormatForm to True
+            Set Enabled_State of oCategoryComboForm to True
+            Set Enabled_State of oDataTypeComboForm to True
+            Set Enabled_State of oValuesGrid to True
+            Set Enabled_State of oDeleteRowButton to True
+            Set Enabled_State of oAppendRowButton to True
+
+            Set Visible_State of oCaptionForm to True
+            Set Visible_State of oIDForm to True
+            Set Visible_State of oFormatForm to True
+            Set Visible_State of oCategoryComboForm to True
+            Set Visible_State of oDataTypeComboForm to True
+            Set Visible_State of oValuesGrid to True
+            Set Visible_State of oDeleteRowButton to True
+            Set Visible_State of oAppendRowButton to True
+
+            Set Size to 188 258
+
+            Get AttributeValue of hoElement "ID" to sData
+            Set Value of oIDForm to sData
+
+            Get AttributeValue of hoElement "Format" to sData
+            Set Value of oFormatForm to sData
+
+            Get AttributeValue of hoElement "Type" to sData
+            If (sData = "") Begin
+                Move OLEPropertyItemString to sData
+            End
+            Send FindComboItem of oDataTypeComboForm sData
+
+            Send EnumerateCategories of oCategoryComboForm hoElement
+        End
+        Else Begin
+            Set Enabled_State of oCaptionForm to False
+            Set Enabled_State of oIDForm to False
+            Set Enabled_State of oFormatForm to False
+            Set Enabled_State of oCategoryComboForm to False
+            Set Enabled_State of oDataTypeComboForm to False
+            Set Enabled_State of oValuesGrid to False
+            Set Enabled_State of oDeleteRowButton to False
+            Set Enabled_State of oAppendRowButton to False
+
+            Set Visible_State of oCaptionForm to False
+            Set Visible_State of oIDForm to False
+            Set Visible_State of oFormatForm to False
+            Set Visible_State of oCategoryComboForm to False
+            Set Visible_State of oDataTypeComboForm to False
+            Set Visible_State of oValuesGrid to False
+            Set Visible_State of oDeleteRowButton to False
+            Set Visible_State of oAppendRowButton to False
+
+            Set Size to 68 258
+        End
+
+        Get AttributeValue of hoElement "Description" to sData
+        Set Value of oHelpTextEdit to sData
+
+        Set Changed_State of oHelpTextEdit to False
+        Set Item_Changed_State of oCaptionForm 0 to False
+        Set Item_Changed_State of oCategoryComboForm 0 to False
+        Set Item_Changed_State of oIDForm 0 to False
+        Set Item_Changed_State of oFormatForm 0 to False
+        Set Item_Changed_State of oDataTypeComboForm 0 to False
+
+        Send Popup_Modal
+
+        Get pbAcceptChanges to bAcceptChanges
+        If (bAcceptChanges) Begin
+            Get Changed_State of oHelpTextEdit to bChanged
+            If (bChanged) Begin
+                Get Value of oHelpTextEdit to sData
+                Move (Replaces (Character (13) + Character (10), sData, "\n")) to sData
+                Set AttributeValue of hoElement "Description" to sData
+            End
+
+            If (sTagName = "Tag") Begin
+                Get Item_Changed_State of oCaptionForm 0 to bChanged
+                If (bChanged) Begin
+                    Get Value of oCaptionForm to sData
+                    Set AttributeValue of hoElement "Title" to sData
+                End
+
+                Get Item_Changed_State of oCategoryComboForm 0 to bChanged
+                If (bChanged) Begin
+                    Send MoveToSelectedCategory of oCategoryComboForm hoElement
+                End
+
+                Get Item_Changed_State of oIDForm 0 to bChanged
+                If (bChanged) Begin
+                    Get Value of oIDForm to sData
+                    Set AttributeValue of hoElement "ID" to sData
+                End
+
+                Get Item_Changed_State of oFormatForm 0 to bChanged
+                If (bChanged) Begin
+                    Get Value of oFormatForm to sData
+                    Set AttributeValue of hoElement "Format" to sData
+                End
+
+                Get Item_Changed_State of oDataTypeComboForm 0 to bChanged
+                If (bChanged) Begin
+                    Send AssignDataType of oDataTypeComboForm hoElement
+                End
+
+                Send StoreValues of oValuesGrid hoElement
+            End
+        End
+
+        Function_Return bAcceptChanges
+    End_Function
+
+    On_Key Key_Alt+Key_O Send KeyAction of oOKButton
+    On_Key Key_Alt+Key_C Send KeyAction of oCancelButton
+End_Object

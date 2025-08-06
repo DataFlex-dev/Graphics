@@ -1,0 +1,2010 @@
+﻿Use Windows.pkg
+Use Wingdi.pkg
+Use Winuser.pkg
+Use cGDIPlus.pkg
+Use tWinStructs.pkg
+Use cGDIGraphics.pkg
+Use cGDIImage.pkg
+Use cGDISolidBrush.pkg
+Use Cursor.pkg
+Use File_dlg.pkg
+Use cGDIImageEncoders.pkg
+Use cClipboard.pkg
+Use cPaintNextFrameTimer.pkg
+
+Define ifOriginal     for 4
+Define ifFitOneSide   for 5
+Define ifFitBothSides for 6
+
+{ ClassLibrary = Windows }
+{ DesignerClass = cDTContainer3D }
+{ OverrideProperty = Color Visibility = Private }
+{ OverrideProperty = FontItalics Visibility = Private }
+{ OverrideProperty = FontSize Visibility = Private }
+{ OverrideProperty = FontUnderline Visibility = Private }
+{ OverrideProperty = FontWeight Visibility = Private }
+{ OverrideProperty = TextColor Visibility = Private }
+{ OverrideProperty = Typeface Visibility = Private }
+{ OverrideProperty = Transparent_State Visibility = Private }
+{ OverrideProperty = pbUseFormWindowHandle Visibility = Private }
+{ OverrideProperty = Client_Area_State Visibility = Private }
+{ HelpTopic = cImageContainer }
+{ Description = "Can be used to display the contents of any GDI+ supported image. Supported formats are: " }
+{ Description += "*.bmp Bitmap" }
+{ Description += "*.ico Icon" }
+{ Description += "*.gif Graphical Interchange Format" }
+{ Description += "*.jpg Joint Photographic Experts Group" }
+{ Description += "*.exf Exchangeable Image File Format" }
+{ Description += "*.png Portable Network Graphics" }
+{ Description += "*.tiff Tagged Image File Format" }
+{ Description += "*.wmf Windows Metafile" }
+{ Description += "*.emf Windows Enhanced Metafile" }
+Class cImageContainer is a DfBaseControl
+    // ******************************************************************************************** //
+    // ** Private interface                                                                      ** //
+    // ******************************************************************************************** //
+    Import_Class_Protocol ToolTip_Support_Mixin
+
+    // Object constructor
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Border_Style to Border_None
+        Set Client_Area_State to False
+
+        Set External_Class_Name "cImageContainer" to "static"
+
+        Send Define_ToolTip_Support_Mixin
+
+        Set Window_Style to SS_NOTIFY True
+        Set Window_Style to WS_VISIBLE True
+        Set Window_Style to WS_CHILD True
+        Set Window_Style to WS_VSCROLL True
+        Set Window_Style to WS_HSCROLL True
+
+        Set External_Message WM_PAINT           to msg_OnPaint
+        Set External_Message WM_HSCROLL         to msg_OnHScroll
+        Set External_Message WM_VSCROLL         to msg_OnVScroll
+
+        Set External_Message WM_MOUSEWHEEL      to msg_OnMouseWheel
+        Set External_Message WM_MOUSEMOVE       to msg_OnMouseMove
+
+        Set External_Message WM_LBUTTONDOWN     to msg_OnLButtonDown
+        Set External_Message WM_LBUTTONUP       to msg_OnLButtonUp
+        Set External_Message WM_LBUTTONDBLCLK   to msg_OnLButtonDblClick
+
+        Set External_Message WM_MBUTTONDOWN     to msg_OnMButtonDown
+        Set External_Message WM_MBUTTONUP       to msg_OnMButtonUp
+        Set External_Message WM_MBUTTONDBLCLK   to msg_OnMButtonDblClick
+
+        Set External_Message WM_RBUTTONDOWN     to msg_OnRButtonDown
+        Set External_Message WM_RBUTTONUP       to msg_OnRButtonUp
+        Set External_Message WM_RBUTTONDBLCLK   to msg_OnRButtonDblClick
+
+        Set External_Message WM_NCHITTEST       to msg_OnNCHitTest
+        Set External_Message WM_NCLBUTTONDOWN   to msg_OnNCLButtonDown
+
+        // Properties
+        { Category = "Image" }
+        { Description = "Path to the images" }
+        Property String psImagePath
+        { Category = "Image" }
+        { Description = "Is the user allowed to select a different image?" }
+        Property Boolean pbSelectImage False
+        { Category = "Image" }
+        { Description = "Title to be used for the file selector dialog" }
+        Property String psSelectImageCaption C_$SelectBitmapFile
+        { Category = "Image" }
+        { Description = "Developer can specify its own (shared) file selector dialog object" }
+        Property Handle phoSelectImageDialog 0
+        { Category = "Image" }
+        { Description = "When TRUE the name of the image (via set psImage) will be used as tooltip. Default is True." }
+        Property Boolean pbAutoTooltip True
+        { Category = "Image" }
+        { Description = "When TRUE the logic will extract thumbnail data from the image." }
+        Property Boolean pbLoadThumbnail False
+        { Category = "Image" }
+        { Description = "Contains the factor, scale of the thumbnail size calculation, so a thumbnail is 33% of the size of the original picture" }
+        Property Decimal pdecThumbnailFactor 0.33
+        { Category = "Image" }
+        { Description = "When true the class will first attempt to load the image from itself, the program executable" }
+        Property Boolean pbLoadFromResource False
+        { Category = "Image" }
+        { Description = "Indicates whether the control should show scrollbars or not" }
+        Property Boolean pbShowScrollBars True
+
+        // Wrapped properties
+        { Visibility = Private }
+        { Description = "Used to store the background color when the image object is not painted. Gets set via Set pcBackColor." }
+        Property UInteger ppcBackColor (GetSysColor (clBtnFace iand $FFFFFF))
+        { Visibility = Private }
+        { Description = "Used to store the image style value when the image object is not painted. Gets set via Set peImageStyle." }
+        Property Integer ppeImageStyle ifOriginal
+        { Visibility = Private }
+        { Description = "Used to store the name of the image file when the image object is not painted. Gets set via psImage." }
+        Property String ppsImage
+        { Visibility = Private }
+        { Description = "Used to store the zoom factor when the image object is not painted. Gets set via piZoom." }
+        Property Integer ppiZoom 100
+        { Visibility = Private }
+        { Description = "Used to store the drop shadow state when the image object is not painted. Gets set via pbDropShadow." }
+        Property Boolean ppbDropShadow
+        { Visibility = Private }
+        { Description = "Used to store whether the image should be enabled or not when the image object is not painted. Gets set via pbEnabled." }
+        Property Boolean ppbEnabled True
+        { Visibility = Private }
+        { Description = "Used to store whether the image should be visible or not when the image object is not painted. Gets set via pbVisible." }
+        Property Boolean ppbVisible True
+        { Visibility = Private }
+        { Description = "Used to keep track of the changed state of the image. Will be set internally and never by application." }
+        Property Integer Changed_State
+
+        // Private properties
+        { Visibility = Private }
+        { Description = "Used to store the calculated zoom factor of the image. Is being reset when applying piZoom." }
+        Property Integer ppiInternalZoom
+        { Visibility = Private }
+        { Description = "Used for optimalization. Disables the paint operation when adjusting scrollbars." }
+        Property Boolean ppbIgnorePaint
+        { Visibility = Private }
+        { Description = "Used to store the MAX value of the horizontal scrollbar" }
+        Property Integer ppiScrollX
+        { Visibility = Private }
+        { Description = "Used to store the MAX value of the vertical scrollbar" }
+        Property Integer ppiScrollY
+        { Visibility = Private }
+        { Description = "Used for optimalization. OnPaint creates an in-memory bitmap and stores the handle in here." }
+        Property Handle phBmp
+        { Visibility = Private }
+        { Description = "Indicates if a drag operation has been started or not." }
+        Property Boolean ppbDrag
+        { Visibility = Private }
+        { Description = "Keeps track of where the mouse position was for a drag operation. Is being set during mouse down." }
+        Property tWinPoint pptMousePos
+        { Visibility = Private }
+        { Description = "Holds the cursor handle to a size all icon" }
+        Property Handle pphSizeAll
+        { Visibility = Private }
+        { Description = "Holds the cursor handle to a hand icon" }
+        Property Handle pphHand
+
+        // Handle properties for the child objects
+        { DesignTime = False }
+        { Description = "Holds a DataFlex object handle to the a cGDIGraphics object, the canvas to paint on" }
+        Property Handle phoGraphics
+        { DesignTime = False }
+        Property Handle phoImage
+
+        Set phoGraphics to (CreateNamed (ghoGDIPlusHandler, RefClass (cGDIGraphics), Name (Self) - "_Canvas"))
+        Set pphSizeAll to (LoadCursor (0, IDC_SIZEALL))
+        Set pphHand to (LoadCursor (0, IDC_HAND))
+
+        // Used for the tooltips
+        Set pbUseFormWindowHandle to False
+
+        // When the image is an animated GIF or a multi page TIFF this timer object
+        // helps to paint the next frame. The value from piFrameDelays will
+        // be used to set the timeout property
+        { Visibility = Private }
+        Object oPaintNextFrameTimer is a cPaintNextFrameTimer
+        End_Object
+
+        On_Key Key_Ctrl+Key_Plus Send ZoomIn
+        On_Key Key_Ctrl+Key_Minus Send ZoomOut
+    End_Procedure
+
+    { Description = "Deactivates the times (if it is still active) before deleting the image" }
+    { Description += "Sends a message to remove the bitmap property value from memory" }
+    { MethodType = Event }
+    Procedure Destroy_Object
+        Handle hoPaintNextFrameTimer
+
+        Get Object_Id of oPaintNextFrameTimer to hoPaintNextFrameTimer
+        If (hoPaintNextFrameTimer <> 0) Begin
+            Set pbEnabled of hoPaintNextFrameTimer to False
+        End
+
+        Send RemoveBitmap
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Sets the scrollbar properties" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure AdjustScrollbars
+        tWinScrollInfo ScrollBarInfo
+        Integer iResult
+        Handle hWnd
+        tWinRect WindowRect
+
+        Get Window_Handle to hWnd
+        If (hWnd <> 0) Begin
+            // Ignore paint caused by adjusting the scrollbars
+            Set ppbIgnorePaint to True
+
+            Move (GetWindowRect (hWnd, AddressOf (WindowRect))) to iResult
+            Move (SizeOfType (tWinScrollInfo)) to ScrollBarInfo.cbSize
+            Move (SIF_PAGE ior SIF_RANGE) to ScrollBarInfo.fMask
+
+            // Horizontal
+            Get ppiScrollX to ScrollBarInfo.nMax
+            Move (WindowRect.right - WindowRect.left) to ScrollBarInfo.nPage
+            Move (SetScrollInfo (hWnd, SB_HORZ, AddressOf (ScrollBarInfo), True)) to iResult
+
+            // Vertical
+            Get ppiScrollY to ScrollBarInfo.nMax
+            Move (WindowRect.bottom - WindowRect.top) to ScrollBarInfo.nPage
+            Move (SetScrollInfo (hWnd, SB_VERT, AddressOf (ScrollBarInfo), True)) to iResult
+
+            // ReSet ppint
+            Set ppbIgnorePaint to False
+        End
+    End_Procedure
+
+    { Description = "Copies the image to the Windows Clipboard." }
+    { Description += "Method send HandleGDIError when there is no image loaded" }
+    { MethodType = Method }
+    Procedure Copy
+        Handle hoImage
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Send Copy of hoImage
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Determines if the image can be copied the Windows Clipboard or not." }
+    { Description += "Method sends HandleGDIError when there is no image loaded." }
+    { MethodType = Method }
+    Function CanCopy Returns Boolean
+        Handle hoImage
+        Boolean bCanCopy
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get CanCopy of hoImage to bCanCopy
+        End
+
+        Function_Return bCanCopy
+    End_Function
+
+    { Description = "Determines if the image can be pasted from the Windows Clipboard or not." }
+    { Description += "Method returns False when there is no image on the Windows Clipboard or when the clipboard cannot be opened" }
+    { Description += "Changes the value of the global ERR indicator" }
+    { MethodType = Method }
+    Function CanPaste Returns Boolean
+        Boolean bSuccess
+        Handle hBitmap hoClipboard
+
+        Move False to Err
+        Get Create (RefClass (cClipboard)) to hoClipboard
+        Send DoOpen of hoClipboard
+        If (not (Err)) Begin
+            Get ppData of hoClipboard CF_BITMAP to hBitmap
+            Send DoClose of hoClipboard
+        End
+        Send Destroy of hoClipboard
+
+        Function_Return (hBitmap <> 0)
+    End_Function
+
+    { Description = "Attempts to change the current page of a TIFF file to next available page." }
+    { Description += "Returns False when the ImageFileFormat is not a TIFF file" }
+    { Description += "Changes the piCurrentFrame property on success. Does nothing when last page was already shown." }
+    { Description += "Returns true when there are more pages according to piFrameCount." }
+    Function DisplayNextPage Returns Boolean
+        Handle hoImage
+        Integer eImageFormat eStatus iFrame iFrameCount
+        WString wGuid
+        tUUID Guid
+        Pointer pImage
+
+        Get phoImage to hoImage
+        Get ImageFileFormat of hoImage to eImageFormat
+        If (eImageFormat = gpImageFormatTIFF) Begin
+            Get ppImage of hoImage to pImage
+            If (pImage <> 0) Begin
+                Get piCurrentFrame of hoImage to iFrame
+                Get piFrameCount of hoImage to iFrameCount
+
+                If ((iFrame + 1) < iFrameCount) Begin
+                    Move guidFrameDimensionPage to wGuid
+                    Move (WinAPI_UuidFromString (AddressOf (wGuid), AddressOf (Guid))) to eStatus
+
+                    Increment iFrame
+
+                    Move (GdipImageSelectActiveFrame (pImage, AddressOf (Guid), iFrame)) to eStatus
+                    If (eStatus <> gpOk) Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler eStatus "Image Select Active Frame"
+                    End
+                    Else Begin
+                        Send RedrawImage
+                        Set piCurrentFrame of hoImage to iFrame
+                        If (iFrame < iFrameCount) Begin
+                            Function_Return True
+                        End
+                    End
+                End
+            End
+        End
+
+        Function_Return False
+    End_Function
+
+    { Description = "Attempts to change the current page of a TIFF file to the previous available page." }
+    { Description += "Returns False when the ImageFileFormat is not a TIFF file" }
+    { Description += "Changes the piCurrentFrame property on success. Does nothing when first page was" }
+    { Description += "already shown. Returns true when there is a previous page after this operation." }
+    Function DisplayPreviousPage Returns Boolean
+        Handle hoImage
+        Integer eImageFormat eStatus iFrame
+        WString wGuid
+        tUUID Guid
+        Pointer pImage
+
+        Get phoImage to hoImage
+        Get ImageFileFormat of hoImage to eImageFormat
+        If (eImageFormat = gpImageFormatTIFF) Begin
+            Get ppImage of hoImage to pImage
+            If (pImage <> 0) Begin
+                Get piCurrentFrame of hoImage to iFrame
+                If (iFrame > 0) Begin
+                    Move guidFrameDimensionPage to wGuid
+                    Move (WinAPI_UuidFromString (AddressOf (wGuid), AddressOf (Guid))) to eStatus
+
+                    Decrement iFrame
+
+                    Move (GdipImageSelectActiveFrame (pImage, AddressOf (Guid), iFrame)) to eStatus
+                    If (eStatus <> gpOk) Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler eStatus "Image Select Active Frame"
+                    End
+                    Else Begin
+                        Send RedrawImage
+                        Set piCurrentFrame of hoImage to iFrame
+                        If (iFrame > 0) Begin
+                            Function_Return True
+                        End
+                    End
+                End
+            End
+        End
+
+        Function_Return False
+    End_Function
+
+    { Description = "Draws a shadow on the bottom and right hand side of the image." }
+    { Description += "Method send HandleGDIError when no image is loaded." }
+    { Description += "Method sends HandleGDIResult when one of the GDI functions returns not a OK status" }
+    { MethodType = Method }
+    { Visibility = Private }
+    Procedure DrawShadow Handle hoGraphics tWinRect ImageRect
+        Boolean bIsImage
+        Integer iResult
+        UInteger uiColorGreyOpaque uiColorWhiteHaze
+        Handle hoBrush hoImage
+        Pointer pImage
+        UInteger[] cColors
+        tWinPoint[] PointData
+        tWinPoint CenterPoint
+        tWinRect BackgroundRect
+        gpStatus eStatus
+
+        Get phoImage to hoImage
+        If (hoImage = 0) Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        // Get the image itself
+        Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+        If (bIsImage) Begin
+            Get ppImage of hoImage to pImage
+            If (pImage = 0) Begin
+                Procedure_Return
+            End
+        End
+        Else Begin
+            Procedure_Return
+        End
+
+        Get ARGB of ghoGDIPlusHandler 255 100 100 100 to uiColorGreyOpaque
+        Get ARGB of ghoGDIPlusHandler  10 255 255 255 to uiColorWhiteHaze
+
+        // Create linear brush for the bottom shadow
+        Get Create (RefClass (cGDILinearGradientBrush)) to hoBrush
+        Move (SetRect (AddressOf (BackgroundRect), ImageRect.right, ImageRect.top + 14, 14, ImageRect.bottom - ImageRect.top - 14)) to iResult
+        Get CreateLineBrushFromRectI of hoBrush BackgroundRect uiColorGreyOpaque uiColorWhiteHaze gpLinearGradientModeHorizontal gpWrapModeTile to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult of ghoGDIPlusHandler iResult "CreateLinearBrush for bottom shadow in DrawShadow"
+        End
+        Get FillRectangle of hoGraphics hoBrush BackgroundRect.left BackgroundRect.top BackgroundRect.right BackgroundRect.bottom to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult of ghoGDIPlusHandler iResult "FillRectangle for bottom shadow in DrawShadow"
+        End
+        Send Destroy of hoBrush
+
+        // Create linear brush for the right hand side shadow
+        Get Create (RefClass (cGDILinearGradientBrush)) to hoBrush
+        Move (SetRect (AddressOf (BackgroundRect), ImageRect.left + 14, ImageRect.bottom, ImageRect.right - ImageRect.left - 14, 14)) to iResult
+        Get CreateLineBrushFromRectI of hoBrush BackgroundRect uiColorGreyOpaque uiColorWhiteHaze gpLinearGradientModeVertical gpWrapModeTile to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult of ghoGDIPlusHandler iResult "CreateLinearBrush for right hand side shadow in DrawShadow"
+        End
+        Get FillRectangle of hoGraphics hoBrush BackgroundRect.left BackgroundRect.top BackgroundRect.right BackgroundRect.bottom to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult of ghoGDIPlusHandler iResult "FillRectangle for right hand side shadow in DrawShadow"
+        End
+        Send Destroy of hoBrush
+
+        // Creates a brush for the image rectangle plus the shadow brush sizes
+        Get Create (RefClass (cGDIPathGradientBrush)) to hoBrush
+
+        Move ImageRect.right to PointData[0].x
+        Move ImageRect.bottom to PointData[0].y
+
+        Move (ImageRect.right + 14) to PointData[1].x
+        Move ImageRect.bottom to PointData[1].y
+
+        Move (ImageRect.right + 14) to PointData[2].x
+        Move (ImageRect.bottom + 14) to PointData[2].y
+
+        Move ImageRect.right to PointData[3].x
+        Move (ImageRect.bottom + 14) to PointData[3].y
+
+        Get CreateBrushI of hoBrush PointData to eStatus
+
+        // Sets the color of area around the brush
+        Move uiColorGreyOpaque to cColors[0]
+        Move uiColorWhiteHaze to cColors[1]
+        Move uiColorWhiteHaze to cColors[2]
+        Move uiColorWhiteHaze to cColors[3]
+        Set pcSurroundColorsWithCount of hoBrush to cColors
+
+        // Original code
+        Move (ImageRect.right + 14) to CenterPoint.x
+        Move (ImageRect.bottom + 14) to CenterPoint.y
+        Set ptCenterPointI of hoBrush to CenterPoint
+        Set pcCenterColor of hoBrush to uiColorWhiteHaze
+
+        Get FillRectangle of hoGraphics hoBrush ImageRect.right ImageRect.bottom 14 14 to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult of ghoGDIPlusHandler iResult "FillRectangle (3) in DrawShadow"
+        End
+        Send Destroy of hoBrush
+    End_Procedure
+
+    { Description = "When the size of the container changes the image must be redrawn" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure Set GUISize Integer iHeight Integer iWidth
+        Forward Set GuiSize to iHeight iWidth
+
+        // Must redraw after the size has changed
+        Send RedrawImage
+    End_Procedure
+
+    { Description = "Returns the DateTime of the image according to the EXIF information that might be included in the image" }
+    { Description += "Format info: http://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif/datetimeoriginal.html" }
+    { Description += "Returns a null datetime when the EXIF information does not have a datetime stamp." }
+    { Description += "Method sends HandleGDIError when there is no image object." }
+    { MethodType = Property }
+    Function EXIFDateTime Returns DateTime
+        DateTime dtTaken
+        Handle hoImage
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get DateTimeProperty of hoImage gpPropertyTagExifDTOrig to dtTaken
+            If (IsNullDateTime (dtTaken)) Begin
+                Get DateTimeProperty of hoImage gpPropertyTagDateTime to dtTaken
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return dtTaken
+    End_Function
+
+    { Description = "Returns the file extension of a file by determining the last dot position in the filename" }
+    { Description += "For example: JPG from myimage.JPG." }
+    { Description += "File extension does not contain the dot." }
+    { MethodType = Method }
+    Function FileExtension String sFileName Returns String
+        Integer iDotPos
+        String sFileExtension
+
+        Move (RightPos ('.', sFileName)) to iDotPos
+        Move (Lowercase (Right (sFileName, Length (sFileName) - iDotPos))) to sFileExtension
+
+        Function_Return sFileExtension
+    End_Function
+
+    { Description = "Finds an image. If the file exists return what was passed in to the function. In most cases this will only" }
+    { Description += "work when the path is included in the filename. If the file is not found directly check if the file" }
+    { Description += "exists in the path stored in psImagePath. If the file is still not found check DF_OPEN_PATH contents." }
+    { Description += "In case all fails the returned string will be empty" }
+    { Visibility = Private }
+    { MethodType = Method }
+    Function FindImage String sImage Returns String
+        Boolean bFound
+        String sPath
+
+        // 1) if path is supplied use it
+        File_Exist sImage bFound
+        If (bFound) Begin
+            Function_Return sImage
+        End
+
+        // 2) use psImagePath to find the image, the property can contain multiple directories
+        Get psImagePath to sPath
+        If (Right (sPath, 1) <> SysConf (SYSCONF_DIR_SEPARATOR)) Begin
+            Move (Append (sPath, SysConf (SYSCONF_DIR_SEPARATOR))) to sPath
+        End
+        File_Exist (sPath - sImage) bFound
+        If (bFound) Begin
+            Function_Return (sPath - sImage)
+        End
+
+        // 3) use File_Path command to find the image using DFPATH
+        Get_File_Path sImage to sImage
+        Function_Return sImage
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Attempts to retrieve the Decimal GPS Latitude coordinate of the image" }
+    { Description += "Does nothing (returns zero) when there is no image loaded." }
+    Function GPSLatitude Returns Number
+        Handle hoImage
+        Number nLatitude
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get GPSLatitudeLongitude of hoImage gpPropertyTagGpsLatitude gpPropertyTagGpsLatitudeRef to nLatitude
+        End
+
+        Function_Return nLatitude
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Attempts to retrieve the Decimal GPS Longitude coordinate of the image." }
+    { Description += "Does nothing (returns zero) when there is no image loaded." }
+    Function GPSLongitude Returns Number
+        Handle hoImage
+        Number nLongitude
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get GPSLatitudeLongitude of hoImage gpPropertyTagGpsLongitude gpPropertyTagGpsLongitudeRef to nLongitude
+        End
+
+        Function_Return nLongitude
+    End_Function
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "Loads the image information from a passed in bitmap handle." }
+    { Description += "On success removes the current image object and replaces it with the returned newly created object." }
+    { Description += "Returns false when hBitmap = 0 or when the image creation from the bitmap handle failed." }
+    { Description += "Calls HandleGDIError when the image creation failed." }
+    Function LoadBitmapFromHBITMAP Handle hBitmap Returns Boolean
+        Handle hoImage hoBitmapImage
+        Boolean bAutoTooltip bLoadThumbnail
+
+        If (hBitmap <> 0) Begin
+            Get CreateImageFromHBITMAP of ghoGDIPlusHandler hBitmap 0 to hoBitmapImage
+            If (hoBitmapImage <> 0) Begin
+                Get phoImage to hoImage
+                If (hoImage <> 0) Begin
+                    Send Destroy of hoImage
+                End
+                Set phoImage to hoBitmapImage
+
+                Get pbLoadThumbnail to bLoadThumbnail
+                If (bLoadThumbnail) Begin
+                    Send LoadThumbnail
+                End
+                Send ResetScrollbars
+
+                Send SetupAnimation
+
+                Get pbAutoTooltip to bAutoTooltip
+                If (bAutoTooltip) Begin
+                    Send AssignTooltip
+                End
+
+                Send RedrawImage
+
+                Function_Return True
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_CouldNotLoadBitmapFromClipboard
+            End
+        End
+
+        Function_Return False
+    End_Function
+
+    { Description = "Creates a thumbnail of the image." }
+    { Description += "The method resizes the image using the thumbnail factor property" }
+    { Description += "Method replaces the stored imagepointer with that resized image." }
+    { MethodType = Method }
+    Procedure LoadThumbnail
+        Decimal decThumbnailFactor
+        Integer iImageWidth iImageHeight
+        Handle hoImage hoImageThumbnail
+        Boolean bAutoTooltip
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get ImageWidth of hoImage to iImageWidth
+            Get ImageHeight of hoImage to iImageHeight
+
+            Get pdecThumbnailFactor to decThumbnailFactor
+            Move (iImageWidth * decThumbnailFactor) to iImageWidth
+            Move (iImageHeight * decThumbnailFactor) to iImageHeight
+
+            Get CreateThumbnail of hoImage iImageWidth iImageHeight to hoImageThumbnail
+            If (hoImageThumbnail <> 0) Begin
+                Send RemoveBitmap
+                Set phoImage to hoImageThumbnail
+                Send Destroy of hoImage
+
+                Get pbAutoTooltip to bAutoTooltip
+                If (bAutoTooltip) Begin
+                    Send AssignTooltip
+                End
+            End
+        End
+    End_Procedure
+
+    { Description = "Selects the next frame from the animated GIF and paints it" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure PaintNextFrame
+        Boolean bHasNext
+        Integer iCurrentFrame
+        Integer[] iFrameDelays
+        Handle hoImage
+
+        // piCurrentFrame is actually the next frame, so we retrieve it BEFORE SelectNextFrame()
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get piCurrentFrame of hoImage to iCurrentFrame
+
+            Get SelectNextFrame of hoImage to bHasNext
+            Send RedrawImage
+
+            Get piFrameDelays of hoImage to iFrameDelays
+            If (SizeOfArray (iFrameDelays) > iCurrentFrame) Begin
+                Set piTimeout of oPaintNextFrameTimer to (iFrameDelays[iCurrentFrame] * 10)
+                If (not (bHasNext)) Begin
+                    Set pbEnabled of oPaintNextFrameTimer to False
+                End
+            End
+            Else Begin
+                Set pbEnabled of oPaintNextFrameTimer to False
+            End
+        End
+    End_Procedure
+
+    { Description = "Set the image display defaults (visible and enabled) and create a tooltip when the object gets painted" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure Page_Object Boolean bPage
+        Boolean bEnabled bVisible
+        Handle hWnd
+
+        Get ppbEnabled to bEnabled
+        Get ppbVisible to bVisible
+
+        Set Window_Style to WS_DISABLED (not (bEnabled))
+        Set Window_Style to WS_VISIBLE bVisible
+
+        Forward Send Page_Object bPage
+
+        // Handle tooltip support....
+        If (not (bPage)) Begin
+            Send RequestDeleteToolTip
+        End
+        Else Begin
+            Send RequestAddToolTip
+        End
+    End_Procedure
+
+    { Description = "Replaces the current image (if any) with the image information from the Windows Clipboard." }
+    { Description += "Nothing happens if the clipboard does not contain an image." }
+    { Description += "Method changes the state of the global ERR indicator." }
+    { Description += "Sets the name reference to a previous loaded image to an empty string." }
+    { MethodType = Method }
+    Procedure Paste
+        Boolean bSuccess
+        Handle hBitmap hoClipboard
+
+        Move False to Err
+        Get Create (RefClass (cClipboard)) to hoClipboard
+        Send DoOpen of hoClipboard
+        If (not (Err)) Begin
+            Get ppData of hoClipboard CF_BITMAP to hBitmap
+            If (hBitmap <> 0) Begin
+                Get LoadBitmapFromHBITMAP hBitmap to bSuccess
+                If (bSuccess) Begin
+                    Set Changed_State to True
+                    Send OnImageSelected ""
+                    Set ppsImage to ""
+                End
+            End
+            Send DoClose of hoClipboard
+        End
+        Send Destroy of hoClipboard
+    End_Procedure
+
+    { Description = "Returns list of image properties as an array of ImageProperty values." }
+    { Description += "Method sends HandleGDIError when no image is loaded." }
+    { MethodType = Method }
+    Function PropertyList Returns tImageProperty[]
+        Handle hoImage
+        tImageProperty[] ImageProperties
+
+        Get phoImage to hoImage
+        If (hoImage > 0) Begin
+            Get ImagePropertyList of hoImage to ImageProperties
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return ImageProperties
+    End_Function
+
+    { Description = "Returns client rect including space which could be taken by borders." }
+    { MethodType = Method }
+    { Visibility = Private }
+    Function RealClientRect Returns tWinRect
+        Integer iResult eBorderStyle
+        Handle hWnd
+        tWinRect WindowRect
+
+        Get Window_Handle to hWnd
+        If (hWnd <> 0) Begin
+            Move (GetWindowRect (hWnd, AddressOf (WindowRect))) to iResult
+
+            // Convert from screen to client coordinates
+            Move (OffsetRect (AddressOf (WindowRect), WindowRect.left * -1, WindowRect.top * -1)) to iResult
+
+            // Remove borders
+            Get Border_Style to eBorderStyle
+            If (eBorderStyle <> Border_None) Begin
+                Move (InflateRect (AddressOf (WindowRect), GetSystemMetrics (SM_CXBORDER) * -1, GetSystemMetrics (SM_CYBORDER) * -1)) to iResult
+            End
+        End
+
+        Function_Return WindowRect
+    End_Function
+
+    { Description = "The Set psImage contains optimalisation code that ignores loading an image if it is already loaded" }
+    { Visibility = Private }
+    { MethodType = Method }
+    Procedure RedisplayImage
+        String sImage
+
+        Get ppsImage to sImage
+        Set ppsImage to ""
+        Set psImage to sImage
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "Redraws the image area" }
+    Procedure RedrawImage
+        Handle hWnd
+        Integer iResult
+        Boolean bShowScrollBars
+
+        Get Window_Handle to hWnd
+        If (hWnd <> 0) Begin
+            Move (InvalidateRect (hWnd, 0, False)) to iResult
+            Move (UpdateWindow (hWnd)) to iResult
+
+            Get pbShowScrollBars to bShowScrollBars
+            Move (ShowScrollBar (hWnd, SB_BOTH, bShowScrollBars)) to iResult
+        End
+    End_Procedure
+
+    { Description = "Called by Page_Object. Handles tooltip creation. The class uses a dedicated" }
+    { Description += "method to perform AddToolTip because it is often the case that Page_Object" }
+    { Description += "is implemented in a mixin class." }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure RequestAddToolTip
+        Send AddToolTip
+    End_Procedure
+
+    { Description = "Called by Page_Object. Handles tooltip removal." }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure RequestDeleteToolTip
+        Send DeleteToolTip
+    End_Procedure
+
+    { Description = "Resets the scrollbar properties" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure ResetScrollbars
+        tWinScrollInfo ScrollBarInfo
+        Integer iResult
+        Handle hWnd
+        tWinRect WindowRect
+
+        Get Window_Handle to hWnd
+        If (hWnd <> 0) Begin
+            Move (GetClientRect (hWnd, AddressOf(WindowRect))) to iResult
+            Move (SizeOfType (tWinScrollInfo)) to ScrollBarInfo.cbSize
+            Move (SIF_PAGE ior SIF_RANGE ior SIF_POS) to ScrollBarInfo.fMask
+
+            // Horizontal
+            Move (WindowRect.right - WindowRect.left) to ScrollBarInfo.nPage
+            Move (SetScrollInfo (hWnd, SB_HORZ, AddressOf(ScrollBarInfo), True)) to iResult
+
+            // Vertical
+            Move (WindowRect.bottom - WindowRect.top) to ScrollBarInfo.nPage
+            Move (SetScrollInfo (hWnd, SB_VERT, AddressOf(ScrollBarInfo), True)) to iResult
+        End
+    End_Procedure
+
+    { Description = "Rotates the image using the rotation type passed." }
+    { Description += "Method returns the GDI+ status, handle it. A non-zero value means the rotation failed." }
+    { Description += "Method sends HandleGDIError when no image object available" }
+    { MethodType = Method }
+    Function RotateImage gpRotateFlipType eType Returns gpStatus
+        Handle hoImage
+        gpStatus eStatus
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get RotateImage of hoImage eType to eStatus
+            If (eStatus = gpOk) Begin
+                Send RemoveBitmap
+                Send RedrawImage
+                Set Changed_State to True
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Function to save an image to a disk file. Pass the name of a non-exiting" }
+    { Description += "file as argument as exiting files cannot be overwritten." }
+    { Description += "If the passed file exists the method sends HandleGDIError." }
+    { Description += "The filetype that is being used is determined based on the last" }
+    { Description += "3 characters of the passed filename." }
+    { Description += "Returns gpOk if saved successful or the gpstatus error if not." }
+    { Description += "gpStatus errors are defined in the cGDIPlus.h file." }
+    { MethodType = Method }
+    Function SaveImageToFile String sFileName Returns gpStatus
+        String sFileExtension sMimeType
+        Handle hoImage hoImageEncoders
+        Boolean bFileExists
+        gpStatus eStatus
+
+        File_Exist sFileName bFileExists
+        If (bFileExists) Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_CannotOverwriteExitingFile
+            Function_Return gpAborted
+        End
+
+        If (sFileName = '') Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FileNameIsRequired
+            Function_Return gpAborted
+        End
+
+        Get phoImage to hoImage
+        Get FileExtension sFileName to sFileExtension
+
+        Get Create of ghoGDIPlusHandler (RefClass (cGDIImageEncoders)) to hoImageEncoders
+        Get FileTypeToMimeType of hoImageEncoders sFileExtension to sMimeType
+        Send Destroy of hoImageEncoders
+
+        If (sMimeType <> "") Begin
+            Get SaveImageToFile of hoImage sFileName sMimeType to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_CannotDetermineMIMEType
+            Move gpAborted to eStatus
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Scales integer based on zoom level" }
+    { Visibility = Private }
+    Function ScaleInt Integer iInt Returns Integer
+        Float fScale
+        Integer iRetval
+
+        Get ppiZoom to fScale
+        Move (iInt * (fScale / 100.0) + 0.5) to iRetval
+
+        Function_Return iRetval
+    End_Function
+
+    { Description = "Scales tWinRect based on zoom level" }
+    { Visibility = Private }
+    Function ScaleRect tWinRect WindowRect Returns tWinRect
+        Float fScale
+
+        Get ppiZoom to fScale
+        Move (WindowRect.left * (fScale / 100.0) + 0.5) to WindowRect.left
+        Move (WindowRect.top * (fScale / 100.0) + 0.5) to WindowRect.top
+        Move (WindowRect.right * (fScale / 100.0) + 0.5) to WindowRect.right
+        Move (WindowRect.bottom * (fScale / 100.0) + 0.5) to WindowRect.bottom
+
+        Function_Return WindowRect
+    End_Function
+
+    { Description = "Selects an image for display. You can specify your own (shared)" }
+    { Description += "open dialog object via the property phoSelectImageDialog if you do not want" }
+    { Description += "that this function creates the object" }
+    { Visibility = Private }
+    Function SelectImage Returns String
+        Handle hoDialog
+        String sSelectImageCaption sImagePath sImage
+        Boolean bSelectImage bOk bDestroy
+
+        Get pbSelectImage to bSelectImage
+        If (bSelectImage) Begin
+            Get phoSelectImageDialog to hoDialog
+            If (hoDialog = 0) Begin
+                Get Create (RefClass (OpenDialog)) to hoDialog
+                Move True to bDestroy
+
+                Get psSelectImageCaption to sSelectImageCaption
+                Get psImagePath to sImagePath
+
+                Set Filter_String of hoDialog to "All Graphic Formats|*.bmp;*.ico;*.gif;*.jpg;*.exf;*.png;*.tiff;*.tif;*.wmf;*.emf|Bitmap|*.bmp|ICON|*.ico|GIF|*.gif|JPEG|*.jpg|EXIF|*.exf|PNG|*.png|TIFF|*.tiff;*.tif|WMF|*.wmf|EMF|*.emf"
+                Set Filter_Index of hoDialog to 1
+                Set Dialog_Caption of hoDialog to sSelectImageCaption
+                Set Initial_Folder of hoDialog to sImagePath
+            End
+
+            Get Show_Dialog of hoDialog to bOk
+            If (bOk) Begin
+                Get File_Name of hoDialog to sImage
+            End
+
+            If (bDestroy) Begin
+                Send Destroy of hoDialog
+            End
+        End
+
+        Function_Return sImage
+    End_Function
+
+    { Description = "Can be used to select an image and assign it to the control." }
+    { Description += "Creates, opens and destroys a Windows common file dialog to select an image." }
+    { Description += "Fires OnImageSelected with the name of the selected image" }
+    { MethodType = Method }
+    Procedure SelectImage
+        String sImage
+
+        Get SelectImage to sImage
+        If (sImage <> "") Begin
+            Set psImage to sImage
+            Set Changed_State to True
+
+            Send OnImageSelected sImage
+        End
+    End_Procedure
+
+    { Description = "Set up the frame timer to animate the image." }
+    { Description = "The timeout of the timer will be set to 10 times the first framedelay stored with the image." }
+    { Visibility = Private }
+    Procedure SetupAnimation
+        Integer iFrameCount
+        Integer[] iFrameDelays
+        Handle hoImage
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get piFrameDelays of hoImage to iFrameDelays
+            Get piFrameCount of hoImage to iFrameCount
+            If (iFrameCount > 1 and SizeOfArray (iFrameDelays) > 0) Begin
+                Set piTimeout of oPaintNextFrameTimer to (iFrameDelays[0] * 10)
+                Set pbEnabled of oPaintNextFrameTimer to True
+            End
+            Else Begin
+                Set pbEnabled of oPaintNextFrameTimer to False
+            End
+        End
+    End_Procedure
+
+    { Description = "Unscales integer based on zoom level" }
+    { Visibility = Private }
+    Function UnscaleInt Integer iInt Returns Integer
+        Float fScale
+        Integer iRetval
+
+        Get ppiZoom to fScale
+        Move (iInt / (fScale / 100.0) + 0.5) to iRetval
+
+        Function_Return iRetval
+    End_Function
+
+    { Description = "Unscales tWinRect bases on zoom level" }
+    { Visibility = Private }
+    Function UnscaleRect tWinRect WindowRect Returns tWinRect
+        Float fScale
+
+        Get ppiZoom to fScale
+        Move (WindowRect.left /(fScale / 100.0) + 0.5) to WindowRect.left
+        Move (WindowRect.top / (fScale / 100.0) + 0.5) to WindowRect.top
+        Move (WindowRect.right / (fScale / 100.0) + 0.5) to WindowRect.right
+        Move (WindowRect.bottom / (fScale / 100.0) + 0.5) to WindowRect.bottom
+
+        Function_Return WindowRect
+    End_Function
+
+    { Description = "Zooms in using the zoomfactor from piZoom. Events gets called using the Ctrl+Plus key" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure ZoomIn
+        Integer iZoomFactor
+
+        Get piZoom to iZoomFactor
+        Move ((iZoomFactor + 25) min 400) to iZoomFactor
+        Set piZoom to iZoomFactor
+    End_Procedure
+
+    { Description = "Zooms out using the zoomfactor from piZoom. Events gets called using the Ctrl+Minus key" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure ZoomOut
+        Integer iZoomFactor
+
+        Get piZoom to iZoomFactor
+        Move ((iZoomFactor - 25) max 10) to iZoomFactor
+        Set piZoom to iZoomFactor
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Does nothing by default" }
+    { MethodType = Event }
+    Procedure Notify Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Does nothing by default" }
+    { MethodType = Event }
+    Procedure Command Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Handles the Windows Notification message HSCROLL." }
+    Procedure OnHScroll Longptr wParam LongPtr lParam
+        Integer iResult iOld
+        tWinScrollInfo ScrollBarInfo
+        Handle hWnd
+
+        If (Low (wParam) = SB_ENDSCROLL) Begin
+            Procedure_Return
+        End
+
+        Get Window_Handle to hWnd
+        If (hWnd <> 0) Begin
+            Procedure_Return
+        End
+
+        Move (SizeOfType (tWinScrollInfo)) to ScrollBarInfo.cbSize
+        Move SIF_ALL to ScrollBarInfo.fMask
+        Move (GetScrollInfo (hWnd, SB_HORZ, AddressOf (ScrollBarInfo))) to iResult
+        Move ScrollBarInfo.nPos to iOld
+
+        Case Begin
+            Case (Low (wParam) = SB_LINERIGHT)
+                Move (ScrollBarInfo.nPos + 10 min ScrollBarInfo.nMax) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_LINELEFT)
+                Move (ScrollBarInfo.nPos - 10 max ScrollBarInfo.nMin) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_PAGERIGHT)
+                Move (ScrollBarInfo.nPos + ScrollBarInfo.nPage min ScrollBarInfo.nMax) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_PAGELEFT)
+                Move (ScrollBarInfo.nPos - ScrollBarInfo.nPage max ScrollBarInfo.nMin) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_RIGHT)
+                Move ScrollBarInfo.nMax to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_LEFT)
+                Move ScrollBarInfo.nMin to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_THUMBPOSITION)
+            Case (Low (wParam) = SB_THUMBTRACK)
+                Move (Hi (wParam)) to ScrollBarInfo.nPos
+                Case Break
+        Case End
+
+        // Set scrollbar properties
+        Move SIF_POS to ScrollBarInfo.fMask
+        Move (SetScrollInfo (hWnd, SB_HORZ, AddressOf (ScrollBarInfo), True)) to iResult
+        Move (GetScrollInfo (hWnd, SB_HORZ, AddressOf (ScrollBarInfo))) to iResult
+
+        // Repaint the Window
+        Move (InvalidateRect (hWnd, 0, False)) to iResult
+        Move (UpdateWindow (hWnd)) to iResult
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message LBUTTONDBLCLICK." }
+    { Description += "Sends SelectImage and OnLeftMouseDoubleClick" }
+    { MethodType = Event }
+    Procedure OnLButtonDblClick Longptr wParam LongPtr lParam
+        Send SelectImage
+        Send OnLeftMouseDoubleClick (Low (lParam)) (Hi (lParam)) wParam
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message LBUTTONDOWN." }
+    { Description += "Sends OnLeftMouseDown" }
+    { MethodType = Event }
+    Procedure OnLButtonDown Longptr wParam LongPtr lParam
+        Integer iResult
+        Handle hWnd hHand
+        tWinPoint CurrentMousePoint
+
+        // Convert to screen coordinates
+        Get Window_Handle to hWnd
+        Move (Low (lParam)) to CurrentMousePoint.x
+        Move (Hi (lParam)) to CurrentMousePoint.y
+        Move (ClientToScreen (hWnd, AddressOf (CurrentMousePoint))) to iResult
+
+        Set ppbDrag to True
+        Set pptMousePos to CurrentMousePoint
+        Get pphHand to hHand
+        Move (SetCursor (hHand)) to iResult
+        Move (SetCapture (hWnd)) to iResult
+
+        Send OnLeftMouseDown (Low (lParam)) (Hi (lParam)) wParam
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message LBUTTONUP." }
+    { MethodType = Event }
+    Procedure OnLButtonUp Longptr wParam LongPtr lParam
+        Integer iResult
+        tWinPoint NullPoint
+
+        Set ppbDrag to False
+        Set pptMousePos to NullPoint
+        Move (ReleaseCapture ()) to iResult
+
+        Send OnLeftMouseUp (Low (lParam)) (Hi (lParam)) wParam
+    End_Procedure
+
+    { Description = "Triggered when left mouse button is double-clicked" }
+    { MethodType = Event }
+    Procedure OnLeftMouseDoubleClick Integer iX Integer iY Integer iKeys
+    End_Procedure
+
+    { Description = "Triggered when left mouse button is pressed" }
+    { MethodType = Event }
+    Procedure OnLeftMouseDown Integer iX Integer iY Integer iKeys
+    End_Procedure
+
+    { Description = "Triggered when left mouse button is released" }
+    { MethodType=Event }
+    Procedure OnLeftMouseUp Integer iX Integer iY Integer iKeys
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message MBUTTONDOWN." }
+    { MethodType = Event }
+    Procedure OnMButtonDown Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message MBUTTONUP." }
+    { MethodType = Event }
+    Procedure OnMButtonUp Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message MBUTTONDBLCLICK." }
+    { MethodType = Event }
+    Procedure OnMButtonDblClick Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Description = "Responds the mousewheel." }
+    { Description += "If the Ctrl+Right Mouse button are active increase or decrease the zoom factor by 1." }
+    { Description += "If the Ctrl key is active increase or decrease the zoom factor by 10." }
+    { Description += "The zoom factor value must be between 10 and 400 and is corrected if lower or higher" }
+    { Description += "If the Shift+Right Mouse button are active scroll the image to the left or right." }
+    { Description += "If the Shift key is active scroll the image per line." }
+    { MethodType = Event }
+    Procedure OnMouseWheel Longptr wParam LongPtr lParam
+        Integer iResult iDelta eImageStyle iZoomFactor
+
+        Move (Hi (wParam)) to iResult
+        Move (Cast (iResult, Short)) to iDelta
+        If (iDelta = 0) Begin
+            Procedure_Return
+        End
+
+        Case Begin
+            Case (Low (wParam) iand MK_CONTROL)
+                Get ppeImageStyle to eImageStyle
+                Get ppiZoom to iZoomFactor
+                If (iZoomFactor = 100 and eImageStyle <> ifOriginal) Begin
+                    Get ppiInternalZoom to iZoomFactor
+                    Set ppiZoom to iZoomFactor
+                    Set ppiInternalZoom to 0
+                End
+                If (wParam iand MK_RBUTTON) Begin
+                    // Zoom window
+                    If (iDelta < 0) Begin
+                        Set piZoom to ((iZoomFactor - 1) max 10)
+                    End
+                    Else Begin
+                        Set piZoom to ((iZoomFactor + 1) min 400)
+                    End
+                End
+                Else Begin
+                    // Zoom window
+                    If (iDelta < 0) Begin
+                        Set piZoom to ((iZoomFactor - 10) max 10)
+                    End
+                    Else Begin
+                        Set piZoom to ((iZoomFactor + 10) min 400)
+                    End
+                End
+                Case Break
+            Case (Low (wParam) iand MK_SHIFT)
+                If (wParam iand MK_RBUTTON) Begin
+                    // Scroll page horizontally
+                    If (iDelta < 0) Begin
+                        Send OnHScroll SB_PAGERIGHT 0
+                    End
+                    Else Begin
+                        Send OnHScroll SB_PAGELEFT 0
+                    End
+                End
+                Else Begin
+                    // Scroll horizontally
+                    If (iDelta < 0) Begin
+                        Send OnHScroll SB_LINERIGHT 0
+                    End
+                    Else Begin
+                        Send OnHScroll SB_LINELEFT 0
+                    End
+                End
+                Case Break // no action
+            Case Else
+                If (wParam iand MK_RBUTTON) Begin
+                    // Scroll page vertically
+                    If (iDelta < 0) Begin
+                        Send OnVScroll SB_PAGEDOWN 0
+                    End
+                    Else Begin
+                        Send OnVScroll SB_PAGEUP 0
+                    End
+                End
+                Else Begin
+                    // Scroll vertically
+                    If (iDelta < 0) Begin
+                        Send OnVScroll SB_LINEDOWN 0
+                    End
+                    Else Begin
+                        Send OnVScroll SB_LINEUP 0
+                    End
+                End
+                Case Break
+        Case End
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message MOUSEMOVE." }
+    { MethodType = Event }
+    Procedure OnMouseMove Longptr wParam LongPtr lParam
+        Integer iResult iMouse iMouseX iMouseY iX iY iDiff
+        tWinScrollInfo ScrollBarInfo
+        tWinPoint CurrentMousePoint OldMousePoint
+        Handle hWnd
+        Boolean bDrag
+
+        Get ppbDrag to bDrag
+        If (bDrag and wParam = MK_LBUTTON) Begin
+            // Convert to screen coordinates
+            Get Window_Handle to hWnd
+            Move (Low (lParam)) to CurrentMousePoint.x
+            Move (Hi (lParam)) to CurrentMousePoint.y
+            Move (ClientToScreen (hWnd, AddressOf (CurrentMousePoint))) to iResult
+            If (CurrentMousePoint.x >= 65536) Begin
+                Move (CurrentMousePoint.x - 65536) to CurrentMousePoint.x // Outside of client area
+            End
+            If (CurrentMousePoint.y >= 65536) Begin
+                Move (CurrentMousePoint.y - 65536) to CurrentMousePoint.y // Outsize of client area
+            End
+
+            Get pptMousePos to OldMousePoint
+            If (CurrentMousePoint.x <> OldMousePoint.x or CurrentMousePoint.y <> OldMousePoint.y) Begin
+                Set pptMousePos to CurrentMousePoint
+
+                // Get scroll information
+                Move (SizeOfType(tWinScrollInfo)) to ScrollBarInfo.cbSize
+                Move SIF_POS to ScrollBarInfo.fMask
+
+                Move (GetScrollInfo (hWnd, SB_HORZ, AddressOf (ScrollBarInfo))) to iResult
+                Move ScrollBarInfo.nPos to iX
+                Move (GetScrollInfo (hWnd, SB_VERT, AddressOf (ScrollBarInfo))) to iResult
+                Move ScrollBarInfo.nPos to iY
+
+                // Scroll window
+                Send OnHScroll (((OldMousePoint.x - CurrentMousePoint.x + iX) max 0) * 65536 + SB_THUMBTRACK) 0
+                Send OnVScroll (((OldMousePoint.y - CurrentMousePoint.y + iY) max 0) * 65536 + SB_THUMBTRACK) 0
+            End
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message NCHITTEST and pass it on to DefWindowProc()." }
+    { MethodType = Event }
+    Procedure OnNCHitTest Longptr wParam Longptr lParam
+        Integer iResult
+        Handle hWnd
+
+        Set Windows_Override_State to True
+        Get Window_Handle to hWnd
+        Move (DefWindowProc(hWnd, WM_NCHITTEST, wParam, lParam)) to iResult
+
+        Procedure_Return iResult
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message NCLBUTTONDOWN and pass it on to DefWindowProc()." }
+    { MethodType = Event }
+    Procedure OnNCLButtonDown Longptr wParam Longptr lParam
+        Integer iResult
+        Handle hWnd
+
+        Set Windows_Override_State to True
+        Get Window_Handle to hWnd
+        Move (DefWindowProc (hWnd, WM_NCLBUTTONDOWN, wParam, lParam)) to iResult
+
+        Procedure_Return iResult
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message WM_PAINT." }
+    { MethodType = Event }
+    Procedure OnPaint Longptr wParam LongPtr lParam
+        Integer iResult iX iY iImageX iImageY 
+        Integer iStyle iZoomScale iFrameCount
+        UInteger uiColor
+        gpStatus eStatus
+        Handle hoGraphics hoImage hoBrush
+        Handle hWnd hDC hMemDC hBmp
+        Pointer pImage
+        Float fScale fScaleX fScaleY
+        Boolean bIgnorePaint bShadow bShowScrollBars
+        tWinPaintStruct PaintData
+        tWinScrollInfo ScrollBarInfo
+        tWinRect DestinationRect SourceRect
+
+        // Get GDI+ Object for the image
+        Get phoImage to hoImage
+        If (hoImage = 0) Begin
+            Procedure_Return
+        End
+
+        Get ppbIgnorePaint to bIgnorePaint
+        If (bIgnorePaint) Begin
+            Procedure_Return
+        End
+
+        Get Window_Handle to hWnd
+        If (hWnd = 0) Begin
+            Procedure_Return
+        End
+
+        Move (BeginPaint (hWnd, AddressOf (PaintData))) to hDC
+
+        // Get client rect
+        Get RealClientRect to DestinationRect
+
+        // Should we paint a shadow
+        Get pbDropShadow to bShadow
+
+        // Get scroll information
+        Move (SizeOfType (tWinScrollInfo)) to ScrollBarInfo.cbSize
+        Move SIF_POS to ScrollBarInfo.fMask
+
+        Move (GetScrollInfo (hWnd, SB_HORZ, AddressOf (ScrollBarInfo))) to iResult
+        Move ScrollBarInfo.nPos to iX
+        Move (GetScrollInfo (hWnd, SB_VERT, AddressOf (ScrollBarInfo))) to iResult
+        Move ScrollBarInfo.nPos to iY
+
+        // Get GDI+ objects
+        Get phoGraphics to hoGraphics
+        Get ppeImageStyle to iStyle
+
+        // Get image size
+        Get ImageWidth of hoImage to iImageX
+        Get ImageHeight of hoImage to iImageY
+
+        // Create memory DC
+        Move (CreateCompatibleDC (hDC)) to hMemDC
+
+        Get phBmp to hBmp
+        If (hBmp = 0) Begin
+            // If the zoom scale is not 100%, only ifOriginal makes any sense
+            Get ppiZoom to iZoomScale
+            If (iZoomScale <> 100) Begin
+                Move ifOriginal to iStyle
+            End
+
+            // Defaults for scaling
+            Move 1 to fScaleX
+            Move 1 to fScaleY
+
+            Case Begin
+                Case (iStyle = ifOriginal)
+                    Get ScaleInt iImageX to iImageX
+                    Get ScaleInt iImageY to iImageY
+
+                    Send OnZoom iZoomScale True // Internal
+                    Case Break
+                Case (iStyle = ifFitOneSide)
+                    If (iImageX > 0) Begin // Avoid a division by zero
+                        Move ((DestinationRect.right * 1.0) / (iImageX * 1.0)) to fScaleX
+                    End
+
+                    If (iImageY > 0) Begin // Avoid a division by zero
+                        Move ((DestinationRect.bottom * 1.0) / (iImageY * 1.0)) to fScaleY
+                    End
+
+                    If (fScaleX < fScaleY) Begin // fit horizontally
+                        Move fScaleX to fScale
+                    End
+                    Else Begin  // fit vertically
+                        Move fScaleY to fScale
+                    End
+
+                    Move (iImageX * fScale - 0.5) to iImageX
+                    Move (iImageY * fScale - 0.5) to iImageY
+
+                    Set ppiInternalZoom to (100 * fScale)
+                    Send OnZoom iZoomScale True // Internal
+                    Case Break
+                Case (iStyle = ifFitBothSides)
+                    If (iImageX > 0) Begin // Avoid a division by zero
+                        Move ((DestinationRect.right * 1.0) / (iImageX * 1.0)) to fScaleX
+                    End
+
+                    If (iImageY > 0) Begin // Avoid a division by zero
+                        Move ((DestinationRect.bottom * 1.0) / (iImageY * 1.0)) to fScaleY
+                    End
+
+                    If (fScaleX > fScaleY) Begin
+                        Move fScaleX to fScale
+                    End
+                    Else Begin
+                        Move fScaleY to fScale
+                    End
+
+                    Move (iImageX * fScale - 0.5) to iImageX
+                    Move (iImageY * fScale - 0.5) to iImageY
+
+                    Get pbShowScrollBars to bShowScrollBars
+
+                    // It looke like windows allows for 15 pixels horizontal overlap and 24 pixels vertical
+                    // overlap before adding scrollbars
+                    If ((DestinationRect.right - DestinationRect.left + 15) <= iImageX) Begin
+                        If (bShowScrollBars) Begin
+                            Move (DestinationRect.bottom - GetSystemMetrics (SM_CXHSCROLL) - 2) to DestinationRect.bottom
+                        End
+                        Get ImageHeight of hoImage to iImageY
+                        Get ImageWidth of hoImage to iImageX
+                        Move (DestinationRect.bottom * 1.0 / iImageY) to fScale
+                    End
+                    Else Begin
+                        If ((DestinationRect.bottom - DestinationRect.top + 24) <= iImageY) Begin
+                            If (bShowScrollBars) Begin
+                                Move (DestinationRect.right - GetSystemMetrics (SM_CYVSCROLL) - 2) to DestinationRect.right
+                            End
+                            Get ImageHeight of hoImage to iImageY
+                            Get ImageWidth of hoImage to iImageX
+                            Move (DestinationRect.right * 1.0 / iImageX) to fScale
+                        End
+                        Else Begin
+                            Get ImageHeight of hoImage to iImageY
+                            Get ImageWidth of hoImage to iImageX
+                        End
+                    End
+
+                    Move (iImageX * fScale - 0.5) to iImageX
+                    Move (iImageY * fScale - 0.5) to iImageY
+
+                    Set ppiInternalZoom to (100 * fScale)
+                    Send OnZoom iZoomScale True // Internal
+                    Case Break
+            Case End
+
+            Move (SetRect (AddressOf (SourceRect), 0, 0, iImageX, iImageY)) to iResult
+
+            // The InflateRect function increases or decreases the width and height of the specified rectangle.
+            // The InflateRect Function adds dx units to the left and right ends of the rectangle and dy units
+            // to the top and bottom. The dx and dy parameters are signed values; positive values increase the
+            // width and height, and negative values decrease them.
+            Move (InflateRect (AddressOf (DestinationRect), 1, 1)) to iResult
+
+            // Create memory bitmap, size of bitmap is the same as the scaled image or the size of the client
+            // area if the bitmap is smaller
+            Move (CreateCompatibleBitmap (hDC, iImageX max DestinationRect.right, iImageY max DestinationRect.bottom)) to hBmp
+            Move (SelectObject (hMemDC, hBmp)) to iResult
+
+            // Attach graphics object to hMemDC
+            Get AttachDC of hoGraphics hMemDC to iResult
+            If (iResult <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler iResult "AttachDC in OnPaint"
+            End
+
+            // Clear background
+            Get ppcBackColor to uiColor
+            Get ARGBFromRGB of ghoGDIPlusHandler uiColor 255 to uiColor
+            Get Create of ghoGDIPlusHandler (RefClass (cGDISolidBrush)) to hoBrush
+            Get CreateSolidFill of hoBrush uiColor to eStatus
+            If (eStatus = gpOk) Begin
+                Get FillRectangle of hoGraphics hoBrush 0 0 (iImageX max DestinationRect.right) (iImageY max DestinationRect.bottom) to iResult
+                If (iResult <> gpOk) Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler iResult "FillRectangle in OnPaint"
+                End
+            End
+            Send Destroy of hoBrush
+
+            // Draw entire image to memory DC
+            Increment SourceRect.bottom
+            Increment SourceRect.right
+            Get DrawImageRectI of hoGraphics hoImage SourceRect to eStatus
+            If (eStatus = gpOk) Begin
+                // Draw shadow
+                If (bShadow) Begin
+                    Move (SetRect (AddressOf (SourceRect), 0, 0, iImageX + iX - 1, iImageY + iY - 1)) to iResult
+                    Send DrawShadow hoGraphics SourceRect
+                End
+
+                // Set scroll values
+                Set ppiScrollX to iImageX
+                Set ppiScrollY to iImageY
+
+                Get piFrameCount of hoImage to iFrameCount
+                If (iFrameCount = 0) Begin
+                    Set phBmp to hBmp
+                End
+            End
+        End
+        Else Begin
+            Move (SelectObject (hMemDC, hBmp)) to iResult
+        End
+
+        // Setting the scrollbars can change the size of the client area!
+        // This causes flickering but there is not much we can do about it except
+        // calculating everything twice
+        Send AdjustScrollbars
+
+        // Copy bitmap
+        Move (BitBlt (hDC, 0, 0, DestinationRect.right, DestinationRect.bottom, hMemDC, iX, iY, SRCCOPY)) to iResult
+
+        Move (DeleteDC (hMemDC)) to iResult
+        If (iFrameCount > 0) Begin
+            Move (DeleteObject (hBmp)) to iResult
+        End
+
+        Move (EndPaint (hWnd, AddressOf (PaintData))) to iResult
+        Set Windows_Override_State to True
+
+        Procedure_Return False
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message RBUTTONDOWN by sending OnRightMouseDown event message with 3 parameters." }
+    { MethodType = Event }
+    Procedure OnRButtonDown Longptr wParam LongPtr lParam
+        Send OnRightMouseDown (Low (lParam)) (Hi (lParam)) wParam
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message RBUTTONUP by sending OnRightMouseUp event message with 3 parameters." }
+    { MethodType = Event }
+    Procedure OnRButtonUp Longptr wParam LongPtr lParam
+        Send OnRightMouseUp (Low (lParam)) (Hi (lParam)) wParam
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message RBUTTONDBLCLICK by sending OnRightMouseDoubleClick event message with 3 parameters." }
+    { MethodType = Event }
+    Procedure OnRButtonDblClick Longptr wParam LongPtr lParam
+        Send OnRightMouseDoubleClick (Low (lParam)) (Hi (lParam)) wParam
+    End_Procedure
+
+    { Description = "Triggered when right mouse button is double-clicked" }
+    { MethodType = Event }
+    Procedure OnRightMouseDoubleClick Integer iX Integer iY Integer iKeys
+    End_Procedure
+
+    { Description = "Triggered when right mouse button is pressed" }
+    { MethodType = Event }
+    Procedure OnRightMouseDown Integer iX Integer iY Integer iKeys
+    End_Procedure
+
+    { Description = "Triggered when right mouse button is released" }
+    { MethodType = Event }
+    Procedure OnRightMouseUp Integer iX Integer iY Integer iKeys
+    End_Procedure
+
+    { Description = "Triggered when a new image is selected (displayed)" }
+    { MethodType = Event }
+    Procedure OnImageSelected String sImage
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Handles the Windows Notification message VSCROLL." }
+    { MethodType = Event }
+    Procedure OnVScroll Longptr wParam Longptr lParam
+        Integer iResult iOld
+        tWinScrollInfo ScrollBarInfo
+        Handle hWnd
+
+        If (Low(wParam) = SB_ENDSCROLL) Begin
+            Procedure_Return
+        End
+
+        Get Window_Handle to hWnd
+        Move (SizeOfType (tWinScrollInfo)) to ScrollBarInfo.cbSize
+        Move SIF_ALL to ScrollBarInfo.fMask
+        Move (GetScrollInfo (hWnd, SB_VERT, AddressOf (ScrollBarInfo))) to iResult
+        Move ScrollBarInfo.nPos to iOld
+
+        Case Begin
+            Case (Low (wParam) = SB_LINEDOWN)
+                Move (ScrollBarInfo.nPos + 10 min ScrollBarInfo.nMax) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_LINEUP)
+                Move (ScrollBarInfo.nPos - 10 max ScrollBarInfo.nMin) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_PAGEDOWN)
+                Move (ScrollBarInfo.nPos + ScrollBarInfo.nPage min ScrollBarInfo.nMax) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_PAGEUP)
+                Move (ScrollBarInfo.nPos - ScrollBarInfo.nPage max ScrollBarInfo.nMin) to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_BOTTOM)
+                Move ScrollBarInfo.nMax to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_TOP)
+                Move ScrollBarInfo.nMin to ScrollBarInfo.nPos
+                Case Break
+            Case (Low (wParam) = SB_THUMBPOSITION)
+            Case (Low (wParam) = SB_THUMBTRACK)
+                Move (Hi (wParam)) to ScrollBarInfo.nPos
+                Case Break
+        Case End
+
+        // Set scrollbar properties
+        Move SIF_POS to ScrollBarInfo.fMask
+
+        Move (SetScrollInfo (hWnd, SB_VERT, AddressOf (ScrollBarInfo), True)) to iResult
+        Move (GetScrollInfo (hWnd, SB_VERT, AddressOf (ScrollBarInfo))) to iResult
+
+        // Repaint the window
+        Move (InvalidateRect (hWnd, 0, False)) to iResult
+        Move (UpdateWindow (hWnd)) to iResult
+    End_Procedure
+
+    { Description = "Triggered when the zoom changes" }
+    { MethodType = Event }
+    Procedure OnZoom Integer iFactor Boolean bInternal
+    End_Procedure
+
+    { Description = "Sets the image name. Optimized when the same name is set again the new different image is not loaded" }
+    { MethodType = Property }
+    { Category = "Image" }
+    { PropertyType = Image }
+    Procedure Set psImage String sImage
+        gpStatus eStatus
+        Handle hoImage
+        Boolean bIsImage
+        Address pImage
+        Boolean bLoadFromResource bAutoTooltip bLoadThumbnail
+        String sPreviousImage
+
+        Get pbLoadFromResource to bLoadFromResource
+        If (not (bLoadFromResource)) Begin
+            Get ppsImage to sPreviousImage
+            Get FindImage sImage to sImage
+            If (sPreviousImage <> "" and sPreviousImage = sImage) Begin
+                Procedure_Return
+            End
+        End
+
+        // Create image object
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+            If (bIsImage) Begin
+                Get ppImage of hoImage to pImage
+                If (pImage <> 0) Begin
+                    Send RemoveBitmap
+                    Send Destroy of hoImage
+                    Move 0 to hoImage
+                    Set phoImage to hoImage
+                End
+            End
+        End
+
+        If (sImage <> "") Begin
+            If (bLoadFromResource) Begin
+                Get CreateImageFromResource of ghoGDIPlusHandler sImage to hoImage
+                If (hoImage = 0) Begin
+                    Get FindImage sImage to sImage
+                End
+                Set phoImage to hoImage
+            End
+            If (hoImage = 0 or (not (bLoadFromResource))) Begin
+                Get CreateImageFromFile of ghoGDIPlusHandler sImage to hoImage
+                If (hoImage <> 0) Begin
+                    Set phoImage to hoImage
+                    Get pbLoadThumbnail to bLoadThumbnail
+                    If (bLoadThumbnail) Begin
+                        Send LoadThumbnail
+                    End
+                    Send ResetScrollbars
+                End
+                Else Begin
+                    Move "" to sImage
+                End
+            End
+        End
+
+        Set ppsImage to sImage
+
+        If (hoImage <> 0) Begin
+            Send SetupAnimation
+            Get pbAutoTooltip to bAutoTooltip
+            If (bAutoTooltip) Begin
+                Send AssignTooltip
+            End
+        End
+
+        // Draw image
+        Send RedrawImage
+    End_Procedure
+
+    { Description = "Returns the image name. Works only if the image container shows an image loaded from a filename." }
+    { MethodType = Property }
+    Function psImage Returns String
+        String sImage
+
+        Get ppsImage to sImage
+
+        Function_Return sImage
+    End_Function
+
+    { Description = "Reads image information and together with the name of the image this will be used as the tooltip" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure AssignTooltip
+        String sImage
+        Handle hoImage
+        Float fHorizontalResolution fVerticalResolution
+        Integer iImageWidth iImageHeight
+
+        Get ppsImage to sImage
+
+        If (sImage <> "") Begin
+            Get phoImage to hoImage
+            If (hoImage <> 0) Begin
+                Get ImageHorizontalResolution of hoImage to fHorizontalResolution
+                Get ImageVerticalResolution of hoImage to fVerticalResolution
+                Get ImageWidth of hoImage to iImageWidth
+                Get ImageHeight of hoImage to iImageHeight
+                Set psToolTip to (sImage + Character (13) + SFormat ("Size: %1 x %2px", iImageHeight, iImageWidth) + Character (13) + SFormat ("Resolution: %1 x %2", fVerticalResolution, fHorizontalResolution))
+            End
+        End
+        Else Begin
+            Set psToolTip to ""
+        End
+    End_Procedure
+
+    { Description = "Delete bitmap" }
+    { Visibility = Private }
+    Procedure RemoveBitmap
+        Handle hBmp
+        Integer iResult
+
+        Get phBmp to hBmp
+        If (hBmp <> 0) Begin
+            Move (DeleteObject (hBmp)) to iResult
+            Set phBmp to 0
+        End
+    End_Procedure
+
+    { Description = "Sets the image display style" }
+    { MethodType = Property Category = "Image" }
+    { EnumList = "ifOriginal, ifFitOneSide, ifFitBothSides" }
+    { InitialValue = ifOriginal }
+    Procedure Set peImageStyle Integer iStyle
+        Integer iResult
+
+        Send RemoveBitmap
+
+        // Reset zoom
+        Set ppiInternalZoom to 0
+        Set ppiZoom to 100
+        Set ppeImageStyle to iStyle
+
+        // Draw image
+        Send RedrawImage
+    End_Procedure
+
+    { Description = "Returns the image style" }
+    { MethodType = Property }
+    Function peImageStyle Returns Integer
+        Integer eImageStyle
+
+        Get ppeImageStyle to eImageStyle
+
+        Function_Return eImageStyle
+    End_Function
+
+    { Description = "Sets the zoom level" }
+    { MethodType = Property }
+    { Category = "Image" }
+    { InitialValue = 100 }
+    Procedure Set piZoom Integer iLevel
+        Set ppiZoom to iLevel
+
+        Send OnZoom iLevel False
+
+        // Draw image
+        Send RedrawImage
+    End_Procedure
+
+    { Description = "Returns the zoom level" }
+    { MethodType = Property }
+    Function piZoom Returns Integer
+        Integer iZoomLevel
+
+        Get ppiZoom to iZoomLevel
+
+        Function_Return iZoomLevel
+    End_Function
+
+    { Description = "Sets the background color" }
+    { MethodType = Property }
+    { Category = "Image" }
+    { PropertyType = Color }
+    { EnumList = "clNone, clDefault, clAqua, clBlack, clBlue, clDkGray, clFuchsia, clGray, clGreen" }
+    { EnumList += "clLime, clLtGray, clMaroon, clNavy, clOlive, clPurple, clRed, clSilver, clTeal, clWhite, clYellow" }
+    { InitialValue = clBtnFace }
+    Procedure Set pcBackColor UInteger uiColor
+        If ((uiColor iand $FFFFFF) <> uiColor) Begin
+            Move (GetSysColor (uiColor iand $FFFFFF)) to uiColor
+        End
+
+        Set ppcBackColor to uiColor
+        Send RemoveBitmap
+
+        // Draw image
+        Send RedrawImage
+    End_Procedure
+
+    { Description = "Returns the background color" }
+    { Category = "Image" }
+    { PropertyType = Color }
+    { EnumList = "clNone, clDefault, clAqua, clBlack, clBlue, clDkGray, clFuchsia, clGray, clGreen" }
+    { EnumList += "clLime, clLtGray, clMaroon, clNavy, clOlive, clPurple, clRed, clSilver, clTeal, clWhite, clYellow" }
+    { MethodType = Property }
+    Function pcBackColor Returns UInteger
+        UInteger uiBackColor
+
+        Get ppcBackColor to uiBackColor
+
+        Function_Return uiBackColor
+    End_Function
+
+    { Description = "Sets the request to draw a shadow line and redraws the image" }
+    { MethodType = Property }
+    { Category = "Image" }
+    { PropertyType = Boolean }
+    { InitialValue = False }
+    Procedure Set pbDropShadow Boolean bShadow
+        Set ppbDropShadow to bShadow
+
+        // Draw image
+        Send RedrawImage
+    End_Procedure
+
+    { Description = "Returns if a shadow should be drawn" }
+    { Category = "Image" }
+    { PropertyType = Boolean }
+    { MethodType = Property }
+    Function pbDropShadow Returns Boolean
+        Boolean bDropShadow
+
+        Get ppbDropShadow to bDropShadow
+
+        Function_Return bDropShadow
+    End_Function
+
+    { Description = "Sets enabled state" }
+    { MethodType = Property }
+    { Category = "Image" }
+    { PropertyType = Boolean }
+    { InitialValue = True }
+    Procedure Set pbEnabled Boolean bEnabled
+        Integer iResult
+        Handle hWnd
+
+        Set ppbEnabled To bEnabled
+        Get Window_Handle to hWnd
+
+        If (hWnd <> 0) Begin
+            Move (EnableWindow (hWnd, bEnabled)) to iResult
+        End
+    End_Procedure
+
+    { Description = "Returns the enabled state of the object" }
+    { Category = "Image" }
+    { PropertyType = Boolean }
+    { MethodType = Property }
+    Function pbEnabled Returns Boolean
+        Boolean bEnabled
+
+        Get ppbEnabled to bEnabled
+
+        Function_Return bEnabled
+    End_Function
+
+    { Description = "Sets visible state and hides the image when present and visible" }
+    { MethodType = Property }
+    { Category = "Image" }
+    { PropertyType = Boolean }
+    { InitialValue = True }
+    Procedure Set pbVisible Boolean bVisible
+        Integer iResult
+        Handle hWnd
+
+        Set ppbVisible to bVisible
+        Get Window_Handle to hWnd
+
+        If (hWnd <> 0) Begin
+            If (bVisible) Begin
+                Move (ShowWindow (hWnd, SW_SHOWNA)) to iResult
+            End
+            Else Begin
+                Move (ShowWindow (hWnd, SW_HIDE)) to iResult
+            End
+        End
+    End_Procedure
+
+    { Description = "Returns if the image is visible or not" }
+    { Category = "Image" }
+    { PropertyType = Boolean }
+    { MethodType = Property }
+    Function pbVisible Returns Boolean
+        Boolean bVisible
+
+        Get ppbVisible to bVisible
+
+        Function_Return bVisible
+    End_Function
+End_Class

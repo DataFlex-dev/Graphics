@@ -1,0 +1,164 @@
+﻿Define LANG_NEUTRAL                         for |CI$00
+Define LANG_AFRIKAANS                       for |CI$36
+Define LANG_ALBANIAN                        for |CI$1c
+Define LANG_ARABIC                          for |CI$01
+Define LANG_ARMENIAN                        for |CI$2b
+Define LANG_ASSAMESE                        for |CI$4d
+Define LANG_AZERI                           for |CI$2c
+Define LANG_BASQUE                          for |CI$2d
+Define LANG_BELARUSIAN                      for |CI$23
+Define LANG_BENGALI                         for |CI$45
+Define LANG_BULGARIAN                       for |CI$02
+Define LANG_CATALAN                         for |CI$03
+Define LANG_CHINESE                         for |CI$04
+Define LANG_CROATIAN                        for |CI$1a
+Define LANG_CZECH                           for |CI$05
+Define LANG_DANISH                          for |CI$06
+Define LANG_DUTCH                           for |CI$13
+Define LANG_ENGLISH                         for |CI$09
+Define LANG_ESTONIAN                        for |CI$25
+Define LANG_FAEROESE                        for |CI$38
+Define LANG_FARSI                           for |CI$29
+Define LANG_FINNISH                         for |CI$0b
+Define LANG_FRENCH                          for |CI$0c
+Define LANG_GEORGIAN                        for |CI$37
+Define LANG_GERMAN                          for |CI$07
+Define LANG_GREEK                           for |CI$08
+Define LANG_GUJARATI                        for |CI$47
+Define LANG_HEBREW                          for |CI$0d
+Define LANG_HINDI                           for |CI$39
+Define LANG_HUNGARIAN                       for |CI$0e
+Define LANG_ICELANDIC                       for |CI$0f
+Define LANG_INDONESIAN                      for |CI$21
+Define LANG_ITALIAN                         for |CI$10
+Define LANG_JAPANESE                        for |CI$11
+Define LANG_KANNADA                         for |CI$4b
+Define LANG_KASHMIRI                        for |CI$60
+Define LANG_KAZAK                           for |CI$3f
+Define LANG_KONKANI                         for |CI$57
+Define LANG_KOREAN                          for |CI$12
+Define LANG_LATVIAN                         for |CI$26
+Define LANG_LITHUANIAN                      for |CI$27
+Define LANG_MACEDONIAN                      for |CI$2f
+Define LANG_MALAY                           for |CI$3e
+Define LANG_MALAYALAM                       for |CI$4c
+Define LANG_MANIPURI                        for |CI$58
+Define LANG_MARATHI                         for |CI$4e
+Define LANG_NEPALI                          for |CI$61
+Define LANG_NORWEGIAN                       for |CI$14
+Define LANG_ORIYA                           for |CI$48
+Define LANG_POLISH                          for |CI$15
+Define LANG_PORTUGUESE                      for |CI$16
+Define LANG_PUNJABI                         for |CI$46
+Define LANG_ROMANIAN                        for |CI$18
+Define LANG_RUSSIAN                         for |CI$19
+Define LANG_SANSKRIT                        for |CI$4f
+Define LANG_SERBIAN                         for |CI$1a
+Define LANG_SINDHI                          for |CI$59
+Define LANG_SLOVAK                          for |CI$1b
+Define LANG_SLOVENIAN                       for |CI$24
+Define LANG_SPANISH                         for |CI$0a
+Define LANG_SWAHILI                         for |CI$41
+Define LANG_SWEDISH                         for |CI$1d
+Define LANG_TAMIL                           for |CI$49
+Define LANG_TATAR                           for |CI$44
+Define LANG_TELUGU                          for |CI$4a
+Define LANG_THAI                            for |CI$1e
+Define LANG_TURKISH                         for |CI$1f
+Define LANG_UKRAINIAN                       for |CI$22
+Define LANG_URDU                            for |CI$20
+Define LANG_UZBEK                           for |CI$43
+Define LANG_VIETNAMESE                      for |CI$2a
+
+Define SUBLANG_NEUTRAL                      for |CI$00 // language neutral
+Define SUBLANG_DEFAULT                      for |CI$01 // user default
+Define SUBLANG_SYS_DEFAULT                  for |CI$02 // system default
+Define SUBLANG_ARABIC_SAUDI_ARABIA          for |CI$01 // Arabic (Saudi Arabia)
+Define SUBLANG_ARABIC_IRAQ                  for |CI$02 // Arabic (Iraq)
+Define SUBLANG_ARABIC_EGYPT                 for |CI$03 // Arabic (Egypt)
+Define SUBLANG_ARABIC_LIBYA                 for |CI$04 // Arabic (Libya)
+Define SUBLANG_ARABIC_ALGERIA               for |CI$05 // Arabic (Algeria)
+Define SUBLANG_ARABIC_MOROCCO               for |CI$06 // Arabic (Morocco)
+Define SUBLANG_ARABIC_TUNISIA               for |CI$07 // Arabic (Tunisia)
+Define SUBLANG_ARABIC_OMAN                  for |CI$08 // Arabic (Oman)
+Define SUBLANG_ARABIC_YEMEN                 for |CI$09 // Arabic (Yemen)
+Define SUBLANG_ARABIC_SYRIA                 for |CI$0a // Arabic (Syria)
+Define SUBLANG_ARABIC_JORDAN                for |CI$0b // Arabic (Jordan)
+Define SUBLANG_ARABIC_LEBANON               for |CI$0c // Arabic (Lebanon)
+Define SUBLANG_ARABIC_KUWAIT                for |CI$0d // Arabic (Kuwait)
+Define SUBLANG_ARABIC_UAE                   for |CI$0e // Arabic (U.A.E)
+Define SUBLANG_ARABIC_BAHRAIN               for |CI$0f // Arabic (Bahrain)
+Define SUBLANG_ARABIC_QATAR                 for |CI$10 // Arabic (Qatar)
+Define SUBLANG_AZERI_LATIN                  for |CI$01 // Azeri (Latin)
+Define SUBLANG_AZERI_CYRILLIC               for |CI$02 // Azeri (Cyrillic)
+Define SUBLANG_CHINESE_TRADITIONAL          for |CI$01 // Chinese (Taiwan Region)
+Define SUBLANG_CHINESE_SIMPLIFIED           for |CI$02 // Chinese (PR China)
+Define SUBLANG_CHINESE_HONGKONG             for |CI$03 // Chinese (Hong Kong)
+Define SUBLANG_CHINESE_SINGAPORE            for |CI$04 // Chinese (Singapore)
+Define SUBLANG_CHINESE_MACAU                for |CI$05 // Chinese (Macau)
+Define SUBLANG_DUTCH                        for |CI$01 // Dutch
+Define SUBLANG_DUTCH_BELGIAN                for |CI$02 // Dutch (Belgian)
+Define SUBLANG_ENGLISH_US                   for |CI$01 // English (USA)
+Define SUBLANG_ENGLISH_UK                   for |CI$02 // English (UK)
+Define SUBLANG_ENGLISH_AUS                  for |CI$03 // English (Australian)
+Define SUBLANG_ENGLISH_CAN                  for |CI$04 // English (Canadian)
+Define SUBLANG_ENGLISH_NZ                   for |CI$05 // English (New Zealand)
+Define SUBLANG_ENGLISH_EIRE                 for |CI$06 // English (Irish)
+Define SUBLANG_ENGLISH_SOUTH_AFRICA         for |CI$07 // English (South Africa)
+Define SUBLANG_ENGLISH_JAMAICA              for |CI$08 // English (Jamaica)
+Define SUBLANG_ENGLISH_CARIBBEAN            for |CI$09 // English (Caribbean)
+Define SUBLANG_ENGLISH_BELIZE               for |CI$0a // English (Belize)
+Define SUBLANG_ENGLISH_TRINIDAD             for |CI$0b // English (Trinidad)
+Define SUBLANG_ENGLISH_ZIMBABWE             for |CI$0c // English (Zimbabwe)
+Define SUBLANG_ENGLISH_PHILIPPINES          for |CI$0d // English (Philippines)
+Define SUBLANG_FRENCH                       for |CI$01 // French
+Define SUBLANG_FRENCH_BELGIAN               for |CI$02 // French (Belgian)
+Define SUBLANG_FRENCH_CANADIAN              for |CI$03 // French (Canadian)
+Define SUBLANG_FRENCH_SWISS                 for |CI$04 // French (Swiss)
+Define SUBLANG_FRENCH_LUXEMBOURG            for |CI$05 // French (Luxembourg)
+Define SUBLANG_FRENCH_MONACO                for |CI$06 // French (Monaco)
+Define SUBLANG_GERMAN                       for |CI$01 // German
+Define SUBLANG_GERMAN_SWISS                 for |CI$02 // German (Swiss)
+Define SUBLANG_GERMAN_AUSTRIAN              for |CI$03 // German (Austrian)
+Define SUBLANG_GERMAN_LUXEMBOURG            for |CI$04 // German (Luxembourg)
+Define SUBLANG_GERMAN_LIECHTENSTEIN         for |CI$05 // German (Liechtenstein)
+Define SUBLANG_ITALIAN                      for |CI$01 // Italian
+Define SUBLANG_ITALIAN_SWISS                for |CI$02 // Italian (Swiss)
+Define SUBLANG_KASHMIRI_INDIA               for |CI$02 // Kashmiri (India)
+Define SUBLANG_KOREAN                       for |CI$01 // Korean (Extended Wansung)
+Define SUBLANG_LITHUANIAN                   for |CI$01 // Lithuanian
+Define SUBLANG_MALAY_MALAYSIA               for |CI$01 // Malay (Malaysia)
+Define SUBLANG_MALAY_BRUNEI_DARUSSALAM      for |CI$02 // Malay (Brunei Darussalam)
+Define SUBLANG_NEPALI_INDIA                 for |CI$02 // Nepali (India)
+Define SUBLANG_NORWEGIAN_BOKMAL             for |CI$01 // Norwegian (Bokmal)
+Define SUBLANG_NORWEGIAN_NYNORSK            for |CI$02 // Norwegian (Nynorsk)
+Define SUBLANG_PORTUGUESE                   for |CI$02 // Portuguese
+Define SUBLANG_PORTUGUESE_BRAZILIAN         for |CI$01 // Portuguese (Brazilian)
+Define SUBLANG_SERBIAN_LATIN                for |CI$02 // Serbian (Latin)
+Define SUBLANG_SERBIAN_CYRILLIC             for |CI$03 // Serbian (Cyrillic)
+Define SUBLANG_SPANISH                      for |CI$01 // Spanish (Castilian)
+Define SUBLANG_SPANISH_MEXICAN              for |CI$02 // Spanish (Mexican)
+Define SUBLANG_SPANISH_MODERN               for |CI$03 // Spanish (Modern)
+Define SUBLANG_SPANISH_GUATEMALA            for |CI$04 // Spanish (Guatemala)
+Define SUBLANG_SPANISH_COSTA_RICA           for |CI$05 // Spanish (Costa Rica)
+Define SUBLANG_SPANISH_PANAMA               for |CI$06 // Spanish (Panama)
+Define SUBLANG_SPANISH_DOMINICAN_REPUBLIC   for |CI$07 // Spanish (Dominican Republic)
+Define SUBLANG_SPANISH_VENEZUELA            for |CI$08 // Spanish (Venezuela)
+Define SUBLANG_SPANISH_COLOMBIA             for |CI$09 // Spanish (Colombia)
+Define SUBLANG_SPANISH_PERU                 for |CI$0a // Spanish (Peru)
+Define SUBLANG_SPANISH_ARGENTINA            for |CI$0b // Spanish (Argentina)
+Define SUBLANG_SPANISH_ECUADOR              for |CI$0c // Spanish (Ecuador)
+Define SUBLANG_SPANISH_CHILE                for |CI$0d // Spanish (Chile)
+Define SUBLANG_SPANISH_URUGUAY              for |CI$0e // Spanish (Uruguay)
+Define SUBLANG_SPANISH_PARAGUAY             for |CI$0f // Spanish (Paraguay)
+Define SUBLANG_SPANISH_BOLIVIA              for |CI$10 // Spanish (Bolivia)
+Define SUBLANG_SPANISH_EL_SALVADOR          for |CI$11 // Spanish (El Salvador)
+Define SUBLANG_SPANISH_HONDURAS             for |CI$12 // Spanish (Honduras)
+Define SUBLANG_SPANISH_NICARAGUA            for |CI$13 // Spanish (Nicaragua)
+Define SUBLANG_SPANISH_PUERTO_RICO          for |CI$14 // Spanish (Puerto Rico)
+Define SUBLANG_SWEDISH                      for |CI$01 // Swedish
+Define SUBLANG_SWEDISH_FINLAND              for |CI$02 // Swedish (Finland)
+Define SUBLANG_URDU_PAKISTAN                for |CI$01 // Urdu (Pakistan)
+Define SUBLANG_URDU_INDIA                   for |CI$02 // Urdu (India)
+Define SUBLANG_UZBEK_LATIN                  for |CI$01 // Uzbek (Latin)
+Define SUBLANG_UZBEK_CYRILLIC               for |CI$02 // Uzbek (Cyrillic)

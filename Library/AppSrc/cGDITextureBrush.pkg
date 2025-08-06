@@ -1,0 +1,443 @@
+﻿Use cGDIPlus.pkg
+Use cGDITextureBrush.h.pkg
+Use cGDIBrush.pkg
+Use cGDIMatrix.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDITextureBrush }
+{ Description = "The TextureBrush class defines a Brush object that contains an Image object that is used for the fill." }
+{ Description += "The fill image can be transformed by using the local Matrix Object contained in the Brush Object." }
+Class cGDITextureBrush is a cGDIBrush
+    { MethodType = Method }
+    { Description = "Creates a TextureBrush object based on an image and a wrap mode." }
+    { Description += "The size of the brush defaults to the size of the image, so the entire image is used by the brush." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateTexture Handle hoImage gpWrapMode eWrapMode Returns gpStatus
+        Boolean bIsImage
+        gpStatus eStatus
+        Pointer pImage pBrush
+
+        If (hoImage <> 0) Begin
+            Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+            If (bIsImage) Begin
+                Get ppImage of hoImage to pImage
+                If (pImage <> 0) Begin
+                    Move 0 to pBrush
+                    Move (GdipCreateTexture (pImage, eWrapMode, AddressOf (pBrush))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        // If exists remove the old brush
+                        Send DeleteBrush
+                        Set ppBrush to pBrush
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a TextureBrush object based on an image, a wrap mode, and a defining set of coordinates." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateTexture2 Handle hoImage gpWrapMode eWrapMode Float fX Float fY Float fWidth Float fHeight Returns gpStatus
+        Boolean bIsImage
+        gpStatus eStatus
+        Pointer pImage pBrush
+
+        If (hoImage <> 0) Begin
+            Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+            If (bIsImage) Begin
+                Get ppImage of hoImage to pImage
+                If (pImage <> 0) Begin
+                    Move 0 to pBrush
+                    Move (GdipCreateTexture2 (pImage, eWrapMode, fX, fY, fWidth, fHeight, AddressOf (pBrush))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        // If exists remove the old brush
+                        Send DeleteBrush
+                        Set ppBrush to pBrush
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a TextureBrush object based on an image, a defining rectangle, and a set of image properties." }
+    { Description += "The x, y, width, and height parameters of the flat function define a rectangle that corresponds to the dstRect parameter of the wrapper method." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateTextureIA Handle hoImage Handle hoImageAttributes Float fX Float fY Float fWidth Float fHeight Returns gpStatus
+        Boolean bIsImage
+        gpStatus eStatus
+        Pointer pImage pImageAttributes pBrush
+
+        If (hoImage <> 0) Begin
+            Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+            If (bIsImage) Begin
+                Get ppImage of hoImage to pImage
+                If (pImage <> 0) Begin
+                    If (hoImageAttributes <> 0) Begin
+                        // ToDo: Get ppImageAttributes or so, class for imageattributes does not yet exists
+                    End
+                    Move 0 to pBrush
+                    Move (GdipCreateTextureIA (pImage, pImageAttributes, fX, fY, fWidth, fHeight, AddressOf (pBrush))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        // If exists remove the old brush
+                        Send DeleteBrush
+                        Set ppBrush to pBrush
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a TextureBrush object based on an image, a defining rectangle, and a set of image properties." }
+    { Description += "The x, y, width, and height parameters of the flat function define a rectangle that corresponds to the dstRect parameter of the wrapper method." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateTextureIAI Handle hoImage Handle hoImageAttributes Integer iX Integer iY Integer iWidth Integer iHeight Returns gpStatus
+        Boolean bIsImage
+        gpStatus eStatus
+        Pointer pImage pImageAttributes pBrush
+
+        If (hoImage <> 0) Begin
+            Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+            If (bIsImage) Begin
+                Get ppImage of hoImage to pImage
+                If (pImage <> 0) Begin
+                    If (hoImageAttributes <> 0) Begin
+                        // ToDo: Get ppImageAttributes or so, class for imageattributes does not yet exists
+                    End
+                    Move 0 to pBrush
+                    Move (GdipCreateTextureIAI (pImage, pImageAttributes, iX, iY, iWidth, iHeight, AddressOf (pBrush))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        // If exists remove the old brush
+                        Send DeleteBrush
+                        Set ppBrush to pBrush
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Gets the transformation matrix of this texture brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function phoTextureTransform Returns Handle
+        Handle hoMatrix
+        Pointer pBrush pMatrix
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to pMatrix
+            Move (GdipGetTextureTransform (pBrush, AddressOf (pMatrix))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get Create of ghoGDIPlusHandler (RefClass (cGDIMatrix)) to hoMatrix
+                Set ppMatrix of hoMatrix to pMatrix
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "TextureTransform"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return hoMatrix
+    End_Function
+
+    { Description = "Sets the transformation matrix of this texture brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set phoTextureTransform Handle hoMatrix
+        Boolean bIsMatrix
+        Pointer pBrush pMatrix
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (hoMatrix <> 0) Begin
+                Get IsObjectOfClass of hoMatrix (RefClass (cGDIMatrix)) to bIsMatrix
+                If (bIsMatrix) Begin
+                    Get ppMatrix of hoMatrix to pMatrix
+                    If (pMatrix <> 0) Begin
+                        Move (GdipSetTextureTransform (pBrush, pMatrix)) to eStatus
+                        If (eStatus <> gpOk) Begin
+                            Send HandleGDIResult of ghoGDIPlusHandler eStatus "TextureTransform"
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Resets the transformation matrix of this texture brush to the identity matrix." }
+    { Description += "This means that no transformation takes place." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function ResetTextureTransform Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipResetTextureTransform (pBrush)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this brush's transformation matrix with the product of itself and another matrix" }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function MultiplyTextureTransform Handle hoMatrix gpMatrixOrder eOrder Returns gpStatus
+        Boolean bIsMatrix
+        gpStatus eStatus
+        Pointer pBrush pMatrix
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (hoMatrix <> 0) Begin
+                Get IsObjectOfClass of hoMatrix (RefClass (cGDIMatrix)) to bIsMatrix
+                If (bIsMatrix) Begin
+                    Get ppMatrix of hoMatrix to pMatrix
+                    If (pMatrix <> 0) Begin
+                        If (num_arguments > 1) Begin
+                            Move (GdipMultiplyTextureTransform (pBrush, pMatrix, eOrder)) to eStatus
+                        End
+                        Else Begin
+                            Move (GdipMultiplyTextureTransform (pBrush, pMatrix, gpMatrixOrderPrepend)) to eStatus
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this brush's current transformation matrix with the product of itself and a translation matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function TranslateTextureTransform Float fdX Float fdY gpMatrixOrder eOrder Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 2) Begin
+                Move (GdipTranslateTextureTransform (pBrush, fdX, fdY, eOrder)) to eStatus
+            End
+            Else Begin
+                Move (GdipTranslateTextureTransform (pBrush, fdX, fDy, gpMatrixOrderPrepend)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this texture brush's current transformation matrix with the product of itself and a scaling matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function ScaleTextureTransform Float fsX Float fsY gpMatrixOrder eOrder Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 2) Begin
+                Move (GdipScaleTextureTransform (pBrush, fsX, fsY, eOrder)) to eStatus
+            End
+            Else Begin
+                Move (GdipScaleTextureTransform (pBrush, fsX, fsy, gpMatrixOrderPrepend)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this texture brush's current transformation matrix with the product of itself and a rotation matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function RotateTextureTransform Float fAngle gpMatrixOrder eOrder Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 1) Begin
+                Move (GdipRotateTextureTransform (pBrush, fAngle, eOrder)) to eStatus
+            End
+            Else Begin
+                Move (GdipRotateTextureTransform (pBrush, fAngle, gpMatrixOrderPrepend)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Sets the wrap mode of this texture brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Procedure Set peTextureWrapMode gpWrapMode eMode
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetTextureWrapMode (pBrush, eMode)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "SetTextureWrapMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Gets the wrap mode currently set for this texture brush." }
+    { Description += "No error indication when the GDI+ function fails" }
+    Function peTextureWrapMode Returns gpWrapMode
+        gpWrapMode eMode
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetTextureWrapMode (pBrush)) to eMode
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eMode
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Gets a pointer to the Image object that is defined by this texture brush." }
+    { Description += "Returns the DataFlex object handle of cGDIImage object if succesful." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function TextureImage Returns Handle
+        gpStatus eStatus
+        Pointer pBrush pImage
+        Handle hoImage
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to pImage
+            Move (GdipGetTextureImage (pBrush, AddressOf (pImage))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateGDIImageObject of ghoGDIPlusHandler "ImageFromTexture" to hoImage
+                Set ppImage of hoImage to pImage
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "TextureImage"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return hoImage
+    End_Function
+End_Class

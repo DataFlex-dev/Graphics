@@ -1,0 +1,102 @@
+﻿Use Windows.pkg
+Use DFAbout.pkg
+Use cImageContainer.pkg
+Use cLinkLabel.pkg
+
+Object oGraphicsAbout is a ModalPanel
+    Set Sysmenu_Icon to False
+    Set Minimize_Icon to False
+    Set Label to "About Graphics Library Demos"
+    Set Locate_Mode to Center_On_Parent
+    Set Size to 120 258
+    Set piMinSize to 99 217
+    Set TextColor to clBlue
+
+    On_Key Key_Escape Send KeyAction of oOK_btn
+
+    Object oOK_btn is a Button
+        Set Label to "&OK"
+        Set Location to 101 203
+        Set peAnchors to anBottomRight
+        Set Default_State to True
+
+        Procedure OnClick
+            Send Close_Panel
+        End_Procedure
+    End_Object
+
+    Object oSysInfo_btn is a Button
+        Set Label to "System Info..."
+        Set Location to 101 147
+        Set peAnchors to anBottomRight
+
+        Procedure OnClick
+            Send Popup_Modal of oSysInfo_pnl
+        End_Procedure
+    End_Object
+
+    Object oAboutBitmap is a cImageContainer
+        Set Size to 38 41
+        Set Location to 4 5
+        Set pbLoadFromResource to True
+        Set psImage to "DacAbout.bmp"
+        Set Border_Style to Border_StaticEdge
+        Set pbShowScrollBars to False
+    End_Object
+
+    Object oProgram_text is a Textbox
+        Set Label to "Project Name"
+        Set TextColor to clBlue
+        Set Location to 4 79
+        Set Size to 10 60
+        set FontUnderline to True
+        Set Value to (psProgram (ghoApplication))
+    End_Object
+
+    Object oLicenseNoticeTextBox is a cLinkLabel
+        Set Size to 56 160
+        Set Location to 17 79
+        Set Label to 'This demo application uses a licensed component (Property Grid). Copyright © 2021, <a href="www.codejock.com">CodeJock Software</a>, 205 N. Hintz Rd, Owosso, Michigan 48867 United States, All rights reserved. You need to purchase your own license when you want to use this outside of this demo!'
+        Set FontWeight to FW_BOLD
+        Set TextColor to clRed
+    End_Object
+
+    Object oCopyright_text is a Textbox
+        Set Label to "© Copyright 1976-2021 Data Access Worldwide"
+        Set TextColor to clBlue
+        Set Location to 77 79
+        Set Size to 10 173
+    End_Object
+
+    Object oVersion_text is a Textbox
+        Set Label to "Version: 00.00.00.00"
+        Set TextColor to clBlue
+        Set Location to 89 79
+        Set Size to 10 26
+
+        Procedure SetVersionInfo
+            // Set the Version Info (build number) text box.
+            // This information is configured in your application properties dialog and
+            // linked into your application.
+            Handle hoVersionInfo
+            String sMajor sMinor sRelease sBuild
+
+            Get phoVersionInfo   of ghoApplication to hoVersionInfo
+            Get piVersionMajor   of hoVersionInfo  to sMajor
+            Get piVersionMinor   of hoVersionInfo  to sMinor
+            Get piVersionRelease of hoVersionInfo  to sRelease
+            Get piVersionBuild   of hoVersionInfo  to sBuild
+
+            Set Label of oVersion_text to ("Version: " + sMajor + "." + sMinor + "." + sRelease + "." + sBuild)
+        End_Procedure
+
+        Send SetVersionInfo
+    End_Object
+End_Object
+
+Object oSysInfo_pnl is a SysInfoDialog
+End_Object
+
+Procedure Activate_About
+    Send Popup_Modal of oGraphicsAbout
+End_Procedure

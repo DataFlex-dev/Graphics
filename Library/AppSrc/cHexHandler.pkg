@@ -1,0 +1,140 @@
+Use VDFbase.pkg
+
+{ ClassLibrary = Common }
+{ HelpTopic = cHexHandler }
+{ Description = "Class to handle hexadecimal operations" }
+Class cHexHandler is a cObject
+    { Description = "Returns true if the content of the passed string are all in the HEX character range" }
+    { MethodType = Method }
+    Function IsHex String sHex Returns Boolean
+        Integer iCounter iLength
+        String sChar
+
+        Move (Uppercase (sHex)) to sHex
+        Move (Length (sHex)) to iLength
+
+        // Check if the string has an even set of HEX characters (HEX value must be in the range of "00-FF")
+        If (Mod (iLength, 2) > 0) Begin
+            Function_Return False
+        End
+
+        Move 1 to iCounter
+        While (iCounter < iLength)
+            Move (Mid (sHex, 1, iCounter)) to sChar
+            If (Pos (sChar, "0123456789ABCDEF") = 0) Begin
+                Function_Return False
+            End
+            Move (Mid (sHex, 1, iCounter + 1)) to sChar
+            If (Pos (sChar, "0123456789ABCDEF") = 0) Begin
+                Function_Return False
+            End
+            Move (iCounter + 2) to iCounter
+        Loop
+
+        Function_Return True
+    End_Function
+
+    { Description = "Converts the integer argument to its HEXadecimal counterpart. The input value must be between 0-15. There is no error when the value is outside these boundaries." }
+    { MethodType = Method }
+    Function CharToHex Integer iChar Returns String
+        String sHex
+
+        Move (Mid ("0123456789ABCDEF", 1, Integer (iChar / 16 + 1))) to sHex
+        Move (sHex - Mid ("0123456789ABCDEF", 1, Mod (iChar, 16) + 1)) to sHex
+
+        Function_Return sHex
+    End_Function
+
+    { Description = "Converts a HEXadecimal value to its integer representation." }
+    { MethodType = Method }
+    Function HexToChar String sHex Returns Integer
+        Integer iCounter iChar iValue iLength iMax
+        String sChar
+
+        Move (Uppercase (sHex)) to sHex
+        Move (Length (sHex)) to iLength
+        Move (iLength - 1) to iMax
+
+        For iCounter from 0 to iMax
+            Move (Mid (sHex, 1, iLength - iCounter)) to sChar
+            If (Pos (sChar, "ABCDEF") <> 0) Begin
+                Move (Ascii (sChar) - 55) to iChar
+            End
+            Else Begin
+                Move (Integer (sChar)) to iChar
+            End
+            If (iCounter = 0) Begin
+                Move iChar to iValue
+            End
+            Else Begin
+                Move (iValue + (iChar * (iCounter * 16))) to iValue
+            End
+        Loop
+
+        Function_Return iValue
+    End_Function
+
+    { Description = "Converts a string into its HEXadecimal representation." }
+    { MethodType = Method }
+    Function StrToHex String sString Returns String
+        Integer iCounter iLength iChar
+        String sHex sChar sHexChar
+
+        Move (Length (sString)) to iLength
+
+        For iCounter from 1 to iLength
+            Move (Mid (sString, 1, iCounter)) to sChar
+            Move (Ascii (sChar)) to iChar
+            Get CharToHex iChar to sHexChar
+            Move (sHex + sHexChar) to sHex
+        Loop
+
+        Function_Return sHex
+    End_Function
+
+    { Description = "Converts a series of HEXadecimal character sets '00-FF' to a string." }
+    { MethodType = Method }
+    Function HexToStr String sHex Returns String
+        Integer iCounter iChar iLength
+        String sString sHexValue sChar
+
+        Move (Length (sHex) / 2) to iLength
+
+        For iCounter from 1 to iLength
+            Move (Mid (sHex, 2, iCounter * 2 - 1)) to sHexValue
+            Get HexToChar sHexValue to iChar
+            Move (Character (iChar)) to sChar
+            Move (sString + sChar) to sString
+        Loop
+
+        Function_Return sString
+    End_Function
+
+    { Description = "Converts a larger integer (> 0-16) into its HEXadecimal counterpart." }
+    { MethodType = Method }
+    Function DecToHex Integer iDec Returns String
+        String sHex
+
+        Move "" to sHex
+        Repeat
+            Move (Mid ("0123456789ABCDEF", 1, ((iDec iand |CI$0F) + 1)) + sHex) to sHex
+            Move (iDec / |CI$10) to iDec
+        Until (iDec = 0)
+
+        Function_Return sHex
+    End_Function
+
+    { Description = "Converts a string into its integer representation where the runtime/compiler does all the work." }
+    { MethodType = Method }
+    Function HexToDec String sHex Returns Integer
+        Boolean bStrict
+        Integer iValue
+
+        Get_StrictEval to bStrict
+        Set_StrictEval to False
+        Move ('$' + Trim (sHex)) to iValue
+        Set_StrictEval to bStrict
+
+        Function_Return iValue
+    End_Function
+End_Class

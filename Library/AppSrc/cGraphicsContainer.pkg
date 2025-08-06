@@ -1,0 +1,357 @@
+﻿Use Windows.pkg
+Use cGDIPlus.pkg
+Use cGDIGraphics.pkg
+Use cGDISolidBrush.pkg
+Use tWinStructs.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGraphicsContainer }
+{ DesignerClass = cDTContainer3D }
+{ OverrideProperty = Bitmap Visibility = Private }
+{ OverrideProperty = Bitmap_Style Visibility = Private }
+{ OverrideProperty = Border_Style Visibility = Private }
+{ OverrideProperty = Visible_State Visibility = Private }
+{ OverrideProperty = Attach_Parent_State Visibility = Private }
+{ OverrideProperty = Block_Mouse_State Visibility = Private }
+{ OverrideProperty = Popup_State Visibility = Private }
+{ OverrideProperty = peNeighborHood Visibility = Private }
+{ OverrideProperty = Ring_State Visibility = Private }
+{ OverrideProperty = Scope_State Visibility = Private }
+{ OverrideProperty = Search_Case Visibility = Private }
+{ OverrideProperty = Skip_State Visibility = Private }
+{ OverrideProperty = FontPointHeight Visibility = Private }
+{ OverrideProperty = Focus_Mode Visibility = Private }
+{ OverrideProperty = Oem_Translate_State Visibility = Private }
+{ OverrideProperty = Color Visibility = Private }
+{ OverrideProperty = FontItalics Visibility = Private }
+{ OverrideProperty = FontSize Visibility = Private }
+{ OverrideProperty = FontUnderline Visibility = Private }
+{ OverrideProperty = FontWeight Visibility = Private }
+{ OverrideProperty = TextColor Visibility = Private }
+{ OverrideProperty = Typeface Visibility = Private }
+{ OverrideProperty = Transparent_State Visibility = Private }
+{ OverrideProperty = pbUseFormWindowHandle Visibility = Private }
+{ OverrideProperty = Client_Area_State Visibility = Private }
+{ Description = "The cGraphicsContainer can be used to paint any shape on top of it." }
+Class cGraphicsContainer is a DfBaseControl
+    Import_Class_Protocol ToolTip_Support_Mixin
+
+    { MethodType = Event }
+    { Description = "Constructs a borderless object that hooks up the Windows PAINT message to the routine to paint" }
+    { Description += "shapes like lines, ellipses, circles etc." }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Border_Style to Border_None
+        Set Client_Area_State to False
+
+        Set External_Class_Name "cGraphicsContainer" to "static"
+
+        Send Define_ToolTip_Support_Mixin
+
+        Set Window_Style to SS_NOTIFY True
+        Set Window_Style to WS_VISIBLE True
+        Set Window_Style to WS_CHILD True
+        Set Window_Style to WS_VSCROLL False
+        Set Window_Style to WS_HSCROLL False
+
+        Set External_Message WM_PAINT to msg_OnPaint
+
+        { Visibility = Private }
+        { Description = "This private property keeps track of the enabled state of the control." }
+        { Description += "This lets the developer set the enabled state (pbEnabled) when the control is not yet paged." }
+        Property Boolean ppbEnabled True
+        { Visibility = Private }
+        { Description = "This private property keeps track of the visible state of the control." }
+        { Description += "This lets the developer set the visible state (pbVisible) when the control is not yet paged." }
+        Property Boolean ppbVisible True
+        { Visibility = Private }
+        { Description = "This private property keeps track of the background color of the control." }
+        { Description += "This lets the developer set the background color when the control is not yet paged." }
+        Property UInteger ppcBackColor (GetSysColor (clBtnFace iand $FFFFFF))
+        { Visibility = Private }
+        { Description = "This private property keeps track of the line color of the control." }
+        { Description += "This lets the developer set the line color when the control is not yet paged." }
+        Property UInteger ppcLineColor clBlack
+        { DesignTime = False }
+        { Description = "The control creates a cGDIGraphics object and stores the DataFlex object handle to Pointer the object" }
+        Property Handle phoGraphics
+        { Visibility = Private }
+        { Description = "For the speed of repainting the class creates an in memory bitmap after painting the shape and stores the handle in this property." }
+        Property Handle phBmp
+
+        Set phoGraphics to (CreateNamed (ghoGDIPlusHandler, RefClass (cGDIGraphics), Name (Self) - "_Canvas"))
+    End_Procedure
+
+    { Description = "Sends a message to remove the bitmap property value from memory." }
+    { Visibility = Private }
+    Procedure Destroy_Object
+        Send RemoveBitmap
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Sets the background color. Redraws the shape when changed after the shape has been painted." }
+    { MethodType = Property }
+    { Category = "Color" }
+    { PropertyType = Color }
+    { EnumList = "clScrollBar, clBackground, clActiveCaption, clInactiveCaption, clMenu, clWindow, clWindowFrame, clMenuText, clWindowText, clCaptionText, clActiveBorder, clInactiveBorder" }
+    { EnumList += "clAppWorkSpace, clHighlight, clHighlightText, clBtnFace, clBtnShadow, clGrayText, clBtnText, clInactiveCaptionText, clBtnHighlight, cl3DDkShadow, cl3DLight, clInfoText, clInfoBk, clDefault, clNone" }
+    { EnumList += "clAqua, clBlack, clBlue, clDkGray, clFuchsia, clGray, clGreen, clLime, clLtGray, clMaroon, clNavy, clOlive, clPurple, clRed, clSilver, clTeal, clWhite, clYellow" }
+    { InitialValue = clBtnFace }
+    Procedure Set pcBackColor UInteger uiColor
+        If ((uiColor iand $FFFFFF) <> uiColor) Begin
+            Move (GetSysColor (uiColor iand $FFFFFF)) to uiColor
+        End
+
+        Set ppcBackColor to uiColor
+        Send RecreateShape
+    End_Procedure
+
+    { Description = "Returns the background color of the shape using the private property to store the color value" }
+    { MethodType = Property }
+    Function pcBackColor Returns UInteger
+        UInteger cBackColor
+
+        Get ppcBackColor to cBackColor
+
+        Function_Return cBackColor
+    End_Function
+
+    { Description = "Sets the line color. Redraws the shape when changed after the shape has been painted." }
+    { MethodType = Property }
+    { Category = "Color" }
+    { PropertyType = Color }
+    { EnumList = "clScrollBar, clBackground, clActiveCaption, clInactiveCaption, clMenu, clWindow, clWindowFrame, clMenuText, clWindowText, clCaptionText, clActiveBorder, clInactiveBorder" }
+    { EnumList += "clAppWorkSpace, clHighlight, clHighlightText, clBtnFace, clBtnShadow, clGrayText, clBtnText, clInactiveCaptionText, clBtnHighlight, cl3DDkShadow, cl3DLight, clInfoText, clInfoBk, clDefault, clNone" }
+    { EnumList += "clAqua, clBlack, clBlue, clDkGray, clFuchsia, clGray, clGreen, clLime, clLtGray, clMaroon, clNavy, clOlive, clPurple, clRed, clSilver, clTeal, clWhite, clYellow" }
+    { InitialValue = clBtnFace }
+    Procedure Set pcLineColor Integer iColor
+        If ((iColor iand $FFFFFF) <> iColor) Begin
+            Move (GetSysColor (iColor iand $FFFFFF)) to iColor
+        End
+
+        Set ppcLineColor to iColor
+        Send RecreateShape
+    End_Procedure
+
+    { Description = "Returns the line color of the shape using the private property to store the color value" }
+    { MethodType = Property }
+    Function pcLineColor Returns Integer
+        Integer cLineColor
+
+        Get ppcLineColor to cLineColor
+
+        Function_Return cLineColor
+    End_Function
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "The class has no need to handle the Notify (WM_NOTIFY) messages send by Windows." }
+    Procedure Notify Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "The class has no need to handle the Command (WM_COMMAND) messages send by Windows." }
+    Procedure Command Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Description = "Augmented to redraw the shape" }
+    { Visibility = Private }
+    Procedure Set GUISize Integer iHeight Integer iWidth
+        Forward Set GuiSize to iHeight iWidth
+
+        Send RecreateShape
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "This routine is responsible for painting the shape outline and background." }
+    Procedure OnPaint Longptr wParam LongPtr lParam
+        Handle hWnd hDC hMemDC hBmp hoGraphics hoSolidBrush hoPen
+        tWinPaintStruct PaintData
+        tWinRect DestinationRect
+        Integer iResult 
+        UInteger uiColor
+
+        Get Window_Handle to hWnd
+        If (hWnd = 0) Begin
+            Procedure_Return
+        End
+
+        Move (BeginPaint (hWnd, AddressOf (PaintData))) to hDC
+
+        // Get client rect
+        Get RealClientRect to DestinationRect
+
+        // Create memory DC
+        Move (CreateCompatibleDC (hDC)) to hMemDC
+        Get phBmp to hBmp
+        If (hBmp = 0) Begin
+            Get phoGraphics to hoGraphics
+
+            // The InflateRect function increases or decreases the width and height of the specified rectangle.
+            // The InflateRect Function adds dx units to the left and right ends of the rectangle and dy units
+            // to the top and bottom. The dx and dy parameters are signed values; positive values increase the
+            // width and height, and negative values decrease them.
+            Move (InflateRect (AddressOf (DestinationRect), 1, 1)) to iResult
+            If (iResult = 0) Begin
+                Send HandleWinAPIError iResult "InflateRect in OnPaint"
+            End
+
+            // Create memory bitmap, size of bitmap is the same as the scaled image or the size of the client
+            // area if the bitmap is smaller
+            Move (CreateCompatibleBitmap (hDC, DestinationRect.right, DestinationRect.bottom)) to hBmp
+            Move (SelectObject (hMemDC, hBmp)) to iResult
+
+            // Attach graphics object to hMemDC
+            Get AttachDC of hoGraphics hMemDC to iResult
+            If (iResult <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler iResult "AttachDC in OnPaint"
+            End
+
+            // Clear background
+            Get pcBackColor to uiColor
+            Get ARGBFromRGB of ghoGDIPlusHandler uiColor 255 to uiColor
+            Get Create (RefClass (cGDISolidBrush)) to hoSolidBrush
+            Get CreateSolidFill of hoSolidBrush uiColor to iResult
+            If (iResult = gpOk) Begin
+                Get FillRectangle of hoGraphics hoSolidBrush 0 0 DestinationRect.right DestinationRect.bottom to iResult
+                If (iResult <> gpOk) Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler iResult "FillRectangle in OnPaint"
+                End
+                Send DeleteBrush of hoSolidBrush
+            End
+            Send Destroy of hoSolidBrush
+
+            Send OnPaintShape hoGraphics DestinationRect
+
+            Set phBmp to hBmp
+        End
+        Else Begin
+            Move (SelectObject (hMemDC, hBmp)) to iResult
+        End
+
+        // Copy bitmap
+        Move (BitBlt (hDC, 0, 0, DestinationRect.right, DestinationRect.bottom, hMemDC, 0, 0, SRCCOPY)) to iResult
+
+        Move (DeleteDC (hMemDC)) to iResult
+        Move (EndPaint (hWnd, AddressOf (PaintData))) to iResult
+        Set Windows_Override_State to True
+
+        Procedure_Return False
+    End_Procedure
+
+    { MethodType = Event }
+    { Description = "Developers should use this event to draw any shape onto the canvas" }
+    Procedure OnPaintShape Handle hoGraphics tWinRect DestinationRect
+    End_Procedure
+
+    { Description = "Set the visible and enabled state, adds/removes the tooltip" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Page_Object Boolean bPage
+        Boolean bEnabled bVisible
+        Handle hWnd
+
+        Get ppbEnabled to bEnabled
+        Get ppbVisible to bVisible
+
+        Set Window_Style to WS_DISABLED (not (bEnabled))
+        Set Window_Style to WS_VISIBLE bVisible
+
+        Forward Send Page_Object bPage
+
+        // Handle tooltip support....
+        If (not (bPage)) Begin
+            Send RequestDeleteToolTip
+        End
+        Else Begin
+            Send RequestAddToolTip
+        End
+    End_Procedure
+
+    { Description = "Returns client rect including space which could be taken by borders" }
+    { MethodType = Method }
+    { Visibility = Private }
+    Function RealClientRect Returns tWinRect
+        Integer eStatus iError eBorderStyle
+        Handle hWnd
+        tWinRect WindowRect
+
+        Get Window_Handle to hWnd
+        If (hWnd) Begin
+            // Retrieves the dimensions of the bounding rectangle of the specified window. The dimensions are given in screen coordinates that are relative to the upper-left corner of the screen.
+            Move (GetWindowRect (hWnd, AddressOf (WindowRect))) to eStatus
+            If (eStatus <> 0) Begin
+                // Convert from screen to client coordinates
+                Move (OffsetRect (AddressOf (WindowRect), WindowRect.left * -1, WindowRect.top * -1)) to eStatus
+                If (eStatus = 0) Begin
+                    Move (ShowLastError()) to iError
+                End
+
+                // Remove borders
+                Get Border_Style to eBorderStyle
+                If (eBorderStyle <> Border_None) Begin
+                    Move (InflateRect (AddressOf (WindowRect), GetSystemMetrics (SM_CXBORDER) * -1, GetSystemMetrics (SM_CYBORDER) * -1)) to eStatus
+                End
+            End
+            Else Begin
+                Move (ShowLastError()) to iError
+            End
+        End
+
+        Function_Return WindowRect
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Can be called to have the shape redrawn. Called when the shape resizes or when the background color changes." }
+    Procedure RecreateShape
+        Send RemoveBitmap
+        Send RedrawShape
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Causes the shape to be repainted." }
+    { Visibility = Private }
+    Procedure RedrawShape
+        Integer iResult
+        Handle hWnd
+
+        Get Window_Handle to hWnd
+        If (hWnd) Begin
+            Move (InvalidateRect (hWnd, 0, False)) to iResult
+            Move (UpdateWindow (hWnd)) to iResult
+        End
+    End_Procedure
+
+    { Description = "If there is a in memory bitmap object, delete it and release the reference" }
+    { Visibility = Private }
+    Procedure RemoveBitmap
+        Handle hBmp
+        Integer iResult
+
+        Get phBmp to hBmp
+        If (hBmp) Begin
+            Move (DeleteObject (hBmp)) to iResult
+            Set phBmp to 0
+        End
+    End_Procedure
+
+    { Description = "Called by Page_Object. Handles tooltip creation." }
+    { Description += "A dedicated method is used to perform AddToolTip because it is often the case that Page_Object is implemented in a mixin class." }
+    { Visibility = Private }
+    { MethodType = Method }
+    Procedure RequestAddToolTip
+        Send AddToolTip
+    End_Procedure
+
+    { Description = "Called by Page_Object. Handles tooltip removal." }
+    { Visibility = Private }
+    { MethodType = Method }
+    Procedure RequestDeleteToolTip
+        Send DeleteToolTip
+    End_Procedure
+End_Class

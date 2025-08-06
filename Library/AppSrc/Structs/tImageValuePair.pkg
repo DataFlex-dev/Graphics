@@ -1,0 +1,6 @@
+Use VDFBase.Pkg
+
+Struct tImageValuePair
+    String sName
+    Variant vValue
+End_Struct

@@ -1,0 +1,17 @@
+﻿Use VdfBase.pkg
+
+External_Function WinAPI_PathRenameExtension "PathRenameExtensionW" SHLWAPI.DLL Pointer pszPath Pointer pszExt Returns Boolean
+
+{ Description = "Searches a path for a file extension and replaces the extension with the passed extension."
+{ Description += "Returns true when succesful." }
+{ MethodType = Method }
+Function PathRenameExtension Desktop WString wPath WString wExtension Returns String
+    Boolean bOk
+
+    Move (WinAPI_PathRenameExtension (AddressOf (wPath), AddressOf (wExtension))) to bOK
+    If (bOk) Begin
+        Move (Trim (CString (wPath))) to wPath
+    End
+
+    Function_Return wPath
+End_Function

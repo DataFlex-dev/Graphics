@@ -1,0 +1,23 @@
+Use Classes\cSelectionListButton.pkg
+
+{ ClassLibrary = Windows }
+{ Description = "Use of this class avoids that DataFlex creates a sub-class of the button class for each button in a selectionlist" }
+Class cSelectionListCancelButton is a cSelectionListButton
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Label to C_$Cancel
+        Set Location to 115 271
+        Set peAnchors to anBottomRight
+    End_Procedure
+
+    { MethodType = Event }
+    { Description = "Send the message Cancel to the object stored in the phoList property." }
+    Procedure OnClick
+        Handle hoList
+
+        Get phoList to hoList
+
+        Send Cancel of hoList
+    End_Procedure
+End_Class

@@ -1,0 +1,150 @@
+Use cGDIPlus.h.pkg
+Use gpMatrixOrder.h.pkg
+
+// GpStatus WINGDIPAPI GdipCreateMatrix(GpMatrix **matrix)
+External_Function GdipCreateMatrix "GdipCreateMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMatrix2(Real m11, Real m12, Real m21, Real m22, Real dx, Real dy, GpMatrix **matrix)
+External_Function GdipCreateMatrix2 "GdipCreateMatrix2" gdiplus.dll ;
+    Float m11 ;
+    Float m12 ;
+    Float m21 ;
+    Float m22 ;
+    Float dx ;
+    Float dy ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMatrix3(GDIPCONST GpRectF *rect, GDIPCONST GpPointF *dstplg, GpMatrix **matrix)
+External_Function GdipCreateMatrix3 "GdipCreateMatrix3" gdiplus.dll ;
+    Pointer rect ;
+    Pointer dstplg ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMatrix3I(GDIPCONST GpRect *rect, GDIPCONST GpPoint *dstplg, GpMatrix **matrix)
+External_Function GdipCreateMatrix3I "GdipCreateMatrix3I" gdiplus.dll ;
+    Pointer rect ;
+    Pointer dstplg ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCloneMatrix(GpMatrix *matrix, GpMatrix **cloneMatrix)
+External_Function GdipCloneMatrix "GdipCloneMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer cloneMatrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeleteMatrix(GpMatrix *matrix)
+External_Function GdipDeleteMatrix "GdipDeleteMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetMatrixElements(GpMatrix *matrix, Real m11, Real m12, Real m21, Real m22, Real dx, Real dy)
+External_Function GdipSetMatrixElements "GdipSetMatrixElements" gdiplus.dll ;
+    Pointer matrix ;
+    Float m11 ;
+    Float m12 ;
+    Float m21 ;
+    Float m22 ;
+    Float dx ;
+    Float dy ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMultiplyMatrix(GpMatrix *matrix, GpMatrix* matrix2, GpMatrixOrder order)
+External_Function GdipMultiplyMatrix "GdipMultiplyMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer matrix2 ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslateMatrix(GpMatrix *matrix, Real offsetX, Real offsetY, GpMatrixOrder order)
+External_Function GdipTranslateMatrix "GdipTranslateMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Float offsetX ;
+    Float offsetY ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipScaleMatrix(GpMatrix *matrix, Real scaleX, Real scaleY, GpMatrixOrder order)
+External_Function GdipScaleMatrix "GdipScaleMatrix" gdiplus.dll ;
+    Pointer image ;
+    Float scaleX ;
+    Float scaleY ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipRotateMatrix(GpMatrix *matrix, Real angle, GpMatrixOrder order)
+External_Function GdipRotateMatrix "GdipRotateMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Float angle ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipShearMatrix(GpMatrix *matrix, Real shearX, Real shearY, GpMatrixOrder order)
+External_Function GdipShearMatrix "GdipShearMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Float shearX ;
+    Float shearY ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipInvertMatrix(GpMatrix *matrix)
+External_Function GdipInvertMatrix "GdipInvertMatrix" gdiplus.dll ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTransformMatrixPoints(GpMatrix *matrix, GpPointF *pts, INT count)
+External_Function GdipTransformMatrixPoints "GdipTransformMatrixPoints" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer pts ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTransformMatrixPointsI(GpMatrix *matrix, GpPoint *pts, INT count)
+External_Function GdipTransformMatrixPointsI "GdipTransformMatrixPointsI" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer pts ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipVectorTransformMatrixPoints(GpMatrix *matrix, GpPointF *pts, INT count)
+External_Function GdipVectorTransformMatrixPoints "GdipVectorTransformMatrixPoints" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer pts ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipVectorTransformMatrixPointsI(GpMatrix *matrix, GpPoint *pts, INT count)
+External_Function GdipVectorTransformMatrixPointsI "GdipVectorTransformMatrixPointsI" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer pts ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetMatrixElements(GDIPCONST GpMatrix *matrix, Real *matrixOut)
+External_Function GdipGetMatrixElements "GdipGetMatrixElements" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer matrixOut ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsMatrixInvertible(GDIPCONST GpMatrix *matrix, BOOL *result)
+External_Function GdipIsMatrixInvertible "GdipIsMatrixInvertible" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsMatrixIdentity(GDIPCONST GpMatrix *matrix, BOOL *result)
+External_Function GdipIsMatrixIdentity "GdipIsMatrixIdentity" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsMatrixEqual(GDIPCONST GpMatrix *matrix, GDIPCONST GpMatrix *matrix2, BOOL *result)
+External_Function GdipIsMatrixEqual "GdipIsMatrixEqual" gdiplus.dll ;
+    Pointer matrix ;
+    Pointer matrix2 ;
+    Pointer result ;
+    Returns gpStatus

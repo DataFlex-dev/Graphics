@@ -1,0 +1,188 @@
+﻿Use Windows.pkg
+Use cCJGrid.pkg
+Use cCJGridColumnRowIndicator.pkg
+Use cCJGridColumn.pkg
+
+Use cGDIImageDecoders.pkg
+
+Object oCodecsInfoDialog is a ModalPanel
+    Set Size to 132 369
+    Set Label to "Codecs"
+    Set piMinSize to 89 211
+    Set Location to 2 2
+    Set Border_Style to Border_Thick
+
+    Procedure Page_Object Boolean bPage
+        Forward Send Page_Object bPage
+
+        If (bPage) Begin
+            Set Icon to "codecs.ico"
+        End
+    End_Procedure
+
+    Object oCodecsDialog is a TabDialog
+        Set Size to 123 360
+        Set Location to 5 5
+        Set peAnchors to anAll
+
+        Object oDecodersTabPage is a TabPage
+            Set Label to "Decoders"
+
+            Object oCodecsGrid is a cCJGrid
+                Set Size to 99 347
+                Set Location to 5 5
+                Set peAnchors to anAll
+                Set psNoItemsText to "No Codecs Found"
+                Set pbAllowAppendRow to False
+                Set pbAllowDeleteRow to False
+                Set pbAllowEdit to False
+                Set pbAllowInsertRow to False
+                Set pbAutoAppend to False
+                Set pbAutoSave to False
+                Set pbUseAlternateRowBackgroundColor to True
+
+                Object oCJGridColumnRowIndicator is a cCJGridColumnRowIndicator
+                    Set piWidth to 22
+                End_Object
+
+                Object oNameColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "Codec Name"
+                End_Object
+
+                Object oDllNameColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "DLL Name"
+                End_Object
+
+                Object oFormatDescriptionColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "Format Description"
+                End_Object
+
+                Object oFileNameExtensionsColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "Filename Extensions"
+                End_Object
+
+                Object oMimetypeColumn is a cCJGridColumn
+                    Set piWidth to 112
+                    Set psCaption to "Mime type"
+                End_Object
+
+                Procedure Activating
+                    Handle hoImageDecoders
+                    tImageCodec[] ImageDecodersInfo
+                    Integer iElements iElement iNameColumnId iMimetypeColumnId
+                    Integer iFileNameExtensionsColumnId iFormatDescriptionColumnId iDllNameColumnId
+                    tDataSourceRow[] GridData
+
+                    Forward Send Activating
+
+                    Get Create (RefClass (cGDIImageDecoders)) to hoImageDecoders
+                    Get ImageDecoders of hoImageDecoders to ImageDecodersInfo
+                    Move (SizeOfArray (ImageDecodersInfo)) to iElements
+                    If (iElements > 0) Begin
+                        Get piColumnId of oNameColumn to iNameColumnId
+                        Get piColumnId of oDllNameColumn to iDllNameColumnId
+                        Get piColumnId of oFormatDescriptionColumn to iFormatDescriptionColumnId
+                        Get piColumnId of oFileNameExtensionsColumn to iFileNameExtensionsColumnId
+                        Get piColumnId of oMimetypeColumn to iMimetypeColumnId
+
+                        Decrement iElements
+                        For iElement from 0 to iElements
+                            Move ImageDecodersInfo[iElement].sCodecName to GridData[iElement].sValue[iNameColumnId]
+                            Move ImageDecodersInfo[iElement].sDllName to GridData[iElement].sValue[iDllNameColumnId]
+                            Move ImageDecodersInfo[iElement].sFormatDescription to GridData[iElement].sValue[iFormatDescriptionColumnId]
+                            Move ImageDecodersInfo[iElement].sFileNameExtension to GridData[iElement].sValue[iFileNameExtensionsColumnId]
+                            Move ImageDecodersInfo[iElement].sMimeType to GridData[iElement].sValue[iMimetypeColumnId]
+                        Loop
+                    End
+
+                    Send InitializeData GridData
+                End_Procedure
+            End_Object
+        End_Object
+
+        Object oEncodersTabPage is a TabPage
+            Set Label to "Encoders"
+
+            Object oCodecsGrid is a cCJGrid
+                Set Size to 99 347
+                Set Location to 5 5
+                Set peAnchors to anAll
+                Set psNoItemsText to "No Codecs Found"
+                Set pbAllowAppendRow to False
+                Set pbAllowDeleteRow to False
+                Set pbAllowEdit to False
+                Set pbAllowInsertRow to False
+                Set pbAutoAppend to False
+                Set pbAutoSave to False
+                Set pbUseAlternateRowBackgroundColor to True
+
+                Object oCJGridColumnRowIndicator is a cCJGridColumnRowIndicator
+                    Set piWidth to 22
+                End_Object
+
+                Object oNameColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "Codec Name"
+                End_Object
+
+                Object oDllNameColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "DLL Name"
+                End_Object
+
+                Object oFormatDescriptionColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "Format Description"
+                End_Object
+
+                Object oFileNameExtensionsColumn is a cCJGridColumn
+                    Set piWidth to 111
+                    Set psCaption to "Filename Extensions"
+                End_Object
+
+                Object oMimetypeColumn is a cCJGridColumn
+                    Set piWidth to 112
+                    Set psCaption to "Mime type"
+                End_Object
+
+                Procedure Activating
+                    Handle hoImageEncoders
+                    tImageCodec[] ImageEncodersInfo
+                    Integer iElements iElement iNameColumnId iMimetypeColumnId
+                    Integer iFileNameExtensionsColumnId iFormatDescriptionColumnId iDllNameColumnId
+                    tDataSourceRow[] GridData
+
+                    Forward Send Activating
+
+                    Get Create (RefClass (cGDIImageEncoders)) to hoImageEncoders
+                    Get ImageEncoders of hoImageEncoders to ImageEncodersInfo
+                    Move (SizeOfArray (ImageEncodersInfo)) to iElements
+                    If (iElements > 0) Begin
+                        Get piColumnId of oNameColumn to iNameColumnId
+                        Get piColumnId of oDllNameColumn to iDllNameColumnId
+                        Get piColumnId of oFormatDescriptionColumn to iFormatDescriptionColumnId
+                        Get piColumnId of oFileNameExtensionsColumn to iFileNameExtensionsColumnId
+                        Get piColumnId of oMimetypeColumn to iMimetypeColumnId
+
+                        Decrement iElements
+                        For iElement from 0 to iElements
+                            Move ImageEncodersInfo[iElement].sCodecName to GridData[iElement].sValue[iNameColumnId]
+                            Move ImageEncodersInfo[iElement].sDllName to GridData[iElement].sValue[iDllNameColumnId]
+                            Move ImageEncodersInfo[iElement].sFormatDescription to GridData[iElement].sValue[iFormatDescriptionColumnId]
+                            Move ImageEncodersInfo[iElement].sFileNameExtension to GridData[iElement].sValue[iFileNameExtensionsColumnId]
+                            Move ImageEncodersInfo[iElement].sMimeType to GridData[iElement].sValue[iMimetypeColumnId]
+                        Loop
+                    End
+
+                    Send InitializeData GridData
+                End_Procedure
+            End_Object
+        End_Object
+    End_Object
+
+    On_Key Key_Escape Send Close_Panel
+End_Object

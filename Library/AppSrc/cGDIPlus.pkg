@@ -1,0 +1,622 @@
+﻿Use cGDIPlus.h.pkg
+Use cGDIImage.h.pkg
+Use cIStream.pkg
+
+// Create a global variable for an object of the cGDIPlusHandler class as there should be only one object
+Global_Variable Handle ghoGDIPlusHandler
+
+Enum_List
+    Define C_GDIErr_ImageObjectNotAvailable for -5000
+    Define C_GDIErr_DeviceHandleRequired
+    Define C_GDIErr_WindowHandleRequired
+    Define C_GDIErr_GraphicsObjectNotAvailable
+    Define C_GDIErr_PenObjectNotAvailable
+    Define C_GDIErr_BrushObjectNotAvailable
+    Define C_GDIErr_GraphicsPathObjectNotAvailable
+    Define C_GDIErr_RegionObjectNotAvailable
+    Define C_GDIErr_MatrixObjectNotAvailable
+    Define C_GDIErr_MemcopyEncoderCodecFailed
+    Define C_GDIErr_MemcopyDecoderCodecFailed
+    Define C_GDIErr_MimeTypeToClsEncoderFailed
+    Define C_GDIErr_CannotOverwriteExitingFile
+    Define C_GDIErr_FileNameIsRequired
+    Define C_GDIErr_CannotDetermineMIMEType
+    Define C_GDIErr_CouldNotLoadBitmapFromClipboard
+    Define C_GDIErr_CouldNotCreateGraphicsFromImage
+    Define C_GDIErr_UnequalNumberOfArrayParameters
+    Define C_GDIErr_StringFormatObjectNotAvailable
+    Define C_GDIErr_NoImagePropertiesAvailable
+    Define C_GDIErr_FontFamilyObjectNotAvailable
+    Define C_GDIErr_FontObjectNotAvailable
+End_Enum_List
+
+Use cGDIImage.pkg
+Use Structs\tEncoderParameters.pkg
+Use UUID.h.pkg
+Use gpStatusText.h.pkg
+Use cGDIGraphics.pkg
+
+Use cGDIImageEncoders.h.pkg
+Use globmem.pkg
+Use Ole32.h.pkg
+
+{ ClassLibrary = Common }
+{ HelpTopic = cGDIPlus }
+{ Description = "Wraps the functions used for all image handling classes and methods." }
+{ Description += "Normally only one cGDIPlus Object needed per application." }
+Class cGDIPlus is a cObject
+    { MethodType = Method }
+    { Description = "Translate a GDI+ Result/Status code to a readable description." }
+    Function GpStatusText Integer eStatus Returns String
+        Case Begin
+            Case (eStatus = gpOk)
+                Function_Return C_$gpOk
+            Case (eStatus = gpGenericError)
+                Function_Return C_$gpGenericError
+            Case (eStatus = gpInvalidParameter)
+                Function_Return C_$gpInvalidParameter
+            Case (eStatus = gpOutOfMemory)
+                Function_Return C_$gpOutOfMemory
+            Case (eStatus = gpObjectBusy)
+                Function_Return C_$gpObjectBusy
+            Case (eStatus = gpInsufficientBuffer)
+                Function_Return C_$gpInsufficientBuffer
+            Case (eStatus = gpNotImplemented)
+                Function_Return C_$gpNotImplemented
+            Case (eStatus = gpWin32Error)
+                Function_Return C_$gpWin32Error
+            Case (eStatus = gpWrongState)
+                Function_Return C_$gpWrongState
+            Case (eStatus = gpAborted)
+                Function_Return C_$gpAborted
+            Case (eStatus = gpFileNotFound)
+                Function_Return C_$gpFileNotFound
+            Case (eStatus = gpValueOverflow)
+                Function_Return C_$gpValueOverflow
+            Case (eStatus = gpAccessDenied)
+                Function_Return C_$gpAccessDenied
+            Case (eStatus = gpUnknownImageFormat)
+                Function_Return C_$gpUnknownImageFormat
+            Case (eStatus = gpFontFamilyNotFound)
+                Function_Return C_$gpFontFamilyNotFound
+            Case (eStatus = gpFontStyleNotFound)
+                Function_Return C_$gpFontStyleNotFound
+            Case (eStatus = gpNotTrueTypeFont)
+                Function_Return C_$gpNotTrueTypeFont
+            Case (eStatus = gpUnsupportedGdiplusVersion)
+                Function_Return C_$gpUnsupportedGdiplusVersion
+            Case (eStatus = gpGdiplusNotInitialized)
+                Function_Return C_$gpGdiplusNotInitialized
+            Case (eStatus = gpPropertyNotFound)
+                Function_Return C_$gpPropertyNotFound
+            Case (eStatus = gpPropertyNotSupported)
+                Function_Return C_$gpPropertyNotSupported
+            Case (eStatus = gpProfileNotFound)
+                Function_Return C_$gpProfileNotFound
+        Case End
+    End_Function
+
+    { Description = "Initialize GDI+. Returns an error when not succesful." }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure Construct_Object
+        GdiplusStartupInput tGDIPlusStartupInput
+        gpStatus eStatus
+        Pointer pToken
+
+        Forward Send Construct_Object
+
+        { Visibility = Private }
+        Property Pointer ppToken
+        
+        { Description = "GDI+ sometimes locks images and this bypasses that error situation" }
+        Property Boolean pbLoadImageFromUCharArray False
+
+        Move 0 to pToken
+        Move 1 to tGDIPlusStartupInput.GdiplusVersion
+        Move (GdiplusStartup (AddressOf (pToken), AddressOf (tGDIPlusStartupInput), 0)) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppToken to pToken
+        End
+        Else Begin
+            Send HandleGDIResult eStatus "Initializing GDI+"
+        End
+    End_Procedure
+
+    { Description = "Shut down GDI+. Sets the GDI+ Token of the object to zero" }
+    { Visibility = Private }
+    { MethodType = Event }
+    Procedure Destroy_Object
+        Integer iVoid
+        Pointer pToken
+
+        Get ppToken to pToken
+        Move (GdiplusShutdown (pToken)) to iVoid
+        Set ppToken to 0
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Create color from alpha, red, green, and blue values passed" }
+    { MethodType = Method }
+    Function ARGB Integer iAlpha Integer iRed Integer iGreen Integer iBlue Returns UInteger
+        UInteger uiColor
+
+        Move (Cast (iBlue + (iGreen * 256) + (iRed * 65536) + (iAlpha * 16777216), UInteger)) to uiColor
+
+        Function_Return uiColor
+    End_Function
+
+    // Returns an ARGB color equal to the RGB color value with added alpha channel value
+    Function ARGBFromRGB Integer iColor Integer iAlpha Returns UInteger
+        Integer iRed iGreen iBlue 
+        UInteger uiARGBColor
+
+        Move (R_From_RGB (iColor)) to iRed
+        Move (G_From_RGB (iColor)) to iGreen
+        Move (B_From_RGB (iColor)) to iBlue
+
+        Get ARGB iAlpha iRed iGreen iBlue to uiARGBColor
+
+        Function_Return uiARGBColor
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a GDI Graphics object and attaches an existing image to the object." }
+    { Description += "Returns a DataFlex object with the attached image." }
+    { Description += "Function returns zero when the operation failed" }
+    Function CreateGraphicsFromImage Handle hoImage Returns Handle
+        gpStatus eStatus
+        Handle hoGraphics
+
+        Get CreateNamed (RefClass (cGDIGraphics)) "GraphicsFromImage" to hoGraphics
+        Get AttachImage of hoGraphics hoImage to eStatus
+        If (eStatus <> gpOk) Begin
+            Send HandleGDIResult eStatus "Create Graphics From Image"
+            Send Destroy of hoGraphics
+            Move 0 to hoGraphics
+        End
+
+        Function_Return hoGraphics
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a Bitmap object based on an image file." }
+    { Description += "This function does not Use ICM. Returns a DataFlex object with the created image loaded." }
+    { Description += "Function returns zero when the operation failed" }
+    Function CreateBitmapFromFile String sFile Returns Handle
+        gpStatus eStatus
+        Pointer pImage
+        Handle hoImage
+        String sObjectName
+        WString wFile
+
+        // Already create object name here as sFile will be changed below
+        Move ("BitmapFromFile_" - sFile) to sObjectName
+
+        Move 0 to pImage
+        Move sFile to wFile
+        Move (GdipCreateBitmapFromFile (AddressOf (wFile), AddressOf (pImage))) to eStatus
+        If (eStatus = gpOk) Begin
+            Get CreateGDIImageObject sObjectName to hoImage
+            Set ppImage of hoImage to pImage
+            #IFDEF IS$WEBAPP
+            #ELSE
+            Send ConfigureMultiFrameImageDisplay of hoImage
+            #ENDIF
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a Bitmap object based on an image file." }
+    { Description += "This function uses ICM. Returns a DataFlex object with the created image loaded." }
+    { Description += "Function returns zero when the operation failed" }
+    Function CreateBitmapFromFileICM String sFile Returns Handle
+        gpStatus eStatus
+        Pointer pImage
+        Handle hoImage
+        String sObjectName
+        WString wFile
+
+        // Already create object name here as sFile will be changed below
+        Move ("BitmapFromFileICM_" - sFile) to sObjectName
+
+        Move 0 to pImage
+        Move sFile to wFile
+        Move (GdipCreateBitmapFromFileICM (AddressOf (wFile), AddressOf (pImage))) to eStatus
+        If (eStatus = gpOk) Begin
+            Get CreateGDIImageObject sObjectName to hoImage
+            Set ppImage of hoImage to pImage
+            #IFDEF IS$WEBAPP
+            #ELSE
+            Send ConfigureMultiFrameImageDisplay of hoImage
+            #ENDIF
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a Bitmap object based on a BITMAPINFO structure and an array of pixel data." }
+    { Description += "Returns a DataFlex object with the created image loaded." }
+    { Description += "Function returns zero when the operation failed" }
+    Function CreateBitmapFromGdiDib Pointer pBitmapInfo Pointer pPixels Returns Handle
+        gpStatus eStatus
+        Pointer pImage
+        Handle hoImage
+
+        Move 0 to pImage
+        Move (GdipCreateBitmapFromGdiDib (pBitmapInfo, pPixels, AddressOf (pImage))) to eStatus
+        If (eStatus = gpOk) Begin
+            Get CreateGDIImageObject "BitmapFromGdiDib" to hoImage
+            Set ppImage of hoImage to pImage
+            #IFDEF IS$WEBAPP
+            #ELSE
+            Send ConfigureMultiFrameImageDisplay of hoImage
+            #ENDIF
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Create a Quality encoder parameter that can be used when an encoder parameter is required." }
+    { Description += "Encoder parameters are used when converting, resizing images" }
+    Function CreateEncoderQualityParameter Integer iQuality Returns tEncoderParameter
+        WString wGuid
+        Integer eStatus
+        tEncoderParameter EncoderParameter
+
+        Move guidEncoderQuality to wGuid
+        Move (WinAPI_UuidFromString (AddressOf (wGuid), AddressOf (EncoderParameter.Guid))) to eStatus
+        If (eStatus = S_OK) Begin
+            Move EncoderParameterValueTypeLong to EncoderParameter.uiType
+            Move 1 to EncoderParameter.uiNumberOfValues
+            Move (AddressOf (iQuality)) to EncoderParameter.pValue
+        End
+
+        Function_Return EncoderParameter
+    End_Function
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "Creates a cGDIImage object with the passed name. Used internally by one of the CreateImageXX functions" }
+    Function CreateGDIImageObject String sName Returns Handle
+        Handle hoImage
+
+        Get CreateNamed (RefClass (cGDIImage)) sName to hoImage
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Create a image object based from the passed filename." }
+    { Description += "Returns a DataFlex object handle when succesful" }
+    Function CreateImageFromFile String sFile Returns Handle
+        Boolean bLoadImageFromUCharArray
+        Handle hoImage
+        UChar[] ucData
+        Integer iChannel
+        Pointer pImage
+        WString wFile
+        gpStatus eStatus
+
+        If (sFile <> "") Begin
+            Get pbLoadImageFromUCharArray to bLoadImageFromUCharArray
+            If (bLoadImageFromUCharArray) Begin
+                Move (Seq_New_Channel ()) to iChannel
+                If (iChannel >= 0) Begin
+                    Direct_Input channel iChannel ("BINARY:" + sFile)
+                    If (not (SeqEof)) Begin
+                        Read_Block channel iChannel ucData -1
+                    End
+                    Close_Input channel iChannel
+                    Send Seq_Release_Channel iChannel
+                    Get CreateImageFromUCharArray ucData to hoImage
+                End
+            End
+            Else Begin
+                Move sFile to wFile
+                Move 0 to pImage
+                Move (GdipLoadImageFromFile (AddressOf (wFile), AddressOf (pImage))) to eStatus
+                If (eStatus = gpOk) Begin
+                    Get CreateGDIImageObject "ImageFromFile" to hoImage
+                    Set ppImage of hoImage to pImage
+                    #IFDEF IS$WEBAPP
+                    #ELSE
+                    Send ConfigureMultiFrameImageDisplay of hoImage
+                    #ENDIF
+                End
+            End
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Create a image object based from the passed filename with Image Color Management (ICM)." }
+    { Description += "Returns a DataFlex object handle when succesful" }
+    Function CreateImageFromFileICM String sFile Returns Handle
+        gpStatus eStatus
+        Pointer pImage
+        Handle hoImage
+        String sObjectName
+        WString wFile
+
+        If (sFile <> "") Begin
+            // Already create object name here as sFile will be changed below
+            Move ("ImageFromFileICM_" - sFile) to sObjectName
+
+            Move 0 to pImage
+            Move sFile to wFile
+            Move (GdipLoadImageFromFileICM (AddressOf (wFile), AddressOf (pImage))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateGDIImageObject sObjectName to hoImage
+                Set ppImage of hoImage to pImage
+                #IFDEF IS$WEBAPP
+                #ELSE
+                Send ConfigureMultiFrameImageDisplay of hoImage
+                #ENDIF
+            End
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Create a image object based on the passed bitmap handle." }
+    { Description += "Returns a DataFlex object handle when succesful" }
+    Function CreateImageFromHBITMAP Handle hBitmap Handle hPalette Returns Handle
+        gpStatus eStatus
+        Pointer pImage
+        Handle hoImage
+
+        Move 0 to pImage
+        Move (GdipCreateBitmapFromHBITMAP (hBitmap, hPalette, AddressOf (pImage))) to eStatus
+        If (eStatus = gpOk) Begin
+            Get CreateGDIImageObject "ImageFromHBitmap" to hoImage
+            Set ppImage of hoImage to pImage
+            #IFDEF IS$WEBAPP
+            #ELSE
+            Send ConfigureMultiFrameImageDisplay of hoImage
+            #ENDIF
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates an image from a resource data area in the executable." }
+    { Description += "The executable may contain bmp and ico references." }
+    { Description += "Returns a DataFlex object handle when succesful" }
+    Function CreateImageFromResource String sResourceName Returns Handle
+        gpStatus eStatus
+        Pointer pImage
+        Handle hInstance hoImage
+        String sObjectName
+        WString wResourceName
+
+        If (sResourceName <> "") Begin
+            Move ("ImageFromResource_" - sResourceName) to sObjectName // Create the object name first as name will be changed to an unicode name
+            Move 0 to pImage
+            Move (GetModuleHandle (0)) to hInstance
+            Move sResourceName to wResourceName
+            Move (GdipCreateBitmapFromResource (hInstance, AddressOf (wResourceName), AddressOf (pImage))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateGDIImageObject sObjectName to hoImage
+                Set ppImage of hoImage to pImage
+                #IFDEF IS$WEBAPP
+                #ELSE
+                Send ConfigureMultiFrameImageDisplay of hoImage
+                #ENDIF
+            End
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "The image data passed via UChar array." }
+    { Description += "Image data stored as blob in a database column or in a disk file can be retrieved via an UChar array and passed to this Function." }
+    Function CreateImageFromUCharArray UChar[] ucpImage Returns Handle
+        Handle hImageMemory hoImage
+        Integer eStatus iSize
+        Pointer pMem pStream pImage
+
+        Move (SizeOfArray (ucpImage)) to iSize
+        Move (GlobalAlloc (GMEM_MOVEABLE ior GMEM_ZEROINIT, iSize)) to hImageMemory
+        If (hImageMemory <> 0) Begin
+            Get CreateGDIImageObject "ImageFromUCharArray" to hoImage
+            // this cannot be freed yet at the end of this method - DeleteImage() will handle that
+            Set phImageMemory of hoImage to hImageMemory
+
+            Move (GlobalLock (hImageMemory)) to pMem
+            Move (CopyMemory (pMem, AddressOf (ucpImage), iSize)) to eStatus
+            Move (GlobalUnlock (hImageMemory)) to eStatus
+
+            Move 0 to pStream
+            Move (Ole32_CreateStreamOnHGlobal (hImageMemory, True, AddressOf (pStream))) to eStatus
+            If (eStatus = S_OK) Begin
+                Move 0 to pImage
+                Move (GdipLoadImageFromStream (pStream, AddressOf (pImage))) to eStatus
+                If (eStatus = gpOk) Begin
+                    Set ppImage of hoImage to pImage
+                    Send ConfigureMultiFrameImageDisplay of hoImage
+                End
+                Else Begin
+                    Send Destroy of hoImage
+                    Move 0 to hoImage
+                End
+                Send ReleaseStream pStream
+            End
+            Else Begin
+                Send Destroy of hoImage
+                Move 0 to hoImage
+            End
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { MethodType = Method }
+    { Description = "General handler for methods in one of the cGDI* classes" }
+    Procedure HandleGDIError Integer eErrorCode
+        Case Begin
+            Case (eErrorCode = C_GDIErr_ImageObjectNotAvailable)
+                Error DFERR_PROGRAM "Image object not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_DeviceHandleRequired)
+                Error DFERR_PROGRAM "Device Handle (hDC) required"
+                Case Break
+            Case (eErrorCode = C_GDIErr_WindowHandleRequired)
+                Error DFERR_PROGRAM "Window handle is required"
+                Case Break
+            Case (eErrorCode = C_GDIErr_GraphicsObjectNotAvailable)
+                Error DFERR_PROGRAM "Graphics object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_PenObjectNotAvailable)
+                Error DFERR_PROGRAM "Pen object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_BrushObjectNotAvailable)
+                Error DFERR_PROGRAM "Brush object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_GraphicsPathObjectNotAvailable)
+                Error DFERR_PROGRAM "Path object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_RegionObjectNotAvailable)
+                Error DFERR_PROGRAM "Region object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_MatrixObjectNotAvailable)
+                Error DFERR_PROGRAM "Matrix object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_MemcopyEncoderCodecFailed)
+                Error DFERR_PROGRAM "The MemCopy function failed (EncoderCodecCLSID)"
+                Case Break
+            Case (eErrorCode = C_GDIErr_MemcopyDecoderCodecFailed)
+                Error DFERR_PROGRAM "The MemCopy function failed (DecoderCodecCLSID)"
+                Case Break
+            Case (eErrorCode = C_GDIErr_MimeTypeToClsEncoderFailed)
+                Error DFERR_PROGRAM "Cannot find a ClsEncoder for this MimeType"
+                Case Break
+            Case (eErrorCode = C_GDIErr_CannotOverwriteExitingFile)
+                Error DFERR_PROGRAM "Cannot overwrite an existing file. Save cancelled"
+                Case Break
+            Case (eErrorCode = C_GDIErr_FileNameIsRequired)
+                Error DFERR_PROGRAM "FileName is required"
+                Case Break
+            Case (eErrorCode = C_GDIErr_CannotDetermineMIMEType)
+                Error DFERR_PROGRAM "Cannot determine the MIME type"
+                Case Break
+            Case (eErrorCode = C_GDIErr_CouldNotLoadBitmapFromClipboard)
+                Error DFERR_PROGRAM "Could not load bitmap from Clipboard."
+                Case Break
+            Case (eErrorCode = C_GDIErr_CouldNotCreateGraphicsFromImage)
+                Error DFERR_PROGRAM "Could not create graphics object from image"
+                Case Break
+            Case (eErrorCode = C_GDIErr_UnequalNumberOfArrayParameters)
+                Error DFERR_PROGRAM "Number of elements in array parameters need to be identical"
+                Case Break
+            Case (eErrorCode = C_GDIErr_StringFormatObjectNotAvailable)
+                Error DFERR_PROGRAM "StringFormat object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_NoImagePropertiesAvailable)
+                Send UserError "The image does not have image properties"
+                Case Break
+            Case (eErrorCode = C_GDIErr_FontFamilyObjectNotAvailable)
+                Error DFERR_PROGRAM "FontFamily object is not available"
+                Case Break
+            Case (eErrorCode = C_GDIErr_FontObjectNotAvailable)
+                Error DFERR_PROGRAM "Font object is not available"
+                Case Break
+        Case End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Can be used to centrally handle the result of a Windows API function call." }
+    { Description += "Status codes defined in cGDIImage.h.pkg" }
+    { Description += "This method translates the status code to aedescription and sends a DataFlex error with the information" }
+    Procedure HandleWinAPIError Integer eStatusCode String sContext
+        Case Begin
+            Case (eStatusCode = S_FALSE)
+                Error DFERR_PROGRAM "Operation unsuccessful"
+                Case Break
+            Case (eStatusCode = E_NOTIMPL)
+                Error DFERR_PROGRAM "not implemented"
+                Case Break
+            Case (eStatusCode = E_NOINTERFACE)
+                Error DFERR_PROGRAM "No such interface supported"
+                Case Break
+            Case (eStatusCode = E_ABORT)
+                Error DFERR_PROGRAM "Operation aborted"
+                Case Break
+            Case (eStatusCode = E_FAIL)
+                Error DFERR_PROGRAM "Unspecified failure; Unicode only"
+                Case Break
+            Case (eStatusCode = E_INVALIDARG)
+                Error DFERR_PROGRAM "One or more arguments are not valid"
+                Case Break
+            Case (eStatusCode = E_ACCESSDENIED)
+                Error DFERR_PROGRAM "General access denied Error"
+                Case Break
+            Case (eStatusCode = E_HANDLE)
+                Error DFERR_PROGRAM "Handle that is not valid"
+                Case Break
+            Case (eStatusCode = E_OUTOFMEMORY)
+                Error DFERR_PROGRAM "Failed to allocate necessary memory"
+                Case Break
+            Case (eStatusCode = E_POINTER)
+                Error DFERR_PROGRAM "Pointer that is not valid"
+                Case Break
+            Case (eStatusCode = E_UNEXPECTED)
+                Error DFERR_PROGRAM "Unexpected failure"
+                Case Break
+        Case End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Can be used to centrally handle the result of a GDI+ function call. GDI+ functions return a gpOk or an" }
+    { Description += "error. This method gets the description of the statuscode and sends a DataFlex error with the information" }
+    Procedure HandleGDIResult gpStatus eStatusCode String sContext
+        String sStatusText
+
+        Get GpStatusText eStatusCode to sStatusText
+        Move (sContext + ':' * sStatusText) to sStatusText
+        Error DFERR_PROGRAM sStatusText
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "Uses COM to release the stream pointer" }
+    Procedure ReleaseStream Pointer pStream
+        Handle hoStream
+        Variant vStream
+        Integer iResult
+
+        Get Create (RefClass (cComIStream)) to hoStream
+
+        // Convert pStream to a VT_DISPATCH
+        Move 0 to vStream
+        Move (StoreDw (AddressOf (vStream), 0, OLE_VT_Dispatch)) to iResult
+        Move (StoreDw (AddressOf (vStream), 8, pStream)) to iResult
+        Set pvComObject of hoStream to vStream
+
+        // Release the stream
+        Send ReleaseComObject of hoStream
+        Send Destroy of hoStream
+    End_Procedure
+
+    { Description = "Set the alpha channel of an ARGB color value" }
+    { MethodType = Method }
+    Function SetAlpha UInteger uiArgbColor Integer iAlpha Returns UInteger
+        UInteger uiResult
+
+        Move (uiArgbColor iand |CI$00FFFFFF) to uiResult
+        Move (uiResult + (iAlpha * 16777216)) to uiResult
+
+        Function_Return uiResult
+    End_Function
+End_Class
+
+Get CreateNamed of Desktop (RefClass (cGDIPlus)) 'oGDIPlus' to ghoGDIPlusHandler

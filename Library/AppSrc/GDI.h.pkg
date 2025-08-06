@@ -1,0 +1,123 @@
+﻿Use Winuser.pkg
+
+// ************************************************************************************************ //
+// ** Constants                                                                                  ** //
+// ************************************************************************************************ //
+
+Define WHITE_BRUSH                          for 0
+Define LTGRAY_BRUSH                         for 1
+Define GRAY_BRUSH                           for 2
+Define DKGRAY_BRUSH                         for 3
+Define BLACK_BRUSH                          for 4
+Define NULL_BRUSH                           for 5
+Define HOLLOW_BRUSH                         for 5
+Define WHITE_PEN                            for 6
+Define BLACK_PEN                            for 7
+Define NULL_PEN                             for 8
+Define OEM_FIXED_FONT                       for 10
+Define ANSI_FIXED_FONT                      for 11
+Define ANSI_VAR_FONT                        for 12
+Define SYSTEM_FONT                          for 13
+Define DEVICE_DEFAULT_FONT                  for 14
+Define DEFAULT_PALETTE                      for 15
+Define SYSTEM_FIXED_FONT                    for 16
+Define DEFAULT_GUI_FONT                     for 17
+Define DC_BRUSH                             for 18
+Define DC_PEN                               for 19
+
+Define SIF_RANGE                            for |CI$0001
+Define SIF_PAGE                             for |CI$0002
+Define SIF_POS                              for |CI$0004
+Define SIF_DISABLENOSCROLL                  for |CI$0008
+Define SIF_TRACKPOS                         for |CI$0010
+Define SIF_ALL                              for (SIF_RANGE ior SIF_PAGE ior SIF_POS ior SIF_TRACKPOS)
+
+Define SRCCOPY                              for |CI$00CC0020
+Define SRCPAINT                             for |CI$00EE0086
+Define SRCAND                               for |CI$008800C6
+Define SRCINVERT                            for |CI$00660046
+Define SRCERASE                             for |CI$00440328
+Define NOTSRCCOPY                           for |CI$00330008
+Define NOTSRCERASE                          for |CI$001100A6
+Define MERGECOPY                            for |CI$00C000CA
+Define MERGEPAINT                           for |CI$00BB0226
+Define PATCOPY                              for |CI$00F00021
+Define PATPAINT                             for |CI$00FB0A09
+Define PATINVERT                            for |CI$005A0049
+Define DSTINVERT                            for |CI$00550009
+Define BLACKNESS                            for |CI$00000042
+Define WHITENESS                            for |CI$00FF0062
+Define NOMIRRORBITMAP                       for |CI$80000000
+Define CAPTUREBLT                           for |CI$40000000
+
+Define WM_MOUSEWHEEL                        for |CI$020A
+Define WM_MOUSEHOVER                        for |CI$02A1
+Define WM_MOUSELEAVE                        for |CI$02A3
+
+Define CCHILDREN_TITLEBAR                   for 5
+Define CCHILDREN_SCROLLBAR                  for 5
+
+Define OBJID_WINDOW                         for |CI$00000000
+Define OBJID_SYSMENU                        for |CI$FFFFFFFF
+Define OBJID_TITLEBAR                       for |CI$FFFFFFFE
+Define OBJID_MENU                           for |CI$FFFFFFFD
+Define OBJID_CLIENT                         for |CI$FFFFFFFC
+Define OBJID_VSCROLL                        for |CI$FFFFFFFB
+Define OBJID_HSCROLL                        for |CI$FFFFFFFA
+Define OBJID_SIZEGRIP                       for |CI$FFFFFFF9
+Define OBJID_CARET                          for |CI$FFFFFFF8
+Define OBJID_CURSOR                         for |CI$FFFFFFF7
+Define OBJID_ALERT                          for |CI$FFFFFFF6
+Define OBJID_SOUND                          for |CI$FFFFFFF5
+Define OBJID_QUERYCLASSNAMEIDX              for |CI$FFFFFFF4
+Define OBJID_NATIVEOM                       for |CI$FFFFFFF0
+
+// ************************************************************************************************ //
+// ** Structures                                                                                 ** //
+// ************************************************************************************************ //
+
+Use tWinStructs.pkg
+Use Structs\tWinScrollbarInfo.pkg
+Use Structs\tWinBitmapInfo.pkg
+
+// ************************************************************************************************ //
+// ** External Functions                                                                         ** //
+// ************************************************************************************************ //
+
+External_Function ScrollWindowEx "ScrollWindowEx" user32.dll ;
+    Handle hWnd ;
+    Integer dx ;
+    Integer dy ;
+    Pointer prcScroll ;
+    Pointer prcClip ;
+    Handle hrgnUpdate ;
+    Pointer prcUpdate ;
+    UInteger flags ;
+    Returns Integer
+
+External_Function DefWindowProc "DefWindowProcW" user32.dll ;
+    Handle hWnd ;
+    UInteger Msg ;
+    Integer wParam ;
+    Integer lParam ;
+    Returns Integer
+
+External_Function SetRect "SetRect" user32.dll ;
+    Pointer lprc ;
+    Integer xLeft ;
+    Integer yTop ;
+    Integer xRight ;
+    Integer yBottom ;
+    Returns Boolean
+
+External_Function InflateRect "InflateRect" user32.dll ;
+    Pointer lprc ;
+    Integer dx ;
+    Integer dy ;
+    Returns Boolean
+
+External_Function ShowScrollBar "ShowScrollBar" User32.dll ;
+    Handle hWnd ;
+    Integer wBar ;
+    Boolean bShow ;
+    Returns Boolean

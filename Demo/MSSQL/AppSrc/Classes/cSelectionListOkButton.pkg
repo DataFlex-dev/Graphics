@@ -1,0 +1,24 @@
+Use Windows.pkg
+Use Classes\cSelectionListButton.pkg
+
+{ ClassLibrary = Windows }
+{ Description = "Use of this class avoids that DataFlex creates a sub-class of the button class for each button in a selectionlist" }
+Class cSelectionListOkButton is a cSelectionListButton
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Label to C_$OK
+        Set Location to 115 217
+        Set peAnchors to anBottomRight
+    End_Procedure
+
+    { MethodType = Event }
+    { Description = "Send the message OK to the object stored in the phoList property." }
+    Procedure OnClick
+        Handle hoList
+
+        Get phoList to hoList
+
+        Send OK of hoList
+    End_Procedure
+End_Class

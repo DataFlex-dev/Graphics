@@ -1,0 +1,85 @@
+﻿Use cApplication.pkg
+Use cConnection.pkg
+
+Object oApplication is a cApplication
+    Set pbPreserveEnvironment to False
+    Set peHelpType to htNoHelp
+
+    Object oConnection is a cConnection
+        Use LoginEncryption.pkg
+        Use DatabaseLoginDialog.dg
+    End_Object
+
+    Set psProduct to "DataFlex Graphics Library Examples"
+    Set psVersion to "25.0"
+End_Object
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// This project demonstrates the use of GDI+ without GUI. It can be used to create and manipulate
+// image files in memory, which can be very useful in many projects, including web apps.
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Use cGDIPlus.pkg
+Use cGDIImage.pkg
+Use cGDIGraphics.pkg
+
+Procedure ResizeImage Global String sFileNameSrc String sFileNameDest String sMimeDest Integer iWidth Integer iHeight
+    gpStatus eStatus
+    Handle hoGraphicsDest
+    Handle hoGraphicsSrc
+    Handle hoImageDest
+    Handle hoImageSrc
+
+    Get CreateImageFromFile of ghoGDIPlusHandler sFileNameSrc to hoImageSrc
+    If (hoImageSrc = 0) Procedure_Return
+
+    Get CreateGraphicsFromImage of ghoGDIPlusHandler hoImageSrc to hoGraphicsSrc
+    If (hoGraphicsSrc = 0) Begin
+        Send Destroy of hoImageSrc
+        Procedure_Return
+    End
+
+    Get CreateImageFromGraphics of hoGraphicsSrc iWidth iHeight to hoImageDest
+    If (hoImageDest = 0) Begin
+        Send Destroy of hoGraphicsSrc
+        Send Destroy of hoImageSrc
+        Procedure_Return
+    End
+
+    Get CreateGraphicsFromImage of ghoGDIPlusHandler hoImageDest to hoGraphicsDest
+    If (hoGraphicsDest = 0) Begin
+        Send Destroy of hoImageDest
+        Send Destroy of hoImageSrc
+        Send Destroy of hoGraphicsSrc
+        Procedure_Return
+    End
+
+    Get DrawImageI of hoGraphicsDest hoImageSrc 0 0 iWidth iHeight to eStatus
+    If (eStatus = gpOk) Begin
+        Get SaveImageToFile of hoImageDest sFileNameDest sMimeDest to eStatus
+    End
+
+    Send Destroy of hoGraphicsDest
+    Send Destroy of hoImageDest
+    Send Destroy of hoGraphicsSrc
+    Send Destroy of hoImageSrc
+End_Procedure
+
+Procedure Main Global
+    Handle hoWorkspace
+    String sBitmapPaths
+    String sFileNameDest
+    String sFileNameSrc
+    String sPath
+
+    Get phoWorkspace of ghoApplication to hoWorkspace
+    Get psBitmapPath of hoWorkspace to sBitmapPaths
+    Get PathAtIndex of hoWorkspace sBitmapPaths 1 to sPath
+
+    Move (sPath - "\China _DSC_ 01.jpg") to sFileNameSrc
+    Move (sPath - "\China _DSC_ 01 500x500.png") to sFileNameDest
+
+    Send ResizeImage sFileNameSrc sFileNameDest CS_PNG_Mimetype 500 500
+End_Procedure
+
+Send Main

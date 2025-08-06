@@ -1,0 +1,10 @@
+Use VdfBase.pkg
+
+Struct tBitmapData
+    UInteger Width
+    UInteger Height
+    Integer Stride
+    Integer PixelFormat  // MSDN: "PixelFormat PixelFormat;"
+    Pointer Scan0
+    Pointer Reserved
+End_Struct

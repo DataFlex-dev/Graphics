@@ -1,0 +1,142 @@
+Use cDbImageContainer.pkg
+Use WinUuid.pkg
+
+{ ClassLibrary = Windows }
+{ OverrideProperty = pcBackColor InitialValue = clBtnFace }
+{ Description = "Automatically sets the psImagePath to the first folder of the workspace' bitmappath." }
+{ Description += "The selected image will be copied to the workspace if it was not present in the workspace' path" }
+{ Description += "Allows paste from Windows clipboard and automatically creates a JPG file for the paste operation" }
+Class cWsDbImageContainer is a cDbImageContainer
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set peImageStyle to ifFitOneSide
+        Set pcBackColor to (GetSysColor (clBtnFace iand $FFFFFF))
+    End_Procedure
+
+    { Description = "Get the first folder from the BitmapPath workspace setting" }
+    { Description += "and initialize the image container class with that path." }
+    { MethodType = Event }
+    Procedure Activating Returns Integer
+        Integer iRetVal
+        Handle hoWorkspace
+        String sBitmapPath
+
+        Forward Get Msg_Activating to iRetVal
+
+        Get phoWorkspace of ghoApplication to hoWorkspace
+        Get psBitmapPath of hoWorkspace to sBitmapPath
+        Get PathAtIndex of hoWorkspace sBitmapPath 1 to sBitmapPath
+        Set psImagePath to sBitmapPath
+
+        Procedure_Return iRetVal
+    End_Procedure
+
+    { Description = "Checks if the selected image is present in the workspace bitmap path." }
+    { Description += "If it is not present copy the image to the first folder of the workspace bitmap path." }
+    { Description += "If this would not be done the reference to the picture would need to be" }
+    { Description += "stored with pathname and that will break when the path changes." }
+    { Visibility = Private }
+    { MethodType = Method }
+    Procedure MakeImageLocalToWorkspace String ByRef sFileWithPath
+        Handle hoWorkspace
+        String sBitmapPath sFileWithoutPath sFolderName
+        Integer iPaths iPath
+        Boolean bFileExist
+
+        Get phoWorkspace of ghoApplication to hoWorkspace
+        Get psBitmapPath of hoWorkspace to sBitmapPath
+        Get CountOfPaths of hoWorkspace sBitmapPath to iPaths
+        Move (ExtractFileName (sFileWithPath)) to sFileWithoutPath
+        For iPath from 1 to iPaths
+            Get PathAtIndex of hoWorkspace sBitmapPath iPath to sFolderName
+            If (Right (sFolderName, 1) <> SysConf (SYSCONF_DIR_SEPARATOR)) Begin
+                Move (sFolderName - SysConf (SYSCONF_DIR_SEPARATOR)) to sFolderName
+            End
+            File_Exist (sFolderName - sFileWithoutPath) bFileExist
+            If (bFileExist) Break
+        Loop
+
+        If (not (bFileExist)) Begin
+            Get PathAtIndex of hoWorkspace sBitmapPath 1 to sFolderName
+            CopyFile sFileWithPath to sFolderName
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { Description = "Create a new filename in the first folder of the Workspace BitmapPath." }
+    { Description += "The filename is constructed from a GUID and the passed filename extension." }
+    { Description += "The extension should not start with a dot, so simple JPEG, TIFF, BMP etc" }
+    Function NewFileName String sExtension Returns String
+        Boolean bExists
+        Handle hoWorkspace
+        String sBitmapPath sFolderName sFileName
+
+        Get phoWorkspace of ghoApplication to hoWorkspace
+        Get psBitmapPath of hoWorkspace to sBitmapPath
+
+        Get PathAtIndex of hoWorkspace sBitmapPath 1 to sFolderName
+        Move (Trim (sFolderName)) to sFolderName
+        If (Right (sFolderName, 1) <> SysConf (SYSCONF_DIR_SEPARATOR)) Begin
+            Move (sFolderName + SysConf (SYSCONF_DIR_SEPARATOR)) to sFolderName
+        End
+
+        Repeat
+            Move (sFolderName + RandomHexUUID () + '.' + sExtension) to sFileName
+            File_Exist sFileName bExists
+        Until (not (bExists))
+
+        Function_Return sFileName
+    End_Function
+
+    { Description = "Save clipboard contents to local file if needed." }
+    { MethodType = Method }
+    Procedure Paste
+        Handle hoImage
+        gpStatus eResult
+        String sFilePath sFileName
+        Boolean bIsDataBound bIsBinaryField
+
+        Forward Send Paste
+
+        Get IsDataBound to bIsDataBound
+        Get IsBinaryField to bIsBinaryField
+        If (bIsDataBound and not (bIsBinaryField)) Begin
+            Get phoImage to hoImage
+            If (hoImage <> 0) Begin
+                Get NewFileName 'jpg' to sFilePath
+                Get SaveImageToFile of hoImage sFilePath CS_JPG_Mimetype to eResult
+                If (eResult = gpOk) Begin
+                    Set psMimeType to CS_JPG_Mimetype
+                    Move (ExtractFileName (sFilePath)) to sFileName
+                    Set psImage to sFileName
+                    Set Changed_State to True
+                    Send OnImageSelected sFileName
+                End
+                Else Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler eResult "Paste from Clipboard"
+                End
+            End
+        End
+    End_Procedure
+
+    { Description = "After selecting a picture the routine checks if the destination" }
+    { Description += "column's datatype is binary. If it is not a call is made to" }
+    { Description += "check if the image is present in the workspace bitmaps path." }
+    Function SelectImage Returns String
+        String sFileWithPath
+        Boolean bIsDataBound bIsBinaryField
+
+        Forward Get SelectImage to sFileWithPath
+
+        Get IsDataBound to bIsDataBound
+        Get IsBinaryField to bIsBinaryField
+        If (bIsDataBound and (not (bIsBinaryField))) Begin
+            Send MakeImageLocalToWorkspace (&sFileWithPath)
+        End
+
+        Function_Return sFileWithPath
+    End_Function
+End_Class

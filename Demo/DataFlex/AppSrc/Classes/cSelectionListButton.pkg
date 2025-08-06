@@ -1,0 +1,13 @@
+Use Windows.pkg
+
+{ ClassLibrary = Windows }
+{ Description = "Used by the OK, Cancel and Search sub-classes" }
+Class cSelectionListButton is a Button
+    { MethodType = Event }
+    { Description = "Creates a property name phoList which gets the object ID of the selectionlist object." }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Property Handle phoList 0
+    End_Procedure
+End_Class

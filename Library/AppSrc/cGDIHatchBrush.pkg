@@ -1,0 +1,102 @@
+﻿Use cGDIPlus.pkg
+Use cGDIHatchBrush.h.pkg
+Use cGDIBrush.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIHatchBrush }
+{ Description = "The HatchBrush class defines a rectangular brush with a hatch style, a foreground color, and a background color." }
+{ Description += "There are six hatch styles. The foreground color defines the color of the hatch lines;" }
+{ Description += "the background color defines the color over which the hatch lines are drawn" }
+Class cGDIHatchBrush is a cGDIBrush
+    { Description = "Creates a HatchBrush object based on a hatch style, a foreground color, and a background color." }
+    { Description += "Returns a non-zero (GDI+ result) value when the operation fails." }
+    { Description += "Handle this status if needed" }
+    { MethodType = Method }
+    Function CreateHatchBrush gpHatchStyle eStyle Integer iForeColor Integer iBackColor Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        // If exists remove the old brush
+        Send DeleteBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateHatchBrush (eStyle, iForeColor, iBackColor, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Gets the hatch style of this hatch brush." }
+    { Description += "Calls HandleGDIResult if the operation failed" }
+    { Description += "Calls HandleGDIError if there is no brush available" }
+    Function HatchStyle Returns gpHatchStyle
+        gpStatus eStatus
+        gpHatchStyle eStyle
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to eStyle
+            Move (GdipGetHatchStyle (pBrush, AddressOf (eStyle))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting HatchStyle"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStyle
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Gets the background color of this hatch brush." }
+    { Description += "Calls HandleGDIResult if the operation failed" }
+    { Description += "Calls HandleGDIError if there is no brush available" }
+    Function HatchBackgroundColor Returns Integer
+        gpStatus eStatus
+        Integer iColor
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to iColor
+            Move (GdipGetHatchBackgroundColor (pBrush, AddressOf (iColor))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting HatchBackgroundColor"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iColor
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Gets the foreground color of this hatch brush." }
+    { Description += "Calls HandleGDIResult if the operation failed" }
+    { Description += "Calls HandleGDIError if there is no brush available" }
+    Function HatchForegroundColor Returns Integer
+        gpStatus eStatus
+        Integer iColor
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to iColor
+            Move (GdipGetHatchForegroundColor (pBrush, AddressOf (iColor))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting HatchForegroundColor"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iColor
+    End_Function
+End_Class

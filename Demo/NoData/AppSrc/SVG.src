@@ -1,0 +1,191 @@
+﻿Use Windows.pkg
+Use cHtmlHelp.pkg
+Use cApplication.pkg
+Use cToolTipController.pkg
+Use cConnection.pkg
+
+Object oHtmlHelp is a cHtmlHelp
+End_Object
+
+Object oApplication is a cApplication
+    Set peHelpType to htHtmlHelp
+    Set pbPreserveEnvironment to False
+    Set psAutoOpenWorkspace to ""
+    Set psProduct to "DataFlex Graphics Library Examples"
+    Set psVersion to "20.1"
+
+    Object oConnection is a cConnection
+        Use LoginEncryption.pkg
+        Use DatabaseLoginDialog.dg
+    End_Object
+End_Object
+
+Object oToolTipController is a cToolTipController
+    Move Self to ghoToolTipController
+End_Object
+
+Use cGDIPlus.pkg
+Use cGraphicsContainer.pkg
+Use vbscript3.pkg
+Use Flexml.pkg
+
+Object oSVGViewerPanel is a BasicPanel
+    Set Border_Style to Border_Thick
+    Set Label to "SVG"
+    Set Location to 4 3
+    Set Size to 300 450
+    Set pbAcceptDropFiles to True
+
+    Object oRegularExpression is a cComRegExp
+    End_Object
+    
+    Object oMatch is a cComMatch
+    End_Object
+    
+    Object oMatchCollection is a cComMatchCollection
+    End_Object
+
+    Object oGraphics is a cGraphicsContainer
+        Set Location to 21 5
+        Set Size to 265 453
+        Set peAnchors to anAll
+        Set Border_Style to Border_Dialog
+
+        Property String psFileName
+
+        Procedure OnPaintShape Handle hoGraphics tWinRect Rect
+            String sFileName
+            Boolean bExists
+            
+            Get psFileName to sFileName
+            If (sFileName <> "") Begin
+                File_Exist sFileName bExists
+                If (bExists) Begin
+                    Send DrawImageFromFile sFileName hoGraphics Rect
+                End
+            End
+        End_Procedure
+
+        Procedure DrawImageFromFile String sFile Handle hoGraphics tWinRect Rect
+            Integer iChannel iElements iElement iDecSep eStatus
+            UChar[] ucData
+            String sSVGData sChar sDecSep sPrev
+            String[] sSplits
+            Float[4] fX fY
+            Float fTwoThird
+            Handle hoXML hoRoot hoGraphicsPath
+            Boolean bOk bIsSVG
+            
+            Get Create (RefClass (cXMLDOMDocument)) to hoXML
+            Set psDocumentName of hoXML to sFile
+            Get LoadXMLDocument of hoXML to bOk
+            If (not (bOk)) Begin
+                Send BasicParseErrorReport of hoXML
+                Send Destroy of hoXML
+                Procedure_Return
+            End
+            
+            Get DocumentElement of hoXML to hoRoot
+            Get IsElementNS of hoRoot "" "svg" to bIsSVG
+            If (not (bIsSVG)) Begin
+                Error DFERR_OPERATOR 'File is not a SVG'
+                Send Destroy of hoRoot
+                Send Destroy of hoXML
+                Procedure_Return
+            End
+            
+            Move (Seq_New_Channel ()) to iChannel
+            If (iChannel >= DF_SEQ_CHANNEL_MIN and iChannel <= DF_SEQ_CHANNEL_MAX) Begin
+                Direct_Input channel iChannel sFile
+                Read_Block channel iChannel ucData -1
+                Close_Input channel iChannel
+                Send Seq_Release_Channel iChannel
+            End
+            
+            Move (UCharArrayToString (ucData)) to sSVGData
+            Move (ResizeArray (ucData, 0)) to ucData
+            Move (StrSplitToArray (sSVGData, ' ')) to sSplits
+            Move "" to sSVGData            
+            
+            Move (SizeOfArray (sSplits)) to iElements
+            If (iElements > 0) Begin
+                Decrement iElements
+                // Grab the decimal separator and change it to a DOT as SVG numbers use a dot as decimal separator
+                Get_Attribute DF_DECIMAL_SEPARATOR to iDecSep
+                Set_Attribute DF_DECIMAL_SEPARATOR to (Ascii ('.'))
+                Send CreateComObject of oRegularExpression
+                Move (2.0 / 3.0) to fTwoThird
+                Get Create (RefClass (cGDIGraphicsPath)) to hoGraphicsPath
+                Get CreatePath of hoGraphicsPath gpFillModeAlternate to eStatus
+                Move 0 to iElement
+                While (iElement < iElements)
+                    Move (Left (sSplits[iElement], 1)) to sChar
+                    Case Begin
+                        Case (sChar = 'M')
+                            Move (Right (sSplits[iElement], Length (sSplits[iElement]) - 1)) to fX[0]
+                            Move sSplits[iElement+1] to fY[0]
+                            Get StartFigure of hoGraphicsPath to eStatus
+                            Move "M" to sPrev
+                            Increment iElement
+                            Case Break
+                        Case (sChar = 'L')
+                            Move (Right (sSplits[iElement], Length (sSplits[iElement]) - 1)) to fX[1]
+                            Move sSplits[iElement+1] to fY[1]
+                            Get AddLine of hoGraphicsPath fX[0] fY[0] fX[1] fY[1] to eStatus
+                            Move fX[1] to fX[0]
+                            Move fY[1] to fY[0]
+                            Move "L" to sPrev
+                            Increment iElement
+                            Case Break
+                        Case (sChar = 'Q')
+                            Move (fX[0] + (fTwoThird * Cast (Right (sSplits[iElement], Length (sSplits[iElement]) - 1), Float) - fX[0])) to fX[1]
+                            Move (fY[0] + (fTwoThird * Cast (sSplits[iElement+1], Float) - fY[0])) to fY[1]
+                            Move sSplits[iElement+2] to fX[3]
+                            Move sSplits[iElement+3] to fY[3]
+                            Move (fX[3] + (fTwoThird * Cast (Right (sSplits[iElement], Length (sSplits[iElement]) - 1), Float) - fY[3])) to fX[2]
+                            Move (fY[3] = (fTwoThird * Cast (sSplits[iElement+1], Float) - fY[3])) to fY[2]
+                            Get AddBezier of hoGraphicsPath fX[0] fY[0] fX[1] fY[1] fX[2] fY[2] fX[3] fY[3] to eStatus
+                            Move fX[3] to fX[0]
+                            Move fY[3] to fY[0]
+                            Move (iElement + 3) to iElement
+                            Move "Q" to sPrev
+                            Case Break
+                        Case (sChar = 'Z')
+                            Get CloseFigure of hoGraphicsPath to eStatus
+                            If (Length (sSplits[iElement] >= 2 and Left (sSplits[iElement], 2)) = 'ZM') Begin
+                                Move (Right (sSplits[iElement], Length (sSplits[iElement]) - 1)) to fX[0]
+                                Move sSplits[iElement+1] to fY[0]
+                                Increment iElement
+                                Get StartFigure of hoGraphicsPath to eStatus
+                                Move "M" to sPrev                                
+                            End
+                            Case Break
+                        Case Else
+                            Set ComGlobal of oRegularExpression to False
+                            Set ComPattern of oRegularExpression to "^[a-zA-Z]*$"
+                            Get ComTest of oRegularExpression (Left (sSplits[iElement+1], 1)) to bOk
+                            If (not (bOk)) Begin
+                                Move (sPrev + sSplits[iElement+1]) to sSplits[iElement+1]
+                            End
+                            Case Break
+                    Case End
+                    Increment iElement
+                Loop
+                
+                // Destroy the created graphicspath object
+                Send Destroy of hoGraphicsPath
+            
+                // Restore the decimal separator
+                Set_Attribute DF_DECIMAL_SEPARATOR to iDecSep
+            End
+        End_Procedure
+    End_Object
+
+    Procedure OnFileDropped String sFilename Boolean bLast
+        Forward Send OnFileDropped sFilename bLast
+        Set psFileName of oGraphics to sFilename
+        Send RecreateShape of oGraphics
+    End_Procedure
+End_Object
+
+Start_UI oSVGViewerPanel

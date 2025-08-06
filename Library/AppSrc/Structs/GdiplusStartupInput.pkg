@@ -1,0 +1,11 @@
+﻿Use VdfBase.pkg
+
+Struct GdiplusStartupInput
+    Integer GdiplusVersion
+#IFDEF IS$WIN64
+    Integer iMissingAlignment
+#ENDIF
+    Pointer DebugEventCallback
+    Integer SuppressBackgroundThread
+    Integer SuppressExternalCodecs
+End_Struct

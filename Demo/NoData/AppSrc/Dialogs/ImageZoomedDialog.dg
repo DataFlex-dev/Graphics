@@ -1,0 +1,320 @@
+﻿Use Windows.pkg
+Use Classes\cGalleryImageContainer.pkg
+Use cRichEdit.pkg
+Use cCJStandardCommandBarSystem.pkg
+Use cCJCommandBarSystem.pkg
+
+Object oImageZoomedDialog is a ModalPanel
+    Set Size to 296 381
+    Set Locate_Mode to CENTER_ON_PARENT
+    Set Border_Style to Border_Thick
+
+    Procedure Page Integer iPageObject
+        Forward Send Page iPageObject
+
+        If (iPageObject <> 0) Begin
+            Set Icon to "Default.Ico"
+        End
+    End_Procedure
+
+    Object oCJCommandBarSystem is a cCJCommandBarSystem
+        Object oOptionsToolbar is a cCJToolbar
+            Set peStretched to stStretch
+            Set pbEnableDocking to False
+            Set pbGripper to False
+            Set pbHideWrap to True
+            Set pbCloseable to False
+            Set pbCustomizable to False
+            Set pbShowExpandButton to False
+
+            Object oDisplayOtionsMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlComboBox
+                Set psCaption to "Image Fit:"
+                Set peControlStyle to xtpButtonCaption
+                Set pbGripper to False
+                Set pbCloseable to False
+                Set pbShowExpandButton to False
+
+                Procedure FillComboList Handle hoCombo
+                    Integer iImageStyle
+
+                    Send ComClear of hoCombo
+
+                    Send ComAddItem of hoCombo "Original" 1
+                    Set ComItemData of hoCombo 1 to ifOriginal
+                    Send ComAddItem of hoCombo "Fit One Side" 2
+                    Set ComItemData of hoCombo 2 to ifFitOneSide
+                    Send ComAddItem of hoCombo "Fit Both Sides" 3
+                    Set ComItemData of hoCombo 3 to ifFitBothSides
+
+                    Get ReadDword of ghoApplication "Preferences" "ImageStyle" ifFitOneSide to iImageStyle
+
+                    Set ComListIndex of hoCombo to (iImageStyle - 3)
+                    Set ComWidth of hoCombo to 200
+
+                    // Redraw the image in the preferred image style
+                    Set peImageStyle of oImageContainer to iImageStyle
+                    Send RedrawImage of oImageContainer
+                End_Procedure
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoCombo
+                    Integer iIndex eImageStyle
+
+                    Get CreateProxyControl vCommandBarControl to hoCombo
+                    Get ComListIndex of hoCombo to iIndex
+                    Get ComItemData of hoCombo iIndex to eImageStyle
+
+                    Set peImageStyle of oImageContainer to eImageStyle
+                    Send RedrawImage of oImageContainer
+
+                    Send Destroy of hoCombo
+                End_Procedure
+
+                Procedure OnCreateControl Handle hoObj
+                    Send FillComboList hoObj
+                End_Procedure
+            End_Object
+        End_Object
+    End_Object
+
+    Object oCloseButton is a Button
+        Set Label to "&Close"
+        Set Location to 280 330
+        Set peAnchors to anBottomRight
+
+        Procedure OnClick
+            Send Close_Panel
+        End_Procedure
+    End_Object
+
+    Object oImageContainer is a cGalleryImageContainer
+        Set Location to 17 0
+        Set pbShowEnlarged to False
+        Set Size to 219 380
+        Set Border_Style to Border_None
+        Set peImageStyle to ifFitBothSides
+        Set peAnchors to anAll
+        Set pbDropShadow to False
+        Set pbVisible to True
+        Set pbAutoTooltip to False
+
+        Procedure OnRightMouseDown Integer iX Integer iY Integer iKeys
+            // Canceled in this dialog
+        End_Procedure
+
+        Procedure OnLButtonDblClick Longptr wParam Longptr lParam
+            // Canceled in this dialog
+        End_Procedure
+
+        Procedure DisplayInfo
+            Handle hoImage
+            Integer iResult iWidth iHeight iType
+            Integer iFlags eImageFormat iImageFlagsElements iImageFlagsElement
+            Integer iImagePixelFormat iPixelFormatSize
+            Boolean bIsIndexedPixelFormat bIsAlphaPixelFormat bIsExtendedPixelFormat
+            Boolean bIsCanonicalPixelFormat
+            String sImageName sImageType sImageFormat sImageFlagsText
+            String[] sImageFlagsInfo
+            tFileDateTime[] FileInfo
+            Float fHorizontalResolution fVerticalResolution
+
+            Get psImage to sImageName
+            Get phoImage to hoImage
+
+            Get ImageWidth of hoImage to iWidth
+            Get ImageHeight of hoImage to iHeight
+            Get ImageType of hoImage to iType
+            Get ImageFlags of hoImage to iFlags
+            Get ImagePixelFormat of hoImage to iImagePixelFormat
+            Get ImageFileFormat of hoImage to eImageFormat
+            Get ImageHorizontalResolution of hoImage to fHorizontalResolution
+            Get ImageVerticalResolution of hoImage to fVerticalResolution
+
+            Get PixelFormatSize of hoImage iImagePixelFormat to iPixelFormatSize
+            Get IsIndexedPixelFormat of hoImage iImagePixelFormat to bIsIndexedPixelFormat
+            Get IsAlphaPixelFormat of hoImage iImagePixelFormat to bIsAlphaPixelFormat
+            Get IsExtendedPixelFormat of hoImage iImagePixelFormat to bIsExtendedPixelFormat
+            Get IsCanonicalPixelFormat of hoImage iImagePixelFormat to bIsCanonicalPixelFormat
+
+            Case Begin
+                Case (IsFlagIn (gpImageFlagsScalable, iFlags))
+                    Move "image can be scaled." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsHasAlpha, iFlags))
+                    Move "pixel data contains alpha values." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsHasTranslucent, iFlags))
+                    Move "pixel data has alpha values other than 0 (transparent) and 255 (opaque)." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsPartiallyScalable, iFlags))
+                    Move "pixel data is partially scalable with some limitations." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsColorSpaceRGB, iFlags))
+                    Move "image is stored using an RGB color space." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsColorSpaceCMYK, iFlags))
+                    Move "image is stored using a CMYK color space." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsColorSpaceGRAY, iFlags))
+                    Move "image is a grayscale image." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsColorSpaceYCBCR, iFlags))
+                    Move "image is stored using a YCBCR color space." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsColorSpaceYCCK, iFlags))
+                    Move "image is stored using a YCCK color space." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsHasRealDPI, iFlags))
+                    Move "dots per inch information is stored in the image." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsHasRealPixelSize, iFlags))
+                    Move "pixel size is stored in the image." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsReadOnly, iFlags))
+                    Move "pixel data is read-only." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+                Case (IsFlagIn (gpImageFlagsCaching, iFlags))
+                    Move "pixel data can be cached for faster access." to sImageFlagsInfo[SizeOfArray (sImageFlagsInfo)]
+                    Case Break
+            Case End
+
+            Move (SizeOfArray (sImageFlagsInfo)) to iImageFlagsElements
+            Decrement iImageFlagsElements
+            For iImageFlagsElement from 0 to iImageFlagsElements
+                If (iImageFlagsElement > 0) Begin
+                    Move (sImageFlagsText + Character (13)) to sImageFlagsText
+                End
+                Move (sImageFlagsText + sImageFlagsInfo[iImageFlagsElement]) To sImageFlagsText
+            Loop
+
+            Case Begin
+                Case (iType = gpImageTypeBitmap)
+                    Move "Bitmap" to sImageType
+                    Case Break
+                Case (iType = gpImageTypeMetafile)
+                    Move "Metafile" to sImageType
+                    Case Break
+                Case (iType = gpImageTypeUnknown)
+                    Move "Unknown" to sImageType
+                    Case Break
+            Case End
+
+            Case Begin
+                Case (eImageFormat = gpImageFormatUndefined)
+                    Move "Undefined" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatMemoryBMP)
+                    Move "MemoryBMP" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatBMP)
+                    Move "BMP" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatEMF)
+                    Move "EMF" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatWMF)
+                    Move "WMF" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatJPEG)
+                    Move "JPEG" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatPNG)
+                    Move "PNG" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatGIF)
+                    Move "GIF" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatTIFF)
+                    Move "TIFF" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatEXIF)
+                    Move "EXIF" to sImageFormat
+                    Case Break
+                Case (eImageFormat = gpImageFormatIcon)
+                    Move "Icon" to sImageFormat
+                    Case Break
+            Case End
+
+            Move (FileDateTime (sImageName)) to FileInfo
+
+            Set Read_Only_State of oImageInfo to False
+            Send Delete_Data of oImageInfo
+            Send AddInfo of oImageInfo (sFormat ("File Name: %1", sImageName))
+            Send AddInfo of oImageInfo (sFormat ("Type: %1", sImageType))
+            Send AddInfo of oImageInfo (sFormat ("Flags: %1", sImageFlagsText))
+            Send AddInfo of oImageInfo (sFormat ("Image RAW Format: %1", sImageFormat))
+            Send AddInfo of oImageInfo (Sformat ("Size: %1 x %2", iHeight, iWidth))
+            Send AddInfo of oImageInfo (Sformat ("Resolution: %1 x %2", fVerticalResolution, fHorizontalResolution))
+            Send AddInfo of oImageInfo (Sformat ("Modified: %1", FileInfo[0].dtLastWrite))
+            Send AddInfo of oImageInfo (Sformat ("Pixel Format Size: %1", iPixelFormatSize))
+            If (bIsIndexedPixelFormat) Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Size: True"
+            End
+            Else Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Size: False"
+            End
+            If (bIsAlphaPixelFormat) Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Alpha: True"
+            End
+            Else Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Alpha: False"
+            End
+            If (bIsExtendedPixelFormat) Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Extended: True"
+            End
+            Else Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Extended: False"
+            End
+            If (bIsCanonicalPixelFormat) Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Canonical: True"
+            End
+            Else Begin
+                Send AddInfo of oImageInfo "Indexed Pixel Format Canonical: False"
+            End
+            Send Beginning_of_Data of oImageInfo
+            Set Read_Only_State of oImageInfo to True
+        End_Procedure
+    End_Object
+
+    Object oImageInfo is a cRichEdit
+        Set Size to 43 380
+        Set Location to 236 0
+        Set peAnchors to anBottomLeftRight
+
+        Procedure AddInfo String sText
+            Integer iPos
+
+            Move (Pos (":", sText)) to iPos
+            If (iPos > 0) Begin
+                Set pbBold to True
+                Send AppendText (Left (sText, iPos))
+                Set pbBold to False
+                Send AppendTextLn (Right (sText, Length (sText) - iPos))
+            End
+            Else Begin
+                Send AppendTextLn sText
+            End
+        End_Procedure
+
+        Procedure Add_Focus Handle hoParent Returns Integer
+            Integer iRetval
+
+            Forward Get Msg_Add_Focus hoParent to iRetval
+
+            Send DisplayInfo of oImageContainer
+
+            Procedure_Return iRetval
+        End_Procedure
+    End_Object
+
+    On_Key Key_Alt+Key_C Send KeyAction of oCloseButton
+    On_Key Key_Escape Send KeyAction of oCloseButton
+
+    Procedure DisplayImageBig String sImageName
+        Set psImage of oImageContainer to sImageName
+        Set Label to sImageName
+
+        Send Popup_Modal
+    End_Procedure
+End_Object

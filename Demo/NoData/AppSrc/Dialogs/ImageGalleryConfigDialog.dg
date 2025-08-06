@@ -1,0 +1,121 @@
+﻿Use Windows.pkg
+Use cTextEdit.pkg
+
+Use cCJGrid.pkg
+Use cCJGridColumn.pkg
+
+Object oImageGalleryConfigDialog is a ModalPanel
+    Set Location to 2 4
+    Set Size to 116 211
+    Set Label to "Configuration"
+    Set Locate_Mode to CENTER_ON_PANEL
+    Set Border_Style to Border_Normal
+
+    Procedure Page Integer iPageObject
+        Forward Send Page iPageObject
+
+        If (iPageObject <> 0) Begin
+            Set Icon to "Default.Ico"
+        End
+    End_Procedure
+
+    Object oFileExtensionsGrid is a cCJGrid
+        Set Location to 4 128
+        Set Size to 92 79
+
+        Object oExtensionColumn is a cCJGridColumn
+            Set piWidth to 70
+            Set psCaption to "Extension"
+        End_Object
+
+        Procedure Activating Returns Integer
+            Integer iRetval iPos iExtensionColumnID iRow
+            String sExtensions sExtension
+            tDataSourceRow[] FileNameExtensions
+
+            Get piColumnId of oExtensionColumn to iExtensionColumnID
+            Move 0 to iRow
+
+            Forward Get Msg_Activating to iRetval
+            If (iRetval = 0) Begin
+                Get ReadString of ghoApplication "Preferences" "GraphicExtensions" ".bmp;.gif;.jpg;.tif;.png;.rle" to sExtensions
+                While (sExtensions <> "")
+                    Move (Pos (";", sExtensions)) to iPos
+                    If (iPos > 0) Begin
+                        Move (Left (sExtensions, iPos - 1)) to sExtension
+                        Move (Right (sExtensions, Length (sExtensions) - iPos)) to sExtensions
+                    End
+                    Else Begin
+                        Move sExtensions to sExtension
+                        Move "" to sExtensions
+                    End
+                    Move sExtension to FileNameExtensions[iRow].sValue[iExtensionColumnID]
+                    Increment iRow
+                Loop
+
+                Send InitializeData FileNameExtensions
+            End
+
+            Procedure_Return iRetval
+        End_Procedure
+
+        Procedure StoreExtensions
+            Integer iElements iElement iExtensionColumnID
+            String sExtension sExtensions
+            Handle hoDataSource
+            tDataSourceRow[] FileNameExtensions
+
+            Get phoDataSource to hoDataSource
+            Get DataSource of hoDataSource to FileNameExtensions
+
+            Get piColumnId of oExtensionColumn to iExtensionColumnID
+
+            Move (SizeOfArray (FileNameExtensions)) to iElements
+            Decrement iElements
+            For iElement from 0 to iElements
+                If (FileNameExtensions[iElement].sValue[iExtensionColumnID] <> "") Begin
+                    If (sExtensions <> "") Begin
+                        Move (sExtensions - ";") to sExtensions
+                    End
+                    Move (sExtensions - FileNameExtensions[iElement].sValue[iExtensionColumnID]) to sExtensions
+                End
+            Loop
+
+            Send WriteString of ghoApplication "Preferences" "GraphicExtensions" sExtensions
+        End_Procedure
+
+        On_Key Key_Ctrl+Key_D Send Request_Delete
+    End_Object
+
+    Object oOKButton is a Button
+        Set Label to "&OK"
+        Set Location to 98 104
+        Set peAnchors To anBottomRight
+
+        Procedure OnClick
+            Send StoreExtensions of oFileExtensionsGrid
+            Send Close_Panel
+        End_Procedure
+    End_Object
+
+    Object oCancelButton is a Button
+        Set Label to "&Cancel"
+        Set Location to 98 158
+        Set peAnchors to anBottomRight
+
+        Procedure OnClick
+            Send Close_Panel
+        End_Procedure
+    End_Object
+
+    Object oExplanationTextBox is a TextBox
+        Set Auto_Size_State to False
+        Set Size to 50 110
+        Set Location to 5 5
+        Set Justification_Mode to JMode_Left
+        Set Label to "The extensions listed here are used to filter file names read from the selected folder."
+    End_Object
+
+    On_Key Key_Alt+Key_O Send KeyAction of oOKButton
+    On_Key Key_Alt+Key_C Send KeyAction of oCancelButton
+End_Object

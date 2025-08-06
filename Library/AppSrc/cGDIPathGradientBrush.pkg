@@ -1,0 +1,700 @@
+﻿Use cGDIPlus.pkg
+Use cGDIPathGradientBrush.h.pkg
+Use cGDIBrush.pkg
+Use tWinStructs.pkg
+Use cGDIGraphicsPath.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIPathGradientBrush }
+{ Description = "Stores the attributes of a color gradient that can be used to fill the interior of a path with a gradually changing color." }
+{ Description += "a path gradient brush has a boundary path, a boundary color, a center point, and a center color." }
+{ Description += "When you paint an area with a path gradient brush, the color changes gradually from the boundary color to the center color as you move from the boundary path to the center point." }
+Class cGDIPathGradientBrush is a cGDIBrush
+    { MethodType = Method }
+    { Description = "Creates a PathGradientBrush object based on an array of points. Initializes the wrap mode of the path gradient brush" }
+    { Description += "The eMode parameter specifies how areas painted with the path gradient brush will be tiled. The default value is WrapModeClamp" }
+    { Description += "Function removes an older brush when it exists." }
+    { Description += "Returns the GDI+ status code, handle this status if needed." }
+    Function CreateBrush tPointF[] BrushPoints Integer iCount gpWrapMode eMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        // If exists remove the old brush
+        Send DeleteBrush
+
+        Move 0 to pBrush
+        If (num_arguments > 2) Begin
+            Move (GdipCreatePathGradient (AddressOf (BrushPoints), iCount, eMode, AddressOf (pBrush))) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppBrush to pBrush
+            End
+        End
+        Else Begin
+            Move (GdipCreatePathGradient (AddressOf (BrushPoints), iCount, gpWrapModeClamp, AddressOf (pBrush))) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppBrush to pBrush
+            End
+        End
+
+        Function_Return eMode
+    End_Function
+
+    { Description = "Creates a PathGradientBrush object based on an array of points. Initializes the wrap mode of the path gradient brush." }
+    { Description += "The eMode parameter specifies how areas painted with the path gradient brush will be tiled. The default value is WrapModeClamp" }
+    { Description += "removes an older brush when it still exists." }
+    { Description += "Returns the GDI+ status code, handle this status if needed." }
+    { MethodType = Method }
+    Function CreateBrushI tWinPoint[] BrushPoints gpWrapMode eMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        // If exists remove the old brush
+        Send DeleteBrush
+
+        Move 0 to pBrush
+        If (num_arguments > 1) Begin
+            Move (GdipCreatePathGradientI (AddressOf (BrushPoints), SizeOfArray (BrushPoints), eMode, AddressOf (pBrush))) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppBrush to pBrush
+            End
+        End
+        Else Begin
+            Move (GdipCreatePathGradientI (AddressOf (BrushPoints), SizeOfArray (BrushPoints), gpWrapModeClamp, AddressOf (pBrush))) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppBrush to pBrush
+            End
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a PathGradientBrush object based on a GraphicsPath object." }
+    { Description += "The path is passed as DataFlex cGDIGraphicsPath object Handle." }
+    { Description += "Returns the GDI+ status code, handle this status if needed." }
+    { Description += "Removes an older brush when it exists." }
+    { MethodType = Method }
+    Function CreateBrushFromPath Handle hoGraphicsPath Returns gpStatus
+        Boolean bIsGraphicsPath
+        gpStatus eStatus
+        Pointer pPath pBrush
+
+        If (hoGraphicsPath <> 0) Begin
+            Get IsObjectOfClass of hoGraphicsPath (RefClass (cGDIGraphicsPath)) to bIsGraphicsPath
+            If (bIsGraphicsPath) Begin
+                Get ppPath of hoGraphicsPath to pPath
+                If (pPath <> 0) Begin
+                    Move 0 to pBrush
+                    Move (GdipCreatePathGradientFromPath (pPath, AddressOf (pBrush))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        // If exists remove the old brush
+                        Send DeleteBrush
+                        Set ppBrush to pBrush
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsPathObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsPathObjectNotAvailable
+            End
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Returns the center color. The function returns zero if there is no brush created yet." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function pcCenterColor Returns UInteger
+        gpStatus eStatus
+        UInteger uiColor
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to uiColor
+            Move (GdipGetPathGradientCenterColor (pBrush, AddressOf (uiColor))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Center Color"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return uiColor
+    End_Function
+
+    { Description = "Sets the center color. The property is not set when there is no brush created yet." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set pcCenterColor UInteger uiColor
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetPathGradientCenterColor (pBrush, uiColor)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Center Color"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Gets the number of colors that have been specified for the boundary path of this path gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function SurroundColorCount Returns Integer
+        gpStatus eStatus
+        Pointer pBrush
+        Integer iCount
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to iCount
+            Move (GdipGetPathGradientSurroundColorCount (pBrush, AddressOf (iCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Gradient Surround Color Count"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iCount
+    End_Function
+
+    { Description = "Gets the surround colors currently specified for this path gradient brush." }
+    { Description += "A path gradient brush has a boundary path and a center point." }
+    { Description += "The center point is set to a single color, but you can specify different colors for several points on the boundary." }
+    { Description += "For example, suppose you specify red for the center color, and you specify blue, green, and yellow for distinct points on the boundary." }
+    { Description += "Then as you move along the boundary, the color will change gradually from blue to green to yellow and back to blue." }
+    { Description += "As you move along a straight line from any point on the boundary to the center point, the color will change from that boundary point's color to red." }
+    { Description += "The iCount parameter specifies the amount of colors to return. There may be less or more colors available." }
+    { Description += "The function returns an array of ARGB colors." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function pcSurroundColorsWithCount Integer iCount Returns UInteger[]
+        gpStatus eStatus
+        UInteger[] uiColors
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (ResizeArray (uiColors, iCount)) to uiColors
+            Move (GdipGetPathGradientSurroundColorsWithCount (pBrush, AddressOf (uiColors), AddressOf (iCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Move (ResizeArray (uiColors, iCount)) to uiColors
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Surround Colors"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return uiColors
+    End_Function
+
+    { Description = "Sets the surround colors of this path gradient brush." }
+    { Description += "The surround colors are colors specified for discrete points on the brush's boundary path." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set pcSurroundColorsWithCount UInteger[] uiColors
+        gpStatus eStatus
+        Pointer pBrush
+        Integer iCount
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (SizeOfArray (uiColors)) to iCount
+            Move (GdipSetPathGradientSurroundColorsWithCount (pBrush, AddressOf (uiColors), AddressOf (iCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Center Color"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Returns the wrap mode. Wrapmodes are predefined constants defined in the gpWrapMode enumeration" }
+    { Description += "If there is no brush the result is 0." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    { EnumList = "gpWrapModeTile, gpWrapModeTileFlipX, gpWrapModeTileFlipY, gpWrapModeTileFlipXY, gpWrapModeClamp" }
+    Function peWrapMode Returns gpWrapMode
+        gpStatus eStatus
+        gpWrapMode eMode
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetPathGradientWrapMode (pBrush, AddressOf (eMode))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting WrapMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eMode
+    End_Function
+
+    { Description = "Sets the wrap mode the passed gpWrapMode constant." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    { EnumList = "gpWrapModeTile, gpWrapModeTileFlipX, gpWrapModeTileFlipY, gpWrapModeTileFlipXY, gpWrapModeClamp" }
+    Procedure Set peWrapMode gpWrapMode eMode
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetPathGradientWrapMode (pBrush, eMode)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Settting WrapMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Gets the number of blend factors currently set for this path gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function BlendCount Returns Integer
+        gpStatus eStatus
+        Integer iBlendCount
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetPathGradientBlendCount (pBrush, AddressOf (iBlendCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Blend Count"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iBlendCount
+    End_Function
+
+    { Description = "Sets the blend factors and the blend positions of this path gradient brush." }
+    { Description += "Number of elements in both array parameters must be identical. If not the method is not executed." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set Blend Float[] fBlendFactors Float[] fBlendPositions
+        Integer iBlendFactorsCount iBlendPositionsCount
+        Pointer pBrush
+        gpStatus eStatus
+
+        Move (SizeOfArray (fBlendFactors)) to iBlendFactorsCount
+        Move (SizeOfArray (fBlendPositions)) to iBlendPositionsCount
+        If (iBlendFactorsCount = iBlendPositionsCount and iBlendPositionsCount > 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (GdipGetPathGradientBlend (pBrush, AddressOf (fBlendFactors), AddressOf (fBlendPositions), iBlendFactorsCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Blend"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_UnequalNumberOfArrayParameters
+        End
+    End_Procedure
+
+    { Description = "Gets the blend factors currently set for this path gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function pfBlendFactors Returns Float[]
+        gpStatus eStatus
+        Integer iBlendCount
+        Float[] fBlendFactors fBlendPositions
+        Pointer pBrush
+
+        Get BlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (fBlendFactors, iBlendCount)) to fBlendFactors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetPathGradientPresetBlend (pBrush, AddressOf (fBlendFactors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (fBlendFactors, 0)) to fBlendFactors
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Blend Factors"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+
+        Function_Return fBlendFactors
+    End_Function
+
+    { Description = "Gets the blend positions currently set for this path gradient brush" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function pfBlendPositions Returns Float[]
+        gpStatus eStatus
+        Integer iBlendCount
+        Float[] fBlendFactors fBlendPositions
+        Pointer pBrush
+
+        Get BlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (fBlendFactors, iBlendCount)) to fBlendFactors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetPathGradientPresetBlend (pBrush, AddressOf (fBlendFactors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (fBlendPositions, 0)) to fBlendPositions
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Blend Positions"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+
+        Function_Return fBlendPositions
+    End_Function
+
+    { Description = "Gets the number of preset colors currently specified for this path gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function PresetBlendCount Returns Integer
+        gpStatus eStatus
+        Integer iBlendCount
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetPathGradientPresetBlendCount (pBrush, AddressOf (iBlendCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Preset Blend Count"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iBlendCount
+    End_Function
+
+    { Description = "Returns array of blend colors. If there is no brush the result is an empty integer array." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    { Category = "Colors" }
+    Function piPresetBlendColors Returns UInteger[]
+        gpStatus eStatus
+        Integer iBlendCount
+        UInteger[] uiBlendColors
+        Float[] fBlendPositions
+        Pointer pBrush
+
+        Get PresetBlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (uiBlendColors, iBlendCount)) to uiBlendColors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetPathGradientPresetBlend (pBrush, AddressOf (uiBlendColors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (uiBlendColors, 0)) to uiBlendColors
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Preset Blend Colors"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+
+        Function_Return uiBlendColors
+    End_Function
+
+    { Description = "Returns array of blend positions. If there is no brush the function returns an empty array of real values" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function piPresetBlendPositions Returns Float[]
+        gpStatus eStatus
+        Integer iBlendCount
+        UInteger[] uiBlendColors
+        Float[] fBlendPositions
+        Pointer pBrush
+
+        Get PresetBlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (uiBlendColors, iBlendCount)) to uiBlendColors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetPathGradientPresetBlend (pBrush, AddressOf (uiBlendColors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (fBlendPositions, 0)) to fBlendPositions
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Preset Blend Positions"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+
+        Function_Return fBlendPositions
+    End_Function
+
+    { Description = "Sets the preset blend." }
+    { Description += "The number of elements in both array parameters needs to be identical, else the method is not executed." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set PresetBlend UInteger[] uiBlendColors Float[] fBlendPositions
+        gpStatus eStatus
+        Integer iBlendColorCount iBlendPositionsCount
+        Pointer pBrush
+
+        Move (SizeOfArray (uiBlendColors)) to iBlendColorCount
+        Move (SizeOfArray (fBlendPositions)) to iBlendPositionsCount
+        If (iBlendColorCount = iBlendPositionsCount and iBlendPositionsCount > 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (GdipSetPathGradientPresetBlend (pBrush, AddressOf (uiBlendColors), AddressOf (fBlendPositions), iBlendColorCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting PresentBlend Positions and Colors"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_UnequalNumberOfArrayParameters
+        End
+    End_Procedure
+
+    { Description = "Returns the center point." }
+    { Description += "By default, the center point is at the centroid of the brush's boundary path, but you can set the center point to any location inside or outside the path" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function ptCenterPoint Returns tPointF
+        gpStatus eStatus
+        tPointF CenterPoint
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetPathGradientCenterPoint (pBrush, AddressOf (CenterPoint))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Center Point"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return CenterPoint
+    End_Function
+
+    { Description = "Sets the center point." }
+    { Description += "By default, the center point is at the centroid of the brush's boundary path, but you can set the center point to any location inside or outside the path" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set ptCenterPoint tPointF CenterPoint
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetPathGradientCenterPoint (pBrush, AddressOf (CenterPoint))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Center Point"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Returns the center point." }
+    { Description += "By default, the center point is at the centroid of the brush's boundary path, but you can set the center point to any location inside or outside the path" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function ptCenterPointI Returns tWinPoint
+        gpStatus eStatus
+        tWinPoint CenterPoint
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetPathGradientCenterPointI (pBrush, AddressOf (CenterPoint))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Center Point"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return CenterPoint
+    End_Function
+
+    { Description = "Sets the center point." }
+    { Description += "By default, the center point is at the centroid of the brush's boundary path, but you can set the center point to any location inside or outside the path" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set ptCenterPointI tWinPoint CenterPoint
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetPathGradientCenterPointI (pBrush, AddressOf (CenterPoint))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Center Point"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Gets the smallest rectangle that encloses the boundary path of this path gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Method }
+    Function GradientRect Returns tRectF
+        gpStatus eStatus
+        Pointer pBrush
+        tRectF Rect
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetPathGradientRect (pBrush, AddressOf (Rect))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Gradient Rect"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return Rect
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Gets the number of points in the array of points that defines this brush's boundary path." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function PointCount Returns Integer
+        gpStatus eStatus
+        Pointer pBrush
+        Integer iCount
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to iCount
+            Move (GdipGetPathGradientPointCount (pBrush, AddressOf (iCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Gradient Point Count"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iCount
+    End_Function
+    { Description = "Gets the smallest rectangle that encloses the boundary path of this path gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Method }
+    Function GradientRectI Returns tWinRect
+        gpStatus eStatus
+        Pointer pBrush
+        tWinRect Rect
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetPathGradientRectI (pBrush, AddressOf (Rect))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Gradient Rect"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return Rect
+    End_Function
+
+    { Description = "Returns if gamma correction is enabled." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function pbGammaCorrection Returns Boolean
+        gpStatus eStatus
+        Boolean bUseGammaCorrection
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move False to bUseGammaCorrection
+            Move (GdipGetPathGradientGammaCorrection (pBrush, AddressOf (bUseGammaCorrection))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Gamma Correction"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return bUseGammaCorrection
+    End_Function
+
+    { Description = "Sets the gamma correction to true or false." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set pbGammaCorrection Boolean bUseGammaCorrection
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetPathGradientGammaCorrection (pBrush, bUseGammaCorrection)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Gamma Correction"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+End_Class

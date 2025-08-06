@@ -1,0 +1,14 @@
+﻿External_Function WinAPI_PathFindExtension "PathFindExtensionW" SHLWAPI.DLL Pointer lpszPath Returns Address
+
+{ Description = "Searches a path for a file extension."
+{ Description += "Returns the extension of the filename in the passed path" }
+{ MethodType = Method }
+Function PathFindExtension Desktop WString wPath Returns String
+    String sRetVal
+    Pointer pExtension
+
+    Move (WinAPI_PathFindExtension (AddressOf (wPath))) to pExtension
+    Move (PointerToWstring (pExtension)) to sRetVal
+
+    Function_Return (Trim (sRetVal))
+End_Function

@@ -1,0 +1,11 @@
+Use cTimer.pkg
+
+{ ClassLibrary = Common }
+{ HelpTopic = cPaintNextFrameTimer }
+{ Description = "Object of this class will be created during object creation and as such does not support altering the object's behavior." }
+{ Description += "Because the object needs to sen the PaintNextFrame message, the creation of this class is necessary. It is also better OO coding." }
+Class cPaintNextFrameTimer is a cTimer
+    Procedure OnTimer
+        Delegate Send PaintNextFrame
+    End_Procedure
+End_Class

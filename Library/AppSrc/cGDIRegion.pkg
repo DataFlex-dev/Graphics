@@ -1,0 +1,237 @@
+﻿Use cGDIPlus.pkg
+Use cGDIRegion.h.pkg
+Use cGDIGraphics.pkg
+Use Structs\tRectF.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIRegion }
+{ Description = "The Region class describes an area of the display surface. The area can be any shape." }
+{ Description += "In other words, the boundary of the area can be a combination of curved and straight lines." }
+{ Description += "Regions can also be created from the interiors of rectangles, paths, or a combination of these." }
+{ Description += "Regions are used in clipping and hit-testing operations" }
+Class cGDIRegion is a cObject
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Creates a property to hold a reference to the GDI+ Region object" }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { Visibility = Private }
+        { Description = "Can hold a pointer of the GDI+ Region object" }
+        Property Pointer ppRegion
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Send a message to delete the GDI+ Region object when the DataFlex object gets destroyed" }
+    Procedure Destroy_Object
+        Send DeleteRegion
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Creates an infinitive empty region. Returns the GDI+ result value when unsuccesful. Handle this status if needed." }
+    { MethodType = Method }
+    Function CreateRegion Returns gpStatus
+        gpStatus eStatus
+        Pointer pRegion
+
+        // First delete a possible existing region
+        Send DeleteRegion
+
+        Move 0 to pRegion
+        Move (GdipCreateRegion (AddressOf (pRegion))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppRegion to pRegion
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a region that is defined by a rectangle. The rectangle coordinates are float values" }
+    { Description += "Returns the GDI+ result value when unsuccesful. Handle this status if needed." }
+    Function CreateRegionFromRectR tRectF Rect Returns gpStatus
+        gpStatus eStatus
+        Pointer pRegion
+
+        // First delete a possible existing region
+        Send DeleteRegion
+
+        Move 0 to pRegion
+        Move (GdipCreateRegionRect (AddressOf (Rect), AddressOf (pRegion))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppRegion to pRegion
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a region that is defined by a rectangle. The rectangle coordinates are integer values" }
+    { Description += "Returns the GDI+ result value when unsuccesful. Handle this status if needed." }
+    Function CreateRegionFromRectI tWinRect Rect Returns gpStatus
+        gpStatus eStatus
+        Pointer pRegion
+
+        // First delete a possible existing region
+        Send DeleteRegion
+
+        Move 0 to pRegion
+        Move (GdipCreateRegionRectI (AddressOf (Rect), AddressOf (pRegion))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppRegion to pRegion
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a region that is defined by a GraphicsPath object and has a fill mode that is contained in the GraphicsPath object" }
+    { Description += "Returns the GDI+ result value when unsuccesful. Handle this status if needed." }
+    { Description += "Calls HandleGDIError when the passed path object is not an object of the cGDIGraphicsPath class." }
+    Function CreateRegionFromPath Handle hoGraphicsPath Returns gpStatus
+        Boolean bIsGraphicsPath
+        gpStatus eStatus
+        Pointer pPath pRegion
+
+        // First delete a possible existing region
+        Send DeleteRegion
+
+        If (hoGraphicsPath <> 0) Begin
+            Get IsObjectOfClass of hoGraphicsPath (RefClass (cGDIGraphicsPath)) to bIsGraphicsPath
+            If (bIsGraphicsPath) Begin
+                Get ppPath of hoGraphicsPath to pPath
+                If (pPath <> 0) Begin
+                    Move 0 to pRegion
+                    Move (GdipCreateRegionPath (pPath, AddressOf (pRegion))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        Set ppRegion to pRegion
+                    End
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+            End
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a region that is defined by data obtained from another region." }
+    { Description += "Returns the GDI+ result value when unsuccesful. Handle this status if needed." }
+    { MethodType = Method }
+    Function CreateRegionFromData UChar[] ucData Returns gpStatus
+        gpStatus eStatus
+        Pointer pRegion
+
+        Move 0 to pRegion
+        Move (GdipCreateRegionRgnData (AddressOf (ucData), SizeOfArray (ucData), AddressOf (pRegion))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppRegion to pRegion
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a region that is identical to the region that is specified by a handle to a GDI region." }
+    { Description += "Returns the GDI+ result value when unsuccesful. Handle this status if needed." }
+    { MethodType = Method }
+    Function CreateRegionFromHRGN Handle hHRGN Returns gpStatus
+        gpStatus eStatus
+        Pointer pRegion
+
+        Move 0 to pRegion
+        Move (GdipCreateRegionHrgn (hHRGN, AddressOf (pRegion))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppRegion to pRegion
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Makes a copy of this Region object and returns the DataFlex object handle of a new cGDIRegion object." }
+    { MethodType = Method }
+    Function CloneRegion Returns Handle
+        gpStatus eStatus
+        Handle hoRegion
+        Pointer pSourceRegion pCloneRegion
+
+        Get ppRegion to pSourceRegion
+        If (pSourceRegion <> 0) Begin
+            Get Create of ghoGDIPlusHandler (RefClass (cGDIRegion)) to hoRegion
+
+            Move 0 to pCloneRegion
+            Move (GdipCloneRegion (pSourceRegion, AddressOf (pCloneRegion))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIRegion)) "ClonedRegion" to hoRegion
+                Set ppRegion of hoRegion to pCloneRegion
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_RegionObjectNotAvailable
+        End
+
+        Function_Return hoRegion
+    End_Function
+
+    { Description = "Releases resources used by the Region object." }
+    { Description += "Calls HandleGDIError when the region object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    { MethodType = Method }
+    Procedure DeleteRegion
+        gpStatus eStatus
+        Pointer pRegion
+
+        Get ppRegion to pRegion
+        If (pRegion <> 0) Begin
+            Move (GdipDeleteRegion (pRegion)) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppRegion to 0
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Deleting Region"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_RegionObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Creates a GDI region from this region." }
+    { MethodType = Method }
+    Function RegionHRGN Handle hoGraphics Returns Handle
+        Boolean bIsGraphics
+        gpStatus eStatus
+        Pointer pRegion pGraphics
+        Handle hRegion
+
+        If (hoGraphics <> 0) Begin
+            Get IsObjectOfClass of hoGraphics (RefClass (cGDIGraphics)) to bIsGraphics
+            If (bIsGraphics) Begin
+                Get ppGraphics of hoGraphics to pGraphics
+                If (pGraphics <> 0) Begin
+                    Get ppRegion to pRegion
+                    If (pRegion <> 0) Begin
+                        Move 0 to hRegion
+                        Move (GdipGetRegionHRgn (pRegion, pGraphics, AddressOf (hRegion))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_RegionObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return hRegion
+    End_Function
+End_Class

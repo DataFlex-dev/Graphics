@@ -1,0 +1,14 @@
+﻿Use VdfBase.pkg
+
+Struct tBITMAP
+    Integer bmType
+    Integer bmWidth
+    Integer bmHeight
+    Integer bmWidthBytes
+    UShort bmPlanes
+    UShort bmBitsPixel
+#IFDEF IS$WIN64    
+    Integer MissingAlignment
+#ENDIF
+    Pointer bmBits
+End_Struct

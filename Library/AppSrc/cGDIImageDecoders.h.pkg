@@ -1,0 +1,18 @@
+﻿Use VdfBase.pkg
+Use Structs\tImageCodecInfo.pkg
+Use cGDIImageEncoders.h.pkg
+
+#IFNDEF get_GdipGetImageDecodersSize
+External_Function GdipGetImageDecodersSize "GdipGetImageDecodersSize" gdiplus.dll ;
+    Pointer numDecoders ;
+    Pointer size ;
+    Returns gpStatus
+#ENDIF
+
+#IFNDEF get_GdipGetImageDecoders
+External_Function GdipGetImageDecoders "GdipGetImageDecoders" gdiplus.dll ;
+    UInteger numDecoders ;
+    UInteger size ;
+    Pointer pImageCodeInfo ;
+    Returns gpStatus
+#ENDIF

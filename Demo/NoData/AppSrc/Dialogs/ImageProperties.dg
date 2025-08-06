@@ -1,0 +1,569 @@
+﻿Use Windows.pkg
+Use Structs\tImageProperty.pkg
+Use Structs\tImageValuePair.pkg
+Use Structs\tuRational.Pkg
+Use Classes\cCJPropertyGrid.pkg
+Use Flexml.pkg
+Use StdFont.pkg
+CompilerLevelWarning AmbiguousFunctions Off // Suppress ComType ambigious function declararion in StdPicture.pkg
+Use StdPicture.pkg
+CompilerLevelWarning AmbiguousFunctions On
+Use cCJCommandBarSystem.pkg
+
+Object oImagePropertiesDialog is a ModalPanel
+    Set Size to 267 409
+    Set Label to "Image Properties"
+    Set piMinSize to 90 225
+    Set Locate_Mode to CENTER_ON_PARENT
+    Set Border_Style to Border_Thick
+
+    Use Dialogs\EditImagePropertyItemDialog.dg
+
+    { Visibility = Private }
+    { Description = "Augmented to set the icon of the dialog" }
+    Procedure Page Integer iPageObject
+        Forward Send Page iPageObject
+
+        If (iPageObject <> 0) Begin
+            Set Icon to "Default.Ico"
+        End
+    End_Procedure
+
+    Object oImageFileNameForm is a Form
+        Set Size to 13 395
+        Set Location to 5 5
+        Set Enabled_State to False
+        Set peAnchors to anTopLeftRight
+    End_Object
+
+    Object oImagePropertiesGrid is a cCJPropertyGrid
+        Set Location to 20 5
+        Set Size to 224 395
+        Set peAnchors to anAll
+
+        { DesignTime = False }
+        { Description = "Indicates whether the user made changes to the XML data structure (via the propertyGrid)" }
+        Property Boolean pbChangesMade
+
+        { DesignTime = False }
+        { Description = "Internal property to keep track of the array with propertydata" }
+        Property tImageProperty[] pImageProperties
+
+        Object oCategories is a cCJPropertyGridItems
+        End_Object
+
+        Object oCategory is a cCJPropertyGridItem
+        End_Object
+
+        Object oItems is a cCJPropertyGridItems
+        End_Object
+
+        Object oItem is a cCJPropertyGridItem
+        End_Object
+
+        Object oMetrics is a cCJPropertyGridItemMetrics
+        End_Object
+
+        Object oFont is a cComStdFont
+        End_Object
+
+        Object oConstraints is a cCJPropertyGridItemConstraints
+        End_Object
+
+        Object oConstraint is a cCJPropertyGridItemConstraint
+        End_Object
+
+        Object oPictureItem is a cCJPropertyGridItemPicture
+        End_Object
+
+        // XML Objects
+        Object oPropertyTagXMLDocument is a cXMLDOMDocument
+        End_Object
+
+        Object oGridContextMenu is a cCJContextMenu
+            Object oEditMenuItem is a cCJMenuItem
+                Set psCaption to "Edit"
+                Set psImage to "ActionEdit.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Send EditItem
+                End_Procedure
+            End_Object
+
+            Object oCopyDescriptionMenuItem is a cCJMenuItem
+                Set psCaption to "Copy Help"
+                Set psImage to "ActionCopy.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Send CopyHelpText
+                End_Procedure
+            End_Object
+
+            Object oRemoveCategoryMenuItem is a cCJMenuItem
+                Set psCaption to "Remove Category"
+                Set psImage to "ActionDelete.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Send RemoveCategory
+                End_Procedure
+
+                Function IsEnabled Returns Boolean
+                    Integer iItemType
+
+                    Get ComType of oItem to iItemType
+
+                    Function_Return (iItemType = OLEPropertyItemCategory)
+                End_Function
+            End_Object
+        End_Object
+
+        Procedure CopyHelpText
+            String sHelpText
+            Handle hoClipboard hText
+
+            Get ComDescription of oItem to sHelpText
+            If (sHelpText <> "") Begin
+                Get Create (RefClass (cClipboard)) to hoClipboard
+                Send CopyText of hoClipboard sHelpText True
+                Send Destroy of hoClipboard
+            End
+        End_Procedure
+
+        Procedure EditItem
+            Integer iItemType
+            Boolean bChanged
+            String sCategoryCaption sItemCaption sQuery
+            Variant vCategory
+            Handle hoDocumentElement hoElement
+
+            Get ComType of oItem to iItemType
+            If (iItemType = OLEPropertyItemCategory) Begin
+                Get ComCaption of oItem to sCategoryCaption
+                Get DocumentElement of oPropertyTagXMLDocument to hoDocumentElement
+                Move ('Category[@Title="' - sCategoryCaption - '"]') to sQuery
+                Get FindNode of hoDocumentElement sQuery to hoElement
+                If (hoElement > 0) Begin
+                    Get EditPropertyItem of oEditImagePropertyItemDialog hoElement to bChanged
+                    If (bChanged) Begin
+                        Set pbChangesMade to True
+                    End
+                    Send Destroy of hoElement
+                End
+                Send Destroy of hoDocumentElement
+            End
+            Else Begin
+                Get ComParent of oItem to vCategory
+                Set pvComObject of oCategory to vCategory
+                Get ComCaption of oCategory to sCategoryCaption
+
+                Get ComCaption of oItem to sItemCaption
+
+                Get DocumentElement of oPropertyTagXMLDocument to hoDocumentElement
+                Move ('Category[@Title="' - sCategoryCaption - '"]/Tag[@Title="' - sItemCaption - '"]') to sQuery
+                Get FindNode of hoDocumentElement sQuery to hoElement
+                If (hoElement > 0) Begin
+                    Get EditPropertyItem of oEditImagePropertyItemDialog hoElement to bChanged
+                    If (bChanged) Begin
+                        Set pbChangesMade to True
+                    End
+                    Send Destroy of hoElement
+                End
+                Send Destroy of hoDocumentElement
+            End
+        End_Procedure
+
+        Procedure RemoveCategory
+            Integer iItemType
+            Handle hoDocumentElement hoCategoryElement hoTagElement
+            String sCategoryCaption sQuery
+
+            Get ComType of oItem to iItemType
+            If (iItemType = OLEPropertyItemCategory) Begin
+                Get ComCaption of oItem to sCategoryCaption
+                Get DocumentElement of oPropertyTagXMLDocument to hoDocumentElement
+                Move ('Category[@Title="' - sCategoryCaption - '"]') to sQuery
+                Get FindNode of hoDocumentElement sQuery to hoCategoryElement
+                If (hoCategoryElement > 0) Begin
+                    Get FirstChild of hoCategoryElement to hoTagElement
+                    If (hoTagElement <> 0) Begin
+                        Send Stop_Box "This category has tags, cannot remove the category"
+                        Send Destroy of hoTagElement
+                    End
+                    Else Begin
+                        Get RemoveNode of hoDocumentElement hoCategoryElement to hoCategoryElement
+                        Set pbChangesMade to True
+                    End
+                    Send Destroy of hoCategoryElement
+                End
+                Send Destroy of hoDocumentElement
+            End
+        End_Procedure
+
+        Procedure OnComRClick Variant vItem
+            Set pvComObject of oItem to vItem
+            Send Popup of oGridConTextMenu
+        End_Procedure
+
+        On_Key Key_Tab Send Default_Key
+
+        Procedure OnCreate
+            String sPropertyTagsFileName sTitle sDescription sItemType
+            String sValueCode sValue sFormat
+            Integer iID
+            Handle hoDocumentElement hoCategoryElement hoTagElement
+            Handle hoValueElementsElement hoValueElement
+            Boolean bOk bHide
+            Variant vUpdateContext vCategory vMetrics vFont vItem vConstraints
+
+            Get ComBeginUpdate to vUpdateContext
+            Set ComHelpHeight to 60
+            Set ComVisualTheme to xtpThemeVisualStudio2008
+            Set ComShowInplaceButtonsAlways to True
+            Set ComVariableHelpHeight to True
+            Set ComNavigateItems to True
+
+            Set pbChangesMade to False
+
+            Get_File_Path "PropertyTags.XML" to sPropertyTagsFileName
+            If (sPropertyTagsFileName <> "") Begin
+                Set psDocumentName of oPropertyTagXMLDocument to sPropertyTagsFileName
+                Get LoadXMLDocument of oPropertyTagXMLDocument to bOk
+                If (bOk) Begin
+                    Get DocumentElement of oPropertyTagXMLDocument to hoDocumentElement
+                    Get FirstChild of hoDocumentElement to hoCategoryElement
+                    While (hoCategoryElement <> 0)
+                        Get AttributeValue of hoCategoryElement "Title" to sTitle
+                        Get ComAddCategory sTitle to vCategory
+                        Set pvComObject of oCategory to vCategory
+
+                        Get ComCaptionMetrics of oCategory to vMetrics
+                        Set pvComObject of oMetrics to vMetrics
+                        Get ComFont of oMetrics to vFont
+                        Set pvComObject of oFont to vFont
+                        Set ComBold of oFont to True
+                        Set ComName of oFont to "Verdana"
+
+                        Get AttributeValue of hoCategoryElement "Description" to sDescription
+                        Move (Replaces ("\n", sDescription, Character (13) + Character (10))) to sDescription
+                        Set ComDescription of oCategory to sDescription
+
+                        Get FirstChild of hoCategoryElement to hoTagElement
+                        While (hoTagElement <> 0)
+                            Get AttributeValue of hoTagElement "Title" to sTitle
+                            Get AttributeValue of hoTagElement "Type" to sItemType
+                            If (sItemType = "") Begin
+                                Move OLEPropertyItemString to sItemType
+                            End
+                            Get ComAddChildItem of oCategory sItemType sTitle "" to vItem
+                            Set pvComObject of oItem to vItem
+
+                            Get AttributeValue of hoTagElement "Format" to sFormat
+                            If (sFormat <> "") Begin
+                                Set ComFormat of oItem to sFormat
+                            End
+
+                            Get ComCaptionMetrics of oItem to vMetrics
+                            Set pvComObject of oMetrics to vMetrics
+                            Set ComForeColor of oMetrics to clLtGray
+
+                            Get ComValueMetrics of oItem to vMetrics
+                            Set pvComObject of oMetrics to vMetrics
+                            Set ComForeColor of oMetrics to clLtGray
+
+                            If (sItemType = OLEPropertyItemEnum) Begin
+                                Get FirstChild of hoTagElement to hoValueElementsElement
+                                If (hoValueElementsElement <> 0) Begin
+                                    Get ComConstraints of oItem to vConstraints
+                                    Set pvComObject of oConstraints to vConstraints
+                                    Get FirstChild of hoValueElementsElement to hoValueElement
+                                    While (hoValueElement <> 0)
+                                        Get AttributeValue of hoValueElement "Code" to sValueCode
+                                        Get psText of hoValueElement to sValue
+                                        Send ComAdd of oConstraints sValue sValueCode
+                                        Get NextNode of hoValueElement to hoValueElement
+                                    Loop
+                                End
+                            End
+
+                            Get AttributeValue of hoTagElement "ID" to iID
+                            Set ComId of oItem to iID
+
+                            Get AttributeValue of hoTagElement "Description" to sDescription
+                            Move (Replaces ("\n", sDescription, Character (13) + Character (10))) to sDescription
+                            Set ComDescription of oItem to sDescription
+
+                            Set ComToolTip of oItem to (sDescription * "(Value not available)")
+
+                            Get NextNode of hoTagElement to hoTagElement
+                        Loop
+
+                        Set ComExpanded of oCategory to True
+                        Get NextNode of hoCategoryElement to hoCategoryElement
+                    Loop
+
+                    Send ShowImagePropertiesData hoDocumentElement
+                    Send Destroy of hoDocumentElement
+                End
+            End
+
+            Get Checked_State of oHideUnusedCheckBox to bHide
+            Send HideUnusedImageProperties bHide
+
+            Send ComEndUpdate vUpdateContext
+        End_Procedure
+
+        Function SearchItem Integer iId Returns Variant
+            Variant vCategories vCategory vItems vItem
+            Integer iCategories iCategory iItems iItem iItemId
+
+            Get ComCategories to vCategories
+            Set pvComObject of oCategories to vCategories
+
+            Get ComCount of oCategories to iCategories
+            For iCategory from 1 to iCategories
+                Get ComItem of oCategories iCategory to vCategory
+                Set pvComObject of oCategory to vCategory
+
+                Get ComChilds of oCategory to vItems
+                Set pvComObject of oItems to vItems
+
+                Get ComCount of oItems to iItems
+                For iItem from 1 to iItems
+                    Get ComItem of oItems iItem to vItem
+                    Set pvComObject of oItem to vItem
+
+                    Get ComId of oItem to iItemId
+                    If (iItemId = iId) Begin
+                        Function_Return vItem
+                    End
+                Loop
+            Loop
+
+            Function_Return (NullComObject ())
+        End_Function
+
+        Procedure ShowImagePropertiesData Handle hoDocumentElement
+            tImageProperty[] ImageProperties
+            tImageValuePair[] ImageValuePairs
+            tuRational uratValues
+            Integer iElements iElement iConstraints iConstraint
+            Integer iValuePairElements iValuePairElement iVariantDataType
+            Variant vItem vCategory vMetrics vConstraints vConstraint vData vValueItem vPicture
+            String sDescription sTitle
+            Handle hoPicture hoCategoryElement hoTagElement
+            Boolean bContraintValueCodeFound
+
+            Get pImageProperties to ImageProperties
+
+            Move (SizeOfArray (ImageProperties)) to iElements
+            If (iElements > 0) Begin
+                Decrement iElements
+                For iElement from 0 to iElements
+                    If (ImageProperties[iElement].iId = 0) Begin
+                        Get SearchItem ImageProperties[iElement].iId to vItem
+                    End
+                    Else Begin
+                        Get ComFindItem ImageProperties[iElement].iId to vItem
+                    End
+                    If (not (IsNullComObject (vItem))) Begin
+                        Set pvComObject of oItem to vItem
+
+                        Get ComDescription of oItem to sDescription
+                        If (sDescription = "") Begin
+                            Get ComCaption of oItem to sDescription
+                        End
+                        Set ComToolTip of oItem to sDescription
+
+                        Case Begin
+                            Case (ImageProperties[iElement].iId = gpPropertyTagThumbnailData)
+                                Get Create (RefClass (cComStdPicture)) to hoPicture
+                                Get ComLoadPicture of hoPicture "CLIPBOARD:" to vPicture
+                                If (IsComObject (vPicture)) Begin
+                                    Get ComAddChildItem of oItem OLEPropertyItemPicture "Thumbnail" "" to vValueItem
+                                    Set pvComObject of oPictureItem to vValueItem
+                                    Set ComValue of oPictureItem to vPicture
+                                End
+                                Send Destroy of hoPicture
+                                Case Break
+                            Case (ImageProperties[iElement].iId = gpPropertyTagGlobalPalette)
+                                // 3 x number of palette entries
+                                // Convert to string is useless but does not give errors either
+                                Set ComValue of oItem to (UCharArrayToString (ImageProperties[iElement].vValue))
+                                Case Break
+                            Case Else
+                                Move (DeRefDw (AddressOf (ImageProperties[iElement].vValue), 0)) to iVariantDataType
+                                If (iVariantDataType = OLE_VT_Array) Begin
+                                    Move ImageProperties[iElement].vValue to ImageValuePairs
+                                    Move (SizeOfArray (ImageValuePairs)) to iValuePairElements
+                                    If (iValuePairElements > 0) Begin
+                                        Decrement iValuePairElements
+                                        For iValuePairElement from 0 to iValuePairElements
+                                            Get ComAddChildItem of oItem OLEPropertyItemString ImageValuePairs[iValuePairElement].sName ImageValuePairs[iValuePairElement].vValue to vValueItem
+                                        Loop
+                                    End
+                                End
+                                Else Begin
+                                    Set ComValue of oItem to ImageProperties[iElement].vValue
+                                End
+                                Case Break
+                        Case End
+
+                        Get ComConstraints of oItem to vConstraints
+                        Set pvComObject of oConstraints to vConstraints
+                        Get ComCount of oConstraints to iConstraints
+                        If (iConstraints > 0) Begin
+                            Move False to bContraintValueCodeFound
+                            For iConstraint from 1 to iConstraints
+                                Get ComItem of oConstraints iConstraint to vConstraint
+                                Set pvComObject of oConstraint to vConstraint
+                                Get ComData of oConstraint to vData
+                                If (String (vData) = ImageProperties[iElement].vValue) Begin
+                                    Move True to bContraintValueCodeFound
+                                End
+                            Loop
+                            If (not (bContraintValueCodeFound)) Begin
+                                Send ComAdd of oConstraints ("No descr." * String (ImageProperties[iElement].vValue)) ImageProperties[iElement].vValue
+                            End
+                        End
+
+                        Get ComCaptionMetrics of oItem to vMetrics
+                        Set pvComObject of oMetrics to vMetrics
+                        Set ComForeColor of oMetrics to clBlack
+
+                        Get ComValueMetrics of oItem to vMetrics
+                        Set pvComObject of oMetrics to vMetrics
+                        Set ComForeColor of oMetrics to clBlack
+                    End
+                    Else Begin
+                        Get ComFindItem "Unknown" to vCategory
+                        If (IsNullComObject (vCategory)) Begin
+                            Get ComAddCategory "Unknown" to vCategory
+                            Set pvComObject of oCategory to vCategory
+                            Set ComDescription of oCategory to "Image Properties not found in PropertyTags.XML"
+                        End
+                        Else Begin
+                            Set pvComObject of oCategory to vCategory
+                        End
+                        Set ComExpanded of oCategory to True
+
+                        If (hoCategoryElement = 0) Begin
+                            Get FindNode of hoDocumentElement 'Category[@Title="Unknown"]' to hoCategoryElement
+                            If (hoCategoryElement = 0) Begin
+                                Get AddElement of hoDocumentElement "Category" "" to hoCategoryElement
+                                If (hoCategoryElement <> 0) Begin
+                                    Set AttributeValue of hoCategoryElement "Title" to "Unknown"
+                                    Set AttributeValue of hoCategoryElement "Description" to "Image Properties not found in PropertyTags.XML"
+                                End
+                            End
+                        End
+                        If (hoCategoryElement <> 0) Begin
+                            Get AddElement of hoCategoryElement "Tag" "" to hoTagElement
+                            If (hoTagElement <> 0) Begin
+                                Set AttributeValue of hoTagElement "Title" to ImageProperties[iElement].sName
+                                Set AttributeValue of hoTagElement "ID" to ImageProperties[iElement].iId
+                                Set AttributeValue of hoTagElement "Type" to OLEPropertyItemString
+                                Send Destroy of hoTagElement
+                            End
+                        End
+
+                        Get ComAddChildItem of oCategory OLEPropertyItemString ImageProperties[iElement].sName ImageProperties[iElement].vValue to vItem
+                        Set pvComObject of oItem to vItem
+                        Set ComId of oItem to ImageProperties[iElement].iId
+
+                        Get ComCaptionMetrics of oItem to vMetrics
+                        Set pvComObject of oMetrics to vMetrics
+                        Set ComForeColor of oMetrics to clBlack
+
+                        Get ComValueMetrics of oItem to vMetrics
+                        Set pvComObject of oMetrics to vMetrics
+                        Set ComForeColor of oMetrics to clBlack
+
+                        Get ComDescription of oItem to sDescription
+                        Set ComToolTip of oItem to sDescription
+                    End
+                Loop
+            End
+
+            If (hoCategoryElement <> 0) Begin
+                Send Destroy of hoCategoryElement
+            End
+
+            Move (ResizeArray (ImageProperties, 0)) to ImageProperties
+            Set pImageProperties to ImageProperties
+        End_Procedure
+
+        Procedure HideUnusedImageProperties Boolean bHide
+            Variant vCategories vCategory vItems vItem vMetrics
+            Integer iCategories iCategory iItems iItem iColor
+
+            Get ComCategories to vCategories
+            Set pvComObject of oCategories to vCategories
+
+            Get ComCount of oCategories to iCategories
+            For iCategory from 1 to iCategories
+                Get ComItem of oCategories iCategory to vCategory
+                Set pvComObject of oCategory to vCategory
+
+                Get ComChilds of oCategory to vItems
+                Set pvComObject of oItems to vItems
+
+                Get ComCount of oItems to iItems
+                For iItem from 1 to iItems
+                    Get ComItem of oItems iItem to vItem
+                    Set pvComObject of oItem to vItem
+
+                    Get ComValueMetrics of oItem to vMetrics
+                    Set pvComObject of oMetrics to vMetrics
+                    Get ComForeColor of oMetrics to iColor
+                    If (iColor = clLtGray) Begin
+                        Set ComHidden of oItem to bHide
+                    End
+                Loop
+            Loop
+        End_Procedure
+    End_Object
+
+    Object oCloseButton is a Button
+        Set Label to "&Close"
+        Set Location to 249 350
+        Set peAnchors To anBottomRight
+
+        Procedure OnClick
+            Boolean bChangesMade
+            Integer iAnswer iError
+
+            Get pbChangesMade of oImagePropertiesGrid to bChangesMade
+            If (bChangesMade) Begin
+                Move (YesNo_Box ("Changes made, do you want to save?", "Question", MB_DEFBUTTON1)) to iAnswer
+                If (iAnswer = MBR_Yes) Begin
+                    Get SaveXMLDocument of (oPropertyTagXMLDocument (oImagePropertiesGrid)) to iError
+                End
+            End
+
+            Send Close_Panel
+        End_Procedure
+    End_Object
+
+    Object oHideUnusedCheckBox is a CheckBox
+        Set Size to 10 50
+        Set Location to 249 5
+        Set Label to "Hide Unused"
+        Set peAnchors to anBottomLeft
+
+        Procedure OnChange
+            Boolean bChecked
+
+            Get Checked_State to bChecked
+            Send HideUnusedImageProperties of oImagePropertiesGrid bChecked
+        End_Procedure
+    End_Object
+
+    Procedure DisplayImageProperties tImageProperty[] ImageProperties String sImageName
+        Set Value of oImageFileNameForm to sImageName
+        Set pImageProperties of oImagePropertiesGrid to ImageProperties
+        Send Popup_Modal
+    End_Procedure
+
+    On_Key Key_Alt+Key_C Send KeyAction of oCloseButton
+    On_Key Key_Escape Send KeyAction of oCloseButton
+End_Object

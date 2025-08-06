@@ -1,0 +1,256 @@
+﻿Use cGDIPlus.h.pkg
+Use gpWrapMode.h.pkg
+Use gpMatrixOrder.h.pkg
+
+// GpStatus WINGDIPAPI GdipCreatePathGradient(GDIPCONST GpPointF* points, INT count, GpWrapMode wrapMode, GpPathGradient **polyGradient)
+External_Function GdipCreatePathGradient "GdipCreatePathGradient" gdiplus.dll ;
+    Pointer points ;
+    Integer count ;
+    gpWrapMode wrapMode ;
+    Pointer polyGradient ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreatePathGradientI(GDIPCONST GpPoint* points, INT count, GpWrapMode wrapMode, GpPathGradient **polyGradient)
+External_Function GdipCreatePathGradientI "GdipCreatePathGradientI" gdiplus.dll ;
+    Pointer points ;
+    Integer count ;
+    gpWrapMode wrapMode ;
+    Pointer polyGradient ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreatePathGradientFromPath(GDIPCONST GpPath* path, GpPathGradient **polyGradient)
+External_Function GdipCreatePathGradientFromPath "GdipCreatePathGradientFromPath" gdiplus.dll ;
+    Pointer ppth ;
+    Pointer polyGradient ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientCenterColor( GpPathGradient *brush, ARGB* colors)
+External_Function GdipGetPathGradientCenterColor "GdipGetPathGradientCenterColor" gdiplus.dll ;
+    Pointer brush ;
+    Pointer colors ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientCenterColor( GpPathGradient *brush, ARGB colors)
+External_Function GdipSetPathGradientCenterColor "GdipSetPathGradientCenterColor" gdiplus.dll ;
+    Pointer brush ;
+    UInteger colors ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientSurroundColorsWithCount( GpPathGradient *brush, ARGB* color, INT* count)
+External_Function GdipGetPathGradientSurroundColorsWithCount "GdipGetPathGradientSurroundColorsWithCount" gdiplus.dll ;
+    Pointer brush ;
+    Pointer color ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientSurroundColorsWithCount( GpPathGradient *brush, GDIPCONST ARGB* color, INT* count)
+External_Function GdipSetPathGradientSurroundColorsWithCount "GdipSetPathGradientSurroundColorsWithCount" gdiplus.dll ;
+    Pointer brush ;
+    Pointer color ;
+    Pointer count ;
+    Returns gpStatus
+
+// According to MSDN these two functions are not implemented in GDI+ 1.0. Windows XP comes with v1.0 and Vista and higher with v1.1.
+// There is no indication this method is implemented in v1.1, therefore commented out
+// GpStatus WINGDIPAPI GdipGetPathGradientPath(GpPathGradient *brush, GpPath *path)
+//External_Function GdipGetPathGradientPath "GdipGetPathGradientPath" gdiplus.dll ;
+//    Pointer brush ;
+//    Pointer ppth ;
+//    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientPath(GpPathGradient *brush, GDIPCONST GpPath *path)
+//External_Function GdipSetPathGradientPath "GdipSetPathGradientPath" gdiplus.dll ;
+//    Pointer brush ;
+//    Pointer ppth ;
+//    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientCenterPoint( GpPathGradient *brush, GpPointF* points)
+External_Function GdipGetPathGradientCenterPoint "GdipGetPathGradientCenterPoint" gdiplus.dll ;
+    Pointer brush ;
+    Pointer points ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientCenterPointI( GpPathGradient *brush, GpPoint* points)
+External_Function GdipGetPathGradientCenterPointI "GdipGetPathGradientCenterPointI" gdiplus.dll ;
+   Pointer brush ;
+   Pointer points ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientCenterPoint( GpPathGradient *brush, GDIPCONST GpPointF* points)
+External_Function GdipSetPathGradientCenterPoint "GdipSetPathGradientCenterPoint" gdiplus.dll ;
+    Pointer brush ;
+    Pointer points ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientCenterPointI( GpPathGradient *brush, GDIPCONST GpPoint* points)
+External_Function GdipSetPathGradientCenterPointI "GdipSetPathGradientCenterPointI" gdiplus.dll ;
+    Pointer brush ;
+    Pointer points ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientRect(GpPathGradient *brush, GpRectF *rect)
+External_Function GdipGetPathGradientRect "GdipGetPathGradientRect" gdiplus.dll ;
+    Pointer brush ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientRectI(GpPathGradient *brush, GpRect *rect)
+External_Function GdipGetPathGradientRectI "GdipGetPathGradientRectI" gdiplus.dll ;
+    Pointer brush ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientPointCount(GpPathGradient *brush, INT* count)
+External_Function GdipGetPathGradientPointCount "GdipGetPathGradientPointCount" gdiplus.dll ;
+    Pointer brush ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientSurroundColorCount(GpPathGradient *brush, INT* count)
+External_Function GdipGetPathGradientSurroundColorCount "GdipGetPathGradientSurroundColorCount" gdiplus.dll ;
+    Pointer brush ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientGammaCorrection(GpPathGradient *brush, BOOL useGammaCorrection)
+External_Function GdipSetPathGradientGammaCorrection "GdipSetPathGradientGammaCorrection" gdiplus.dll ;
+    Pointer brush ;
+    Boolean useGammaCorrection ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientGammaCorrection(GpPathGradient *brush, BOOL *useGammaCorrection)
+External_Function GdipGetPathGradientGammaCorrection "GdipGetPathGradientGammaCorrection" gdiplus.dll ;
+    Pointer brush ;
+    Pointer useGammaCorrection ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientBlendCount(GpPathGradient *brush, INT *count)
+External_Function GdipGetPathGradientBlendCount "GdipGetPathGradientBlendCount" gdiplus.dll ;
+    Pointer brush ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientBlend(GpPathGradient *brush, Real *blend, Real *positions, INT count)
+External_Function GdipGetPathGradientBlend "GdipGetPathGradientBlend" gdiplus.dll ;
+    Pointer brush ;
+    Pointer blend ;
+    Pointer positions ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientBlend(GpPathGradient *brush, GDIPCONST Real *blend, GDIPCONST Real *positions, INT count)
+External_Function GdipSetPathGradientBlend "GdipSetPathGradientBlend" gdiplus.dll ;
+    Pointer brush ;
+    Pointer blend ;
+    Pointer positions ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientPresetBlendCount(GpPathGradient *brush, INT *count)
+External_Function GdipGetPathGradientPresetBlendCount "GdipGetPathGradientPresetBlendCount" gdiplus.dll ;
+    Pointer brush ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientPresetBlend(GpPathGradient *brush, ARGB *blend, Real* positions, INT count)
+External_Function GdipGetPathGradientPresetBlend "GdipGetPathGradientPresetBlend" gdiplus.dll ;
+    Pointer brush ;
+    Pointer blend ;
+    Pointer positions ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientPresetBlend(GpPathGradient *brush, GDIPCONST ARGB *blend, GDIPCONST Real* positions, INT count)
+External_Function GdipSetPathGradientPresetBlend "GdipSetPathGradientPresetBlend" gdiplus.dll ;
+    Pointer brush ;
+    Pointer blend ;
+    Pointer positions ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientSigmaBlend(GpPathGradient *brush, Real focus, Real scale)
+External_Function GdipSetPathGradientSigmaBlend "GdipSetPathGradientSigmaBlend" gdiplus.dll ;
+    Pointer brush ;
+    Float Focus ;
+    Float scale ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientLinearBlend(GpPathGradient *brush, Real focus, Real scale)
+External_Function GdipSetPathGradientLinearBlend "GdipSetPathGradientLinearBlend" gdiplus.dll ;
+    Pointer brush ;
+    Float focus ;
+    Float scale ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientWrapMode(GpPathGradient *brush, GpWrapMode *wrapmode)
+External_Function GdipGetPathGradientWrapMode "GdipGetPathGradientWrapMode" gdiplus.dll ;
+    Pointer brush ;
+    Pointer wrapmode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientWrapMode(GpPathGradient *brush, GpWrapMode wrapmode)
+External_Function GdipSetPathGradientWrapMode "GdipSetPathGradientWrapMode" gdiplus.dll ;
+    Pointer brush ;
+    gpWrapMode wrapmode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientTransform(GpPathGradient *brush, GpMatrix *matrix)
+External_Function GdipGetPathGradientTransform "GdipGetPathGradientTransform" gdiplus.dll ;
+    Pointer brush ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientTransform(GpPathGradient *brush, GpMatrix *matrix)
+External_Function GdipSetPathGradientTransform "GdipSetPathGradientTransform" gdiplus.dll ;
+    Pointer brush ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipResetPathGradientTransform(GpPathGradient* brush)
+External_Function GdipResetPathGradientTransform "GdipResetPathGradientTransform" gdiplus.dll ;
+    Pointer brush ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMultiplyPathGradientTransform(GpPathGradient* brush, GDIPCONST GpMatrix *matrix, GpMatrixOrder order)
+External_Function GdipMultiplyPathGradientTransform "GdipMultiplyPathGradientTransform" gdiplus.dll ;
+    Pointer brush ;
+    Pointer matrix ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslatePathGradientTransform(GpPathGradient* brush, Real dx, Real dy, GpMatrixOrder order)
+External_Function GdipTranslatePathGradientTransform "GdipTranslatePathGradientTransform" gdiplus.dll ;
+    Pointer brush ;
+    Float dx ;
+    Float dy ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipScalePathGradientTransform(GpPathGradient* brush, Real sx, Real sy, GpMatrixOrder order)
+External_Function GdipScalePathGradientTransform "GdipScalePathGradientTransform" gdiplus.dll ;
+    Pointer brush ;
+    Float sx ;
+    Float sy ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipRotatePathGradientTransform(GpPathGradient* brush, Real angle, GpMatrixOrder order)
+External_Function GdipRotatePathGradientTransform "GdipRotatePathGradientTransform" gdiplus.dll ;
+    Pointer brush ;
+    Float angle ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathGradientFocusScales(GpPathGradient *brush, Real* xScale, Real* yScale)
+External_Function GdipGetPathGradientFocusScales "GdipGetPathGradientFocusScales" gdiplus.dll ;
+    Pointer brush ;
+    Pointer xScale ;
+    Pointer yScale ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathGradientFocusScales(GpPathGradient *brush, Real xScale, Real yScale)
+External_Function GdipSetPathGradientFocusScales "GdipSetPathGradientFocusScales" gdiplus.dll ;
+    Pointer brush ;
+    Float xScale ;
+    Float yScale ;
+    Returns gpStatus

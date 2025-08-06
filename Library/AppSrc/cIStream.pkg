@@ -1,0 +1,13 @@
+Use FlexCOM20_Base.pkg
+
+// CoClass
+// CLSID: {00000320-0000-0000-C000-000000000046}
+{ Visibility = Private }
+{ Description = "Makes file streaming possible" }
+Class cComIStream is a cComAutomationObject
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set psProgID to "{00000320-0000-0000-C000-000000000046}"
+        Set peAutoCreate to acNoAutoCreate
+    End_Procedure
+End_Class

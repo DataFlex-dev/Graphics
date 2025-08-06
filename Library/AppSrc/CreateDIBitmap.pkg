@@ -1,0 +1,17 @@
+Use Dll.pkg
+
+// constants for CreateDIBitmap
+Define CBM_INIT for 4 // initialize bitmap
+
+// DIB color table identifiers
+Define DIB_RGB_COLORS   for 0 // color table in RGBs
+Define DIB_PAL_COLORS   for 1 // color table in palette indices
+
+External_Function CreateDIBitmap "CreateDIBitmap" Gdi32.dll ;
+    Handle hdc ;
+    Pointer lpbmih ;
+    UInteger fdwInit ;
+    Pointer lpbInit ;
+    Pointer lpbmi ;
+    UInteger fuUsage ;
+    Returns Handle

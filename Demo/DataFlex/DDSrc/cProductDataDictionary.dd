@@ -1,0 +1,51 @@
+Use DataDict.pkg
+
+Open Product
+Open PersonProduct
+Open System
+
+Register_Object oProductLookup
+
+Class cProductDataDictionary is a DataDictionary
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Main_file to Product.File_Number
+
+        Set Add_System_File to System.File_Number DD_Lock_On_New_Save
+
+        Set Add_Client_File to PersonProduct.File_Number
+
+        Set Foreign_Field_Option DD_KEYFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_KEYFIELD DD_FINDREQ to True
+        Set Foreign_Field_Option DD_INDEXFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_DEFAULT DD_DISPLAYONLY to True
+
+        Set Field_Label_Long Field Product.ID to "ID"
+        Set Field_Label_Short Field Product.ID to "ID"
+        Set Field_Class_Name Field Product.ID to "dbForm"
+        Set Status_Help Field Product.ID to "Auto Assigned ID for this product"
+        Set Field_Option Field Product.ID DD_AUTOFIND to True
+        Set Key_Field_State Field Product.ID to True
+        Set Field_Auto_Increment Field Product.ID to File_Field System.Product_ID
+        Set Field_Prompt_Object Field Product.ID to oProductLookup
+
+        Set Field_Label_Long Field Product.Name to "Name"
+        Set Field_Label_Short Field Product.Name to "Name"
+        Set Field_Class_Name Field Product.Name to "dbForm"
+        Set Status_Help Field Product.Name to "What is the name of the product"
+        Set Field_Prompt_Object Field Product.Name to oProductLookup
+
+        Set Field_Label_Long Field Product.FileName to "Filename"
+        Set Field_Label_Short Field Product.FileName to "Filename"
+        Set Field_Class_Name Field Product.FileName to "cWSDbImageContainer"
+        Set Status_Help Field Product.FileName to "Name of the picture file"
+
+        Set Cascade_Delete_State to False
+    End_Procedure
+End_Class
+
+#IFDEF Is$WebApp
+#ELSE
+Use SelectionLists\ProductLookup.sl
+#ENDIF

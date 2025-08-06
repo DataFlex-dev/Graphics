@@ -1,0 +1,41 @@
+Use DataDict.pkg
+
+Open PersonProduct
+Open Product
+Open Person
+Open System
+
+Class cPersonProductDataDictionary is a DataDictionary
+    
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set Main_file to PersonProduct.File_Number
+
+        Set Add_System_File to System.File_Number DD_Lock_On_New_Save
+
+        Set Add_Server_File to Product.File_Number
+        Set Add_Server_File to Person.File_Number
+
+        Set Foreign_Field_Option DD_KEYFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_KEYFIELD DD_FINDREQ to True
+        Set Foreign_Field_Option DD_INDEXFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_DEFAULT DD_DISPLAYONLY to True
+
+        Set Field_Auto_Increment Field PersonProduct.ID to File_Field System.PersonProduct_ID
+        Set Field_Label_Long Field PersonProduct.ID to "ID"
+        Set Field_Label_Short Field PersonProduct.ID to "ID"
+        Set Field_Class_Name Field PersonProduct.ID to "dbForm"
+        Set Status_Help Field PersonProduct.ID to "Auto assigned ID of this Person/Product combination"
+        Set Field_Option Field PersonProduct.ID DD_AUTOFIND to True
+        Set Key_Field_State Field PersonProduct.ID to True
+
+        Set Field_Label_Long Field PersonProduct.Person_ID to "Person ID"
+        Set Field_Label_Short Field PersonProduct.Person_ID to "Pers.ID"
+        Set Field_Class_Name Field PersonProduct.Person_ID to "dbForm"
+        Set Status_Help Field PersonProduct.Person_ID to "ID of the person linked to"
+
+        Set Field_Label_Long Field PersonProduct.Product_ID to "Product ID"
+        Set Field_Label_Short Field PersonProduct.Product_ID to "ProdID"
+        Set Status_Help Field PersonProduct.Product_ID to "ID of the product linked to"
+    End_Procedure
+End_Class

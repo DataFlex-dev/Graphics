@@ -1,0 +1,6 @@
+Use VDFBase.pkg
+
+Struct tPointF
+    Float fX
+    Float fY
+End_Struct

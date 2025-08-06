@@ -1,0 +1,17 @@
+﻿Use VdfBase.pkg
+Use Structs\tBitmap.pkg
+Use Structs\tWinBitmapInfoHeader.pkg
+
+Struct tDIBSection
+    tBitmap dsBm
+    tWinBitmapInfoHeader dsBmih
+    UInteger[3] dsBitfields
+#IFDEF IS$WIN64    
+    Integer MissingAlignment
+#ENDIF
+    Handle dshSection
+    UInteger dsOffset
+#IFDEF IS$WIN64    
+    Integer MissingAlignment2
+#ENDIF
+End_Struct

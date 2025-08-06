@@ -1,0 +1,123 @@
+Use DataDict.pkg
+
+Open PPhoto
+Open Person
+Open System
+
+Class cPPhotoDataDictionary is a DataDictionary
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Property String Private.psBackoutFileName
+
+        Set Main_file to PPhoto.File_Number
+
+        Set Add_System_File to System.File_Number DD_Lock_On_New_Save
+
+        Set Add_Server_File to Person.File_Number
+
+        Set Foreign_Field_Option DD_KEYFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_KEYFIELD DD_FINDREQ to True
+        Set Foreign_Field_Option DD_INDEXFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_DEFAULT DD_DISPLAYONLY to True
+
+        Set Field_Label_Long Field PPhoto.ID to "ID"
+        Set Field_Label_Short Field PPhoto.ID to "ID"
+        Set Field_Class_Name Field PPhoto.ID to "dbForm"
+        Set Status_Help Field PPhoto.ID to "Auto Assigned ID for this Person/Photo combination"
+        Set Key_Field_State Field PPhoto.ID to True
+        Set Field_Auto_Increment Field PPhoto.ID to File_Field System.PPhoto_ID
+        Set Field_Option Field PPhoto.ID DD_AUTOFIND to True
+
+        Set Field_Label_Long Field PPhoto.Person_ID to "Person ID"
+        Set Field_Label_Short Field PPhoto.Person_ID to "Person ID"
+        Set Field_Class_Name Field PPhoto.Person_ID to "dbForm"
+        Set Status_Help Field PPhoto.Person_ID to "ID of the Person Linked to"
+
+        Set Field_Label_Long Field PPhoto.FileName to "Filename"
+        Set Field_Label_Short Field PPhoto.FileName to "F.name"
+        Set Field_Class_Name Field PPhoto.FileName to "cWSDbImageContainer"
+        Set Status_Help Field PPhoto.FileName to "Filename in which the photo is stored"
+
+        Set Field_Class_Name Field PPhoto.Added to "dbForm"
+        Set Field_Mask_Type Field PPhoto.Added to Mask_Date_Window
+        Set Field_Label_Short Field PPhoto.Added to "Added"
+        Set Field_Label_Long Field PPhoto.Added to "Added at"
+        Set Status_Help Field PPhoto.Added to "Photo added at"
+
+        Set Field_Label_Long Field PPhoto.Comments to "Comments"
+        Set Field_Label_Short Field PPhoto.Comments to "Comments"
+        Set Field_Class_Name Field PPhoto.Comments to "cDbTextEdit"
+        Set Status_Help Field PPhoto.Comments to "Comments for this photo"
+
+        Set Field_Label_Long Field PPhoto.Where to "Where"
+        Set Field_Label_Short Field PPhoto.Where to "Where"
+        Set Status_Help Field PPhoto.Where to "Where was this photo taken?"
+        Set Field_Class_Name Field PPhoto.Where to "dbForm"
+
+        Set Field_Label_Long Field PPhoto.MadeInYear to "Year"
+        Set Field_Label_Short Field PPhoto.MadeInYear to "Year"
+        Set Field_Class_Name Field PPhoto.MadeInYear to "dbForm"
+        Set Status_Help Field PPhoto.MadeInYear to "In whch year was this photo made?"
+        Set Field_Value_Range Field PPhoto.MadeInYear to 1850 2100
+        Set Field_Error Field PPhoto.MadeInYear to 122 "The year must be between @PARAM1 and @PARAM2"
+
+        Set Field_Label_Long Field PPhoto.MakeInMonth to "Month"
+        Set Field_Label_Short Field PPhoto.MakeInMonth to "Month"
+        Set Field_Class_Name Field PPhoto.MakeInMonth to "dbSpinForm"
+        Set Status_Help Field PPhoto.MakeInMonth to "In which month was this photo made?"
+        Set Field_Value_Range Field PPhoto.MakeInMonth to 1 12
+        Set Field_Error Field PPhoto.MakeInMonth to 121 "The month must be between @PARAM1 and @PARAM2"
+    End_Procedure
+
+    Function Today Returns Date
+        Date dToday
+
+        Sysdate dToday
+
+        Function_Return dToday
+    End_Function
+
+    Function CurrentYear Returns Integer
+        Integer iYear
+
+        Move (DateGetYear (CurrentDateTime ())) to iYear
+
+        Function_Return iYear
+    End_Function
+
+    Procedure Field_Defaults
+        Set Field_Changed_Value Field PPhoto.Added to (Today (Self))
+        Set Field_Changed_Value Field PPhoto.MadeInYear to (CurrentYear (Self))
+        Set Field_Changed_Value Field PPhoto.MakeInMonth to 1
+
+        Forward Send Field_Defaults
+    End_Procedure
+
+    Procedure Update
+        Handle hoWorkspace
+        String sBitmapPath sFolderName sFileName sOldFileName
+
+        Forward Send Update
+
+        Get Private.psBackoutFileName to sOldFileName
+        If (PPhoto.FileName <> sOldFileName and sOldFileName <> '') Begin
+            Get phoWorkspace of ghoApplication to hoWorkspace
+            Get psBitmapPath of hoWorkspace to sBitmapPath
+
+            Get PathAtIndex of hoWorkspace sBitmapPath 1 to sFolderName
+            Move (Trim (sFolderName)) to sFolderName
+            If (Right (sFolderName, 1) <> '\') Begin
+                Move (sFolderName + '\') to sFolderName
+            End
+
+            EraseFile (sFolderName + sOldFileName)
+        End
+    End_Procedure
+
+    Procedure Backout
+        Forward Send Backout
+
+        Set Private.psBackoutFileName to (Trim (PPhoto.FileName))
+    End_Procedure
+End_Class

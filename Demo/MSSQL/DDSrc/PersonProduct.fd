@@ -1,0 +1,5 @@
+#REPLACE FILE4 PersonProduct
+#REPLACE PersonProduct.Recnum |FN4,0
+#REPLACE PersonProduct.ID |FN4,1
+#REPLACE PersonProduct.Person_ID |FN4,2
+#REPLACE PersonProduct.Product_ID |FN4,3

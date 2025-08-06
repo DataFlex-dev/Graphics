@@ -1,0 +1,9 @@
+﻿Use VdfBase.pkg
+Use cGDIImage.h.pkg
+
+Struct tImageProperty
+    String sName
+    Integer iId
+    gpPropertyTagType iDataType
+    Variant vValue
+End_Struct

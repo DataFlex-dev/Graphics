@@ -1,0 +1,508 @@
+﻿Use cGDIPlus.pkg
+Use cGDIStringFormat.h.pkg
+Use LanguageIDs.h.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIStringFormat }
+{ Description = "The StringFormat class encapsulates text layout information" }
+{ Description += " (such as alignment, orientation, tab stops, and clipping) and display manipulations" }
+{ Description += " (such as trimming, font substitution for characters that are not supported by the requested font," }
+{ Description += " and digit substitution for languages that Do not Use Western European digits)." }
+{ Description += "A StringFormat Object can be passed to the DrawString Methods method to format a String" }
+Class cGDIStringFormat is a cObject
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Creates a property to hold a reference to the GDI+ StringFormat object and support properties such as language" }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { DesignTime = False }
+        { Description = "Can hold a pointer of the GDI+ StringFormat object" }
+        Property Pointer ppStringFormat
+        { DesignTime = False }
+        { Description = "First tabstop" }
+        Property Float pfFirstTabOffset
+        { DesignTime = False }
+        { Description = "Language identifier. Will be set by peDigitSubstitution" }
+        Property Short peLanguage LANG_NEUTRAL
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Send a message to delete the GDI+ StringFormat object when the DataFlex object gets destroyed" }
+    Procedure Destroy_Object
+        Send DeleteStringFormat
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Creates a new StringFormat object and initializes it with the contents of this StringFormat object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    Function CloneStringFormat Returns Handle
+        gpStatus eStatus
+        Pointer pSourceStringFormat pClonedStringFormat
+        Handle hoFormat
+
+        Get ppStringFormat to pSourceStringFormat
+        If (pSourceStringFormat <> 0) Begin
+            Move 0 to pClonedStringFormat
+            Move (GdipCloneStringFormat (pSourceStringFormat, AddressOf (pClonedStringFormat))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIStringFormat)) "ClonedStringFormat" to hoFormat
+                Set ppStringFormat of hoFormat to pClonedStringFormat
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return hoFormat
+    End_Function
+
+    { Description = "Creates a generic, default StringFormat object" }
+    { Description += "a generic, default StringFormat Object has the following characteristics:" }
+    { Description += "No string format flags are set." }
+    { Description += "Character alignment and line alignment are set to StringAlignmentNear." }
+    { Description += "Language ID is set to neutral language, which means that the current language associated with the calling thread is used." }
+    { Description += "String digit substitution is set to StringDigitSubstituteUser." }
+    { Description += "Hot key prefix is set to HotkeyPrefixNone." }
+    { Description += "Number of tab stops is set to zero." }
+    { Description += "String trimming is set to StringTrimmingCharacter." }
+    { MethodType = Method }
+    Function CreateGenericDefault Returns gpStatus
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        // Remove old string format object when existing
+        Send DeleteStringFormat
+
+        Move 0 to pStringFormat
+        Move (GdipStringFormatGetGenericDefault (AddressOf (pStringFormat))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppStringFormat to pStringFormat
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a generic, typographic string format object" }
+    { Description += "a generic, typographic StringFormat Object has the following characteristics:" }
+    { Description += "String format flags StringFormatFlagsLineLimit, StringFormatFlagsNoClip, and StringFormatFlagsNoFitBlackBox are set." }
+    { Description += "Character alignment and line alignment are set to StringAlignmentNear." }
+    { Description += "Language ID is set to neutral language, which means that the current language associated with the calling thread is used." }
+    { Description += "String digit substitution is Set to StringDigitSubstituteUser." }
+    { Description += "Hot key prefix is set to HotkeyPrefixNone." }
+    { Description += "Number of tab stops is set to zero." }
+    { Description += "String trimming is set to StringTrimmingNone." }
+    { MethodType = Method }
+    Function CreateGenericTypographic Returns gpStatus
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Move 0 to pStringFormat
+        Move (GdipStringFormatGetGenericTypographic (AddressOf (pStringFormat))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppStringFormat to pStringFormat
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a string format object based on string format flags and a language" }
+    { MethodType = Method }
+    Function CreateStringFormat gpStringFormatFlags eFormat Short eLanguage Returns gpStatus
+        gpStatus eStatus
+        Pointer pFormat
+
+        Move 0 to pFormat
+        Move (GdipCreateStringFormat (eFormat, eLanguage, AddressOf (pFormat))) to eStatus
+        If (eStatus = gpOk) Begin
+            Set ppStringFormat to pFormat
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Releases resources used by the StringFormat object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    { MethodType = Method }
+    Procedure DeleteStringFormat
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move (GdipDeleteStringFormat (pStringFormat)) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppStringFormat to 0
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Deleting StringFormat"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Sets the format flags for this StringFormat object." }
+    { Description += "The format flags determine most of the characteristics of a StringFormat Object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Procedure Set peFormatFlags gpStringFormatFlags eFlags
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move (GdipSetStringFormatFlags (pStringFormat, eFlags)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peFormatFlags'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Returns the format flags for this StringFormat object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function peFormatFlags Returns gpStringFormatFlags
+        gpStatus eStatus
+        gpStringFormatFlags eFlags
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move 0 to eFlags
+            Move (GdipGetStringFormatFlags (pStringFormat, AddressOf (eFlags))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get peFormatFlags'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return eFlags
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the character alignment of this StringFormat object in relation to the origin of the layout rectangle." }
+    { Description += "A layout rectangle is used to position the displayed string" }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Procedure Set peAlignment gpStringAlignment eAlign
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move (GdipSetStringFormatAlign (pStringFormat, eAlign)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peAlignment'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets an element of the StringAlignment enumeration that indicates the character alignment of this StringFormat object in relation to the origin of the layout rectangle." }
+    { Description += "A layout rectangle is used to position the displayed String" }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function peAlignment Returns gpStringAlignment
+        gpStatus eStatus
+        gpStringAlignment eAlign
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move 0 to eAlign
+            Move (GdipGetStringFormatAlign (pStringFormat, AddressOf (eAlign))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get peAlignment'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return eAlign
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the line alignment of this StringFormat object in relation to the origin of the layout rectangle." }
+    { Description += "The line alignment setting specifies how to align the String vertically in the layout rectangle" }
+    { Description += "The layout rectangle is used to position the displayed String." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Procedure Set peLineAlignment gpStringAlignment eAlign
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move (GdipSetStringFormatLineAlign (pStringFormat, eAlign)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peLineAlignment'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the line alignment of this StringFormat object in relation to the origin of the layout rectangle." }
+    { Description += "The line alignment setting specifies how to align the String vertically in the layout rectangle" }
+    { Description += "The layout rectangle is used to position the displayed String." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function peLineAlignment Returns gpStringAlignment
+        gpStatus eStatus
+        gpStringAlignment eAlign
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move 0 to eAlign
+            Move (GdipGetStringFormatLineAlign (pStringFormat, AddressOf (eAlign))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get peLineAlignment'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return eAlign
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the trimming style for this StringFormat object." }
+    { Description += "The trimming style determines how to trim a String so that it fits into the layout rectangle." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Procedure Set peTrimming gpStringTrimming eTrimming
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move (GdipSetStringFormatTrimming(pStringFormat, eTrimming)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peTrimming'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the trimming style for this StringFormat object." }
+    { Description += "The trimming style determines how to trim a String so that it fits into the layout rectangle." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function peTrimming Returns gpStringTrimming
+        gpStatus eStatus
+        gpStringTrimming eTrimming
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move 0 to eTrimming
+            Move (GdipGetStringFormatTrimming (pStringFormat, AddressOf (eTrimming))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get peTrimming'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return eTrimming
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the type of processing that is performed on a string when the hot key prefix, an ampersand (&), is encountered." }
+    { Description += "The ampersand is called the hot key prefix and can be used to designate certain keys as hot keys." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Procedure Set peHotkeyPrefix gpHotkeyPrefix ePrefix
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move (GdipSetStringFormatHotkeyPrefix (pStringFormat, ePrefix)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peHotkeyPrefix'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the type of processing that is performed on a string when the hot key prefix, an ampersand (&), is encountered." }
+    { Description += "The ampersand is called the hot key prefix and can be used to designate certain keys as hot keys." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function peHotkeyPrefix Returns gpHotkeyPrefix
+        gpStatus eStatus
+        Pointer pStringFormat
+        gpHotkeyPrefix ePrefix
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move 0 to ePrefix
+            Move (GdipGetStringFormatHotkeyPrefix (pStringFormat, AddressOf (ePrefix))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get peHotkeyPrefix'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return ePrefix
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the offsets for tab stops in this StringFormat object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Procedure Set pfTabStops Float[] fTabstops
+        gpStatus eStatus
+        Pointer pStringFormat
+        Float fFirstTabOffset
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Get pfFirstTabOffset to fFirstTabOffset
+            Move (GdipSetStringFormatTabStops (pStringFormat, fFirstTabOffset, SizeOfArray (fTabstops), AddressOf (fTabstops))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get pfTabStops'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the offsets for tab stops in this StringFormat object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function pfTabStops Returns Float[]
+        Integer iTabStops
+        gpStatus eStatus
+        Float[] fTabstops
+        Float fFirstTabOffset
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Get TabstopCount to iTabStops
+            Move (ResizeArray (fTabstops, iTabStops)) to fTabstops
+            Move 0 to fFirstTabOffset
+            Move (GdipGetStringFormatTabStops (pStringFormat, iTabStops, AddressOf (fFirstTabOffset), AddressOf (fTabstops))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get pfTabStops'
+            End
+            Else Begin
+                Set pfFirstTabOffset to fFirstTabOffset
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return fTabstops
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Gets the number of tab-stop offsets in this StringFormat object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function TabStopCount Returns Integer
+        Integer iTabStops
+        gpStatus eStatus
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move 0 to iTabStops
+            Move (GdipGetStringFormatTabStopCount (pStringFormat, AddressOf (iTabStops))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get TabStopCount'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return iTabStops
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the digit substitution method and the language that corresponds to the digit substitutes." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Procedure Set peDigitSubstitution gpStringDigitSubstitute eSubstitute
+        gpStatus eStatus
+        Short eLanguage
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Get peLanguage to eLanguage
+            Move (GdipSetStringFormatDigitSubstitution (pStringFormat, eLanguage, eSubstitute)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peDigitSubstitution'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets an element of the StringDigitSubstitute enumeration that indicates the digit substitution method that is used by this StringFormat object." }
+    { Description += "Calls HandleGDIError when the StringFormat object is not available." }
+    { Description += "Calls HandleGDIResult when the GDI+ function failed." }
+    Function peDigitSubstitution Returns gpStringDigitSubstitute
+        gpStatus eStatus
+        gpStringDigitSubstitute eSubstitute
+        Short eLanguage
+        Pointer pStringFormat
+
+        Get ppStringFormat to pStringFormat
+        If (pStringFormat <> 0) Begin
+            Move 0 to eLanguage
+            Move 0 to eSubstitute
+            Move (GdipGetStringFormatDigitSubstitution (pStringFormat, AddressOf (eLanguage), AddressOf (eSubstitute))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peDigitSubstitution'
+            End
+            Else Begin
+                Set peLanguage to eLanguage
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+        End
+
+        Function_Return eSubstitute
+    End_Function
+End_Class

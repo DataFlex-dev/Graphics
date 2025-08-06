@@ -1,0 +1,27 @@
+Use VdfBase.pkg
+
+Define gpImageFormat for Integer
+Enum_List
+    Define gpImageFormatUndefined // Indicates that GDI+ is unable to determine the format
+    Define gpImageFormatMemoryBMP // Indicates that the image was constructed from a memory bitmap
+    Define gpImageFormatBMP       // Indicates the Windows  BMP format
+    Define gpImageFormatEMF       // Indicates the EMF format
+    Define gpImageFormatWMF       // Indicates the WMF format
+    Define gpImageFormatJPEG      // Indicates the JPEG format
+    Define gpImageFormatPNG       // Indicates the PNG format
+    Define gpImageFormatGIF       // Indicates the GIF format
+    Define gpImageFormatTIFF      // Indicates the TIFF format
+    Define gpImageFormatEXIF      // Indicates the Exif (Exchangeable Image File) format
+    Define gpImageFormatIcon      // Indicates the Icon format
+    Define gpImageFormatHEIF      // Indicates the HEIF (High Efficiency Image Format) format
+    Define gpImageFormatWEBP      // Indicates the WebP format
+    Define gpImageFormatPHOTOCD   // Photo CD format
+    Define gpImageFormatFLASHPIX  // FlashPix format
+    Define gpImageFormatTIFFEP    // Tag Image File Format for Eletronic Photography
+    Define gpImageFormatCIFF      // Canon Image File Format
+    Define gpImageFormatJFIF      // JPEG File Interchange Format
+    Define gpImageFormatPICT      // Quickdraw Image Format
+    Define gpImageFormatTIFFIT    // Tag Image File Format for Information Technology(graphic arts)
+    Define gpImageFormatJPEG2K    // JPEG 2000 baseline file format
+    Define gpImageFormatJPEG2KX   // JPEG 2000 extended file format
+End_Enum_List

@@ -1,0 +1,35 @@
+Use DataDict.pkg
+
+Open System
+
+Class cSystemDataDictionary is a DataDictionary
+    
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set Main_file to System.File_Number
+
+        Set Foreign_Field_Option DD_KEYFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_KEYFIELD DD_FINDREQ to True
+        Set Foreign_Field_Option DD_INDEXFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_DEFAULT DD_DISPLAYONLY to True
+
+        Set Field_Label_Long Field System.Person_ID to "Last Person ID"
+        Set Field_Class_Name Field System.Person_ID to "dbForm"
+        Set Status_Help Field System.Person_ID to "Last Assigned ID in the Person Table"
+
+        Set Field_Label_Long Field System.Product_ID to "Last Product ID"
+        Set Field_Class_Name Field System.Product_ID to "dbForm"
+        Set Status_Help Field System.Product_ID to "Last Assigned ID in the Product Table"
+
+        Set Field_Label_Long Field System.Photo_ID to "Last Photo ID"
+        Set Field_Class_Name Field System.Photo_ID to "dbForm"
+        Set Status_Help Field System.Photo_ID to "Last Assigned ID in the Photo Table"
+
+        Set Field_Label_Long Field System.PersonPhoto_ID to "Last Person/Photo ID"
+        Set Field_Class_Name Field System.PersonPhoto_ID to "dbForm"
+        Set Status_Help Field System.PersonPhoto_ID to "Last Assigned ID in the Photo per Person Table"
+        Set Cascade_Delete_State to False
+
+    End_Procedure
+
+End_Class

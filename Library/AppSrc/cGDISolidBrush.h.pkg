@@ -1,0 +1,20 @@
+﻿Use cGDIPlus.h.pkg
+Use cGDIBrush.h.pkg
+
+// GpStatus WINGDIPAPI GdipCreateSolidFill(ARGB color, GpSolidFill **brush)
+External_Function GdipCreateSolidFill "GdipCreateSolidFill" gdiplus.dll ;
+    UInteger color ;
+    Pointer brush ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetSolidFillColor(GpSolidFill *brush, ARGB color)
+External_Function GdipSetSolidFillColor "GdipSetSolidFillColor" gdiplus.dll ;
+    Pointer brush ;
+    UInteger color ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetSolidFillColor(GpSolidFill *brush, ARGB *color)
+External_Function GdipGetSolidFillColor "GdipGetSolidFillColor" gdiplus.dll ;
+    Pointer brush ;
+    Pointer color ;
+    Returns gpStatus

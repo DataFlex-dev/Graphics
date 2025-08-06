@@ -1,0 +1,7 @@
+// constants for the biCompression Field
+Define BI_RGB       for 0
+Define BI_RLE8      for 1
+Define BI_RLE4      for 2
+Define BI_BITFIELDS for 3
+Define BI_JPEG      for 4
+Define BI_PNG       for 5

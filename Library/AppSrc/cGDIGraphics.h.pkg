@@ -1,0 +1,1935 @@
+﻿Use cGDIPlus.h.pkg
+Use gpMatrixOrder.h.pkg
+
+define EMR_MIN                                              for 1
+define EMR_MAX                                              for 122
+
+define GDIP_EMFPLUS_RECORD_BASE                             for $00004000
+define GDIP_WMF_RECORD_BASE                                 for $00010000
+
+define META_SETBKCOLOR                                      for $0201
+define META_SETBKMODE                                       for $0102
+define META_SETMAPMODE                                      for $0103
+define META_SETROP2                                         for $0104
+define META_SETRELABS                                       for $0105
+define META_SETPOLYFILLMODE                                 for $0106
+define META_SETSTRETCHBLTMODE                               for $0107
+define META_SETTEXTCHAREXTRA                                for $0108
+define META_SETTEXTCOLOR                                    for $0209
+define META_SETTEXTJUSTIFICATION                            for $020A
+define META_SETWINDOWORG                                    for $020B
+define META_SETWINDOWEXT                                    for $020C
+define META_SETVIEWPORTORG                                  for $020D
+define META_SETVIEWPORTEXT                                  for $020E
+define META_OFFSETWINDOWORG                                 for $020F
+define META_SCALEWINDOWEXT                                  for $0410
+define META_OFFSETVIEWPORTORG                               for $0211
+define META_SCALEVIEWPORTEXT                                for $0412
+define META_LINETO                                          for $0213
+define META_MOVETO                                          for $0214
+define META_EXCLUDECLIPRECT                                 for $0415
+define META_INTERSECTCLIPRECT                               for $0416
+define META_ARC                                             for $0817
+define META_ELLIPSE                                         for $0418
+define META_FLOODFILL                                       for $0419
+define META_PIE                                             for $081A
+define META_RECTANGLE                                       for $041B
+define META_ROUNDRECT                                       for $061C
+define META_PATBLT                                          for $061D
+define META_SAVEDC                                          for $001E
+define META_SETPIXEL                                        for $041F
+define META_OFFSETCLIPRGN                                   for $0220
+define META_TEXTOUT                                         for $0521
+define META_BITBLT                                          for $0922
+define META_STRETCHBLT                                      for $0B23
+define META_POLYGON                                         for $0324
+define META_POLYLINE                                        for $0325
+define META_ESCAPE                                          for $0626
+define META_RESTOREDC                                       for $0127
+define META_FILLREGION                                      for $0228
+define META_FRAMEREGION                                     for $0429
+define META_INVERTREGION                                    for $012A
+define META_PAINTREGION                                     for $012B
+define META_SELECTCLIPREGION                                for $012C
+define META_SELECTOBJECT                                    for $012D
+define META_SETTEXTALIGN                                    for $012E
+define META_CHORD                                           for $0830
+define META_SETMAPPERFLAGS                                  for $0231
+define META_EXTTEXTOUT                                      for $0a32
+define META_SETDIBTODEV                                     for $0d33
+define META_SELECTPALETTE                                   for $0234
+define META_REALIZEPALETTE                                  for $0035
+define META_ANIMATEPALETTE                                  for $0436
+define META_SETPALENTRIES                                   for $0037
+define META_POLYPOLYGON                                     for $0538
+define META_RESIZEPALETTE                                   for $0139
+define META_DIBBITBLT                                       for $0940
+define META_DIBSTRETCHBLT                                   for $0b41
+define META_DIBCREATEPATTERNBRUSH                           for $0142
+define META_STRETCHDIB                                      for $0f43
+define META_EXTFLOODFILL                                    for $0548
+define META_SETLAYOUT                                       for $0149
+define META_DELETEOBJECT                                    for $01f0
+define META_CREATEPALETTE                                   for $00f7
+define META_CREATEPATTERNBRUSH                              for $01F9
+define META_CREATEPENINDIRECT                               for $02FA
+define META_CREATEFONTINDIRECT                              for $02FB
+define META_CREATEBRUSHINDIRECT                             for $02FC
+define META_CREATEREGION                                    for $06FF
+
+define EMR_HEADER                                           for 1
+define EMR_POLYBEZIER                                       for 2
+define EMR_POLYGON                                          for 3
+define EMR_POLYLINE                                         for 4
+define EMR_POLYBEZIERTO                                     for 5
+define EMR_POLYLINETO                                       for 6
+define EMR_POLYPOLYLINE                                     for 7
+define EMR_POLYPOLYGON                                      for 8
+define EMR_SETWINDOWEXTEX                                   for 9
+define EMR_SETWINDOWORGEX                                   for 10
+define EMR_SETVIEWPORTEXTEX                                 for 11
+define EMR_SETVIEWPORTORGEX                                 for 12
+define EMR_SETBRUSHORGEX                                    for 13
+define EMR_EOF                                              for 14
+define EMR_SETPIXELV                                        for 15
+define EMR_SETMAPPERFLAGS                                   for 16
+define EMR_SETMAPMODE                                       for 17
+define EMR_SETBKMODE                                        for 18
+define EMR_SETPOLYFILLMODE                                  for 19
+define EMR_SETROP2                                          for 20
+define EMR_SETSTRETCHBLTMODE                                for 21
+define EMR_SETTEXTALIGN                                     for 22
+define EMR_SETCOLORADJUSTMENT                               for 23
+define EMR_SETTEXTCOLOR                                     for 24
+define EMR_SETBKCOLOR                                       for 25
+define EMR_OFFSETCLIPRGN                                    for 26
+define EMR_MOVETOEX                                         for 27
+define EMR_SETMETARGN                                       for 28
+define EMR_EXCLUDECLIPRECT                                  for 29
+define EMR_INTERSECTCLIPRECT                                for 30
+define EMR_SCALEVIEWPORTEXTEX                               for 31
+define EMR_SCALEWINDOWEXTEX                                 for 32
+define EMR_SAVEDC                                           for 33
+define EMR_RESTOREDC                                        for 34
+define EMR_SETWORLDTRANSFORM                                for 35
+define EMR_MODIFYWORLDTRANSFORM                             for 36
+define EMR_SELECTOBJECT                                     for 37
+define EMR_CREATEPEN                                        for 38
+define EMR_CREATEBRUSHINDIRECT                              for 39
+define EMR_DELETEOBJECT                                     for 40
+define EMR_ANGLEARC                                         for 41
+define EMR_ELLIPSE                                          for 42
+define EMR_RECTANGLE                                        for 43
+define EMR_ROUNDRECT                                        for 44
+define EMR_ARC                                              for 45
+define EMR_CHORD                                            for 46
+define EMR_PIE                                              for 47
+define EMR_SELECTPALETTE                                    for 48
+define EMR_CREATEPALETTE                                    for 49
+define EMR_SETPALETTEENTRIES                                for 50
+define EMR_RESIZEPALETTE                                    for 51
+define EMR_REALIZEPALETTE                                   for 52
+define EMR_EXTFLOODFILL                                     for 53
+define EMR_LINETO                                           for 54
+define EMR_ARCTO                                            for 55
+define EMR_POLYDRAW                                         for 56
+define EMR_SETARCDIRECTION                                  for 57
+define EMR_SETMITERLIMIT                                    for 58
+define EMR_BEGINPATH                                        for 59
+define EMR_ENDPATH                                          for 60
+define EMR_CLOSEFIGURE                                      for 61
+define EMR_FILLPATH                                         for 62
+define EMR_STROKEANDFILLPATH                                for 63
+define EMR_STROKEPATH                                       for 64
+define EMR_FLATTENPATH                                      for 65
+define EMR_WIDENPATH                                        for 66
+define EMR_SELECTCLIPPATH                                   for 67
+define EMR_ABORTPATH                                        for 68
+define EMR_GDICOMMENT                                       for 70
+define EMR_FILLRGN                                          for 71
+define EMR_FRAMERGN                                         for 72
+define EMR_INVERTRGN                                        for 73
+define EMR_PAINTRGN                                         for 74
+define EMR_EXTSELECTCLIPRGN                                 for 75
+define EMR_BITBLT                                           for 76
+define EMR_STRETCHBLT                                       for 77
+define EMR_MASKBLT                                          for 78
+define EMR_PLGBLT                                           for 79
+define EMR_SETDIBITSTODEVICE                                for 80
+define EMR_STRETCHDIBITS                                    for 81
+define EMR_EXTCREATEFONTINDIRECTW                           for 82
+define EMR_EXTTEXTOUTA                                      for 83
+define EMR_EXTTEXTOUTW                                      for 84
+define EMR_POLYBEZIER16                                     for 85
+define EMR_POLYGON16                                        for 86
+define EMR_POLYLINE16                                       for 87
+define EMR_POLYBEZIERTO16                                   for 88
+define EMR_POLYLINETO16                                     for 89
+define EMR_POLYPOLYLINE16                                   for 90
+define EMR_POLYPOLYGON16                                    for 91
+define EMR_POLYDRAW16                                       for 92
+define EMR_CREATEMONOBRUSH                                  for 93
+define EMR_CREATEDIBPATTERNBRUSHPT                          for 94
+define EMR_EXTCREATEPEN                                     for 95
+define EMR_POLYTEXTOUTA                                     for 96
+define EMR_POLYTEXTOUTW                                     for 97
+define EMR_SETICMMODE                                       for 98
+define EMR_CREATECOLORSPACE                                 for 99
+define EMR_SETCOLORSPACE                                    for 100
+define EMR_DELETECOLORSPACE                                 for 101
+define EMR_GLSRECORD                                        for 102
+define EMR_GLSBOUNDEDRECORD                                 for 103
+define EMR_PIXELFORMAT                                      for 104
+define EMR_RESERVED_105                                     for 105
+define EMR_RESERVED_106                                     for 106
+define EMR_RESERVED_107                                     for 107
+define EMR_RESERVED_108                                     for 108
+define EMR_RESERVED_109                                     for 109
+define EMR_RESERVED_110                                     for 110
+define EMR_COLORCORRECTPALETTE                              for 111
+define EMR_SETICMPROFILEA                                   for 112
+define EMR_SETICMPROFILEW                                   for 113
+define EMR_ALPHABLEND                                       for 114
+define EMR_SETLAYOUT                                        for 115
+define EMR_TRANSPARENTBLT                                   for 116
+define EMR_RESERVED_117                                     for 117
+define EMR_GRADIENTFILL                                     for 118
+define EMR_RESERVED_119                                     for 119
+define EMR_RESERVED_120                                     for 120
+define EMR_COLORMATCHTOTARGETW                              for 121
+define EMR_CREATECOLORSPACEW                                for 122
+
+// DrawText() constants
+Define DT_TOP                           for |CI$00000000
+Define DT_LEFT                          for |CI$00000000
+Define DT_CENTER                        for |CI$00000001
+Define DT_RIGHT                         for |CI$00000002
+Define DT_VCENTER                       for |CI$00000004
+Define DT_BOTTOM                        for |CI$00000008
+Define DT_WORDBREAK                     for |CI$00000010
+Define DT_SINGLELINE                    for |CI$00000020
+Define DT_EXPANDTABS                    for |CI$00000040
+Define DT_TABSTOP                       for |CI$00000080
+Define DT_NOCLIP                        for |CI$00000100
+Define DT_EXTERNALLEADING               for |CI$00000200
+Define DT_CALCRECT                      for |CI$00000400
+Define DT_NOPREFIX                      for |CI$00000800
+Define DT_INTERNAL                      for |CI$00001000
+Define DT_EDITCONTROL                   for |CI$00002000
+Define DT_PATH_ELLIPSIS                 for |CI$00004000
+Define DT_END_ELLIPSIS                  for |CI$00008000
+Define DT_MODIFYSTRING                  for |CI$00010000
+Define DT_RTLREADING                    for |CI$00020000
+Define DT_WORD_ELLIPSIS                 for |CI$00040000
+Define DT_NOFULLWIDTHCHARBREAK          for |CI$00080000
+Define DT_HIDEPREFIX                    for |CI$00100000
+Define DT_PREFIXONLY                    for |CI$00200000
+
+Define gpFlushIntention for Integer
+    Define gpFlushIntentionFlush    for 0 // When passed to the Graphics::Flush method, specifies that pending rendering operations are executed as soon as possible. The Flush method is not synchronized with the completion of the rendering operations and might return before the rendering operations are completed.
+    Define gpFlushIntentionSync     for 1 // When passed to the Graphics::Flush method, specifies that pending rendering operations are executed as soon as possible. The Flush method is synchronized with the completion of the rendering operations; that is, it will not return Until after the rendering operations are completed.
+
+define gpQualityMode for Integer
+    Define gpQualityModeInvalid for -1 // Specifies an invalid mode
+    Define gpQualityModeDefault for 0  // Specifies the default mode
+    Define gpQualityModeLow     for 1  // Specifies low quality, high speed rendering
+    Define gpQualityModeHigh    for 2  // Specifies high quality, low speed rendering
+
+Define gpCompositingMode for Integer
+    Define gpCompositingModeSourceOver  for 0 // Specifies that when a color is rendered, it is blended with the background color. The blend is determined by the alpha component of the color being rendered.
+    Define gpCompositingModeSourceCopy  for 1 // Specifies that when a color is rendered, it overwrites the background color. This mode cannot be used along with TextRenderingHintClearTypeGridFit.
+
+Define gpCompositingQuality for Integer
+    Define gpCompositingQualityDefault          for 0 // Specifies that gamma correction is not applied.
+    Define gpCompositingQualityHighSpeed        for 1 // Specifies that gamma correction is not applied.
+    Define gpCompositingQualityHighQuality      for 2 // Specifies that gamma correction is applied.
+    Define gpCompositingQualityGammaCorrected   for 3 // Specifies that gamma correction is applied.
+    Define gpCompositingQualityAssumeLinear     for 4 // Specifies that gamma correction is not applied.
+
+Define gpSmoothingMode for Integer
+    Define gpSmoothingModeInvalid       for -1 // Reserved.
+    Define gpSmoothingModeDefault       for 0  // Specifies that smoothing is not applied.
+    Define gpSmoothingModeHighSpeed     for 1  // Specifies that smoothing is not applied.
+    Define gpSmoothingModeHighQuality   for 2  // Specifies that smoothing is applied using an 8 X 4 box filter.
+    Define gpSmoothingModeNone          for 3  // Specifies that smoothing is not applied.
+    Define gpSmoothingModeAntiAlias8x4  for 4  // Specifies that smoothing is applied using an 8 X 4 box filter.
+    Define gpSmoothingModeAntiAlias     for 3  // Specifies that smoothing is applied using an 8 X 4 box filter.
+    Define gpSmoothingModeAntiAlias8x8  for 5  // Specifies that smoothing is applied using an 8 X 8 box filter.
+
+Define gpPixelOffsetMode for Integer
+    Define gpPixelOffsetModeInvalid     for -1 // Used internally
+    Define gpPixelOffsetModeDefault     for 0  // Equivalent to PixelOffsetModeNone
+    Define gpPixelOffsetModeHighSpeed   for 1  // Equivalent to PixelOffsetModeNone
+    Define gpPixelOffsetModeHighQuality for 2  // Equivalent to PixelOffsetModeHalf
+    Define gpPixelOffsetModeNone        for 3  // Indicates that pixel centers have Integer coordinates.
+    Define gpPixelOffsetModeHalf        for 4  // Indicates that pixel centers have coordinates that are half way Between Integer values.
+
+define gpTextRenderingHint for Integer
+    Define gpTextRenderingHintSystemDefault             for 0 // Specifies that a character is drawn using the currently selected system font smoothing mode (also called a rendering hint).
+    Define gpTextRenderingHintSingleBitPerPixelGridFit  for 1 // Specifies that a character is drawn using its glyph bitmap and hinting to improve character appearance on stems and curvature
+    Define gpTextRenderingHintSingleBitPerPixel         for 2 // Specifies that a character is drawn using its glyph bitmap and no hinting. This results in better performance at the expense of quality
+    Define gpTextRenderingHintAntiAliasGridFit          for 3 // Specifies that a character is drawn using its antialiased glyph bitmap and hinting. This results in much better quality due to antialiasing at a higher performance cost
+    Define gpTextRenderingHintAntiAlias                 for 4 // Specifies that a character is drawn using its antialiased glyph bitmap and no hinting. Stem width differences may be noticeable because hinting is turned off
+    Define gpTextRenderingHintClearTypeGridFit          for 5 // Specifies that a character is drawn using its glyph ClearType bitmap and hinting. This type of text rendering cannot be used along with CompositingModeSourceCopy.
+
+define gpInterpolationMode for Integer
+    Define gpInterpolationModeInvalid               for -1 // Used internally
+    Define gpInterpolationModeDefault               for 0  // Specifies the default interpolation mode
+    Define gpInterpolationModeLowQuality            for 1  // Specifies a low-quality mode
+    Define gpInterpolationModeHighQuality           for 2  // Specifies a high-quality mode
+    Define gpInterpolationModeBilinear              for 3  // Specifies bilinear interpolation. No prefiltering is done. This mode is not suitable for shrinking an image below 50 percent of its original size
+    Define gpInterpolationModeBicubic               for 4  // Specifies bicubic interpolation. No prefiltering is done. This mode is not suitable for shrinking an image below 25 percent of its original size
+    Define gpInterpolationModeNearestNeighbor       for 5  // Specifies nearest-neighbor interpolation
+    Define gpInterpolationModeHighQualityBilinear   for 6  // Specifies high-quality, bilinear interpolation. Prefiltering is performed to ensure high-quality shrinking.
+    Define gpInterpolationModeHighQualityBicubic    for 7  // Specifies high-quality, bicubic interpolation. Prefiltering is performed to ensure high-quality shrinking. This mode produces the highest quality transformed images
+
+define gpUnit for Integer
+    Define gpUnitWorld      for 0 // Specifies world coordinates, a nonphysical unit.
+    Define gpUnitDisplay    for 1 // Specifies display units. for example, If the display device is a monitor, then the unit is 1 pixel.
+    Define gpUnitPixel      for 2 // Specifies that a unit is 1 pixel.
+    Define gpUnitPoint      for 3 // Specifies that a unit is 1 point or 1/72 inch.
+    Define gpUnitInch       for 4 // Specifies that a unit is 1 inch.
+    Define gpUnitDocument   for 5 // Specifies that a unit is 1/300 inch.
+    Define gpUnitMillimeter for 6 // Specifies that a unit is 1 millimeter.
+
+Define gpCoordinateSpace for Integer
+    Define gpCoordinateSpaceWorld   for 0 // Specifies the world coordinate space
+    Define gpCoordinateSpacePage    for 1 // Specifies the page coordinate space
+    Define gpCoordinateSpaceDevice  for 2 // Specifies the space coordinate space
+
+define gpFillMode for Integer
+    Define gpFillModeAlternate for 0 // Specifies the alternate fill mode
+    Define gpFillModeWinding   for 1 // Specifies the winding fill mode
+
+define gpEmfPlusRecordType for Integer
+    define gpWmfRecordTypeSetBkColor                        for (GDIP_EMFPLUS_RECORD_BASE ior META_SETBKCOLOR)
+    define gpWmfRecordTypeSetBkMode                         for (GDIP_EMFPLUS_RECORD_BASE ior META_SETBKMODE)
+    define gpWmfRecordTypeSetMapMode                        for (GDIP_EMFPLUS_RECORD_BASE ior META_SETMAPMODE)
+    define gpWmfRecordTypeSetROP2                           for (GDIP_EMFPLUS_RECORD_BASE ior META_SETROP2)
+    define gpWmfRecordTypeSetRelAbs                         for (GDIP_EMFPLUS_RECORD_BASE ior META_SETRELABS)
+    define gpWmfRecordTypeSetPolyFillMode                   for (GDIP_EMFPLUS_RECORD_BASE ior META_SETPOLYFILLMODE)
+    define gpWmfRecordTypeSetStretchBltMode                 for (GDIP_EMFPLUS_RECORD_BASE ior META_SETSTRETCHBLTMODE)
+    define gpWmfRecordTypeSetTextCharExtra                  for (GDIP_EMFPLUS_RECORD_BASE ior META_SETTEXTCHAREXTRA)
+    define gpWmfRecordTypeSetTextColor                      for (GDIP_EMFPLUS_RECORD_BASE ior META_SETTEXTCOLOR)
+    define gpWmfRecordTypeSetTextJustification              for (GDIP_EMFPLUS_RECORD_BASE ior META_SETTEXTJUSTIFICATION)
+    define gpWmfRecordTypeSetWindowOrg                      for (GDIP_EMFPLUS_RECORD_BASE ior META_SETWINDOWORG)
+    define gpWmfRecordTypeSetWindowExt                      for (GDIP_EMFPLUS_RECORD_BASE ior META_SETWINDOWEXT)
+    define gpWmfRecordTypeSetViewportOrg                    for (GDIP_EMFPLUS_RECORD_BASE ior META_SETVIEWPORTORG)
+    define gpWmfRecordTypeSetViewportExt                    for (GDIP_EMFPLUS_RECORD_BASE ior META_SETVIEWPORTEXT)
+    define gpWmfRecordTypeOffsetWindowOrg                   for (GDIP_EMFPLUS_RECORD_BASE ior META_OFFSETWINDOWORG)
+    define gpWmfRecordTypeScaleWindowExt                    for (GDIP_EMFPLUS_RECORD_BASE ior META_SCALEWINDOWEXT)
+    define gpWmfRecordTypeOffsetViewportOrg                 for (GDIP_EMFPLUS_RECORD_BASE ior META_OFFSETVIEWPORTORG)
+    define gpWmfRecordTypeScaleViewportExt                  for (GDIP_EMFPLUS_RECORD_BASE ior META_SCALEVIEWPORTEXT)
+    define gpWmfRecordTypeLineTo                            for (GDIP_EMFPLUS_RECORD_BASE ior META_LINETO)
+    define gpWmfRecordTypeMoveTo                            for (GDIP_EMFPLUS_RECORD_BASE ior META_MOVETO)
+    define gpWmfRecordTypeExcludeClipRect                   for (GDIP_EMFPLUS_RECORD_BASE ior META_EXCLUDECLIPRECT)
+    define gpWmfRecordTypeIntersectClipRect                 for (GDIP_EMFPLUS_RECORD_BASE ior META_INTERSECTCLIPRECT)
+    define gpWmfRecordTypeArc                               for (GDIP_EMFPLUS_RECORD_BASE ior META_ARC)
+    define gpWmfRecordTypeEllipse                           for (GDIP_EMFPLUS_RECORD_BASE ior META_ELLIPSE)
+    define gpWmfRecordTypeFloodFill                         for (GDIP_EMFPLUS_RECORD_BASE ior META_FLOODFILL)
+    define gpWmfRecordTypePie                               for (GDIP_EMFPLUS_RECORD_BASE ior META_PIE)
+    define gpWmfRecordTypeRectangle                         for (GDIP_EMFPLUS_RECORD_BASE ior META_RECTANGLE)
+    define gpWmfRecordTypeRoundRect                         for (GDIP_EMFPLUS_RECORD_BASE ior META_ROUNDRECT)
+    define gpWmfRecordTypePatBlt                            for (GDIP_EMFPLUS_RECORD_BASE ior META_PATBLT)
+    define gpWmfRecordTypeSaveDC                            for (GDIP_EMFPLUS_RECORD_BASE ior META_SAVEDC)
+    define gpWmfRecordTypeSetPixel                          for (GDIP_EMFPLUS_RECORD_BASE ior META_SETPIXEL)
+    define gpWmfRecordTypeOffsetClipRgn                     for (GDIP_EMFPLUS_RECORD_BASE ior META_OFFSETCLIPRGN)
+    define gpWmfRecordTypeTextOut                           for (GDIP_EMFPLUS_RECORD_BASE ior META_TEXTOUT)
+    define gpWmfRecordTypeBitBlt                            for (GDIP_EMFPLUS_RECORD_BASE ior META_BITBLT)
+    define gpWmfRecordTypeStretchBlt                        for (GDIP_EMFPLUS_RECORD_BASE ior META_STRETCHBLT)
+    define gpWmfRecordTypePolygon                           for (GDIP_EMFPLUS_RECORD_BASE ior META_POLYGON)
+    define gpWmfRecordTypePolyline                          for (GDIP_EMFPLUS_RECORD_BASE ior META_POLYLINE)
+    define gpWmfRecordTypeEscape                            for (GDIP_EMFPLUS_RECORD_BASE ior META_ESCAPE)
+    define gpWmfRecordTypeRestoreDC                         for (GDIP_EMFPLUS_RECORD_BASE ior META_RESTOREDC)
+    define gpWmfRecordTypeFillRegion                        for (GDIP_EMFPLUS_RECORD_BASE ior META_FILLREGION)
+    define gpWmfRecordTypeFrameRegion                       for (GDIP_EMFPLUS_RECORD_BASE ior META_FRAMEREGION)
+    define gpWmfRecordTypeInvertRegion                      for (GDIP_EMFPLUS_RECORD_BASE ior META_INVERTREGION)
+    define gpWmfRecordTypePaintRegion                       for (GDIP_EMFPLUS_RECORD_BASE ior META_PAINTREGION)
+    define gpWmfRecordTypeSelectClipRegion                  for (GDIP_EMFPLUS_RECORD_BASE ior META_SELECTCLIPREGION)
+    define gpWmfRecordTypeSelectObject                      for (GDIP_EMFPLUS_RECORD_BASE ior META_SELECTOBJECT)
+    define gpWmfRecordTypeSetTextAlign                      for (GDIP_EMFPLUS_RECORD_BASE ior META_SETTEXTALIGN)
+    define gpWmfRecordTypeDrawText                          for (GDIP_EMFPLUS_RECORD_BASE ior $062F) // META_DRAWTEXT
+    define gpWmfRecordTypeChord                             for (GDIP_EMFPLUS_RECORD_BASE ior META_CHORD)
+    define gpWmfRecordTypeSetMapperFlags                    for (GDIP_EMFPLUS_RECORD_BASE ior META_SETMAPPERFLAGS)
+    define gpWmfRecordTypeExtTextOut                        for (GDIP_EMFPLUS_RECORD_BASE ior META_EXTTEXTOUT)
+    define gpWmfRecordTypeSetDIBToDev                       for (GDIP_EMFPLUS_RECORD_BASE ior META_SETDIBTODEV)
+    define gpWmfRecordTypeSelectPalette                     for (GDIP_EMFPLUS_RECORD_BASE ior META_SELECTPALETTE)
+    define gpWmfRecordTypeRealizePalette                    for (GDIP_EMFPLUS_RECORD_BASE ior META_REALIZEPALETTE)
+    define gpWmfRecordTypeAnimatePalette                    for (GDIP_EMFPLUS_RECORD_BASE ior META_ANIMATEPALETTE)
+    define gpWmfRecordTypeSetPalEntries                     for (GDIP_EMFPLUS_RECORD_BASE ior META_SETPALENTRIES)
+    define gpWmfRecordTypePolyPolygon                       for (GDIP_EMFPLUS_RECORD_BASE ior META_POLYPOLYGON)
+    define gpWmfRecordTypeResizePalette                     for (GDIP_EMFPLUS_RECORD_BASE ior META_RESIZEPALETTE)
+    define gpWmfRecordTypeDIBBitBlt                         for (GDIP_EMFPLUS_RECORD_BASE ior META_DIBBITBLT)
+    define gpWmfRecordTypeDIBStretchBlt                     for (GDIP_EMFPLUS_RECORD_BASE ior META_DIBSTRETCHBLT)
+    define gpWmfRecordTypeDIBCreatePatternBrush             for (GDIP_EMFPLUS_RECORD_BASE ior META_DIBCREATEPATTERNBRUSH)
+    define gpWmfRecordTypeStretchDIB                        for (GDIP_EMFPLUS_RECORD_BASE ior META_STRETCHDIB)
+    define gpWmfRecordTypeExtFloodFill                      for (GDIP_EMFPLUS_RECORD_BASE ior META_EXTFLOODFILL)
+    define gpWmfRecordTypeSetLayout                         for (GDIP_EMFPLUS_RECORD_BASE ior $0149) // META_SETLAYOUT
+    define gpWmfRecordTypeResetDC                           for (GDIP_EMFPLUS_RECORD_BASE ior $014C) // META_RESETDC
+    define gpWmfRecordTypeStartDoc                          for (GDIP_EMFPLUS_RECORD_BASE ior $014D) // META_STARTDOC
+    define gpWmfRecordTypeStartPage                         for (GDIP_EMFPLUS_RECORD_BASE ior $004F) // META_STARTPAGE
+    define gpWmfRecordTypeEndPage                           for (GDIP_EMFPLUS_RECORD_BASE ior $0050) // META_ENDPAGE
+    define gpWmfRecordTypeAbortDoc                          for (GDIP_EMFPLUS_RECORD_BASE ior $0052) // META_ABORTDOC
+    define gpWmfRecordTypeEndDoc                            for (GDIP_EMFPLUS_RECORD_BASE ior $005E) // META_ENDDOC
+    define gpWmfRecordTypeDeleteObject                      for (GDIP_EMFPLUS_RECORD_BASE ior META_DELETEOBJECT)
+    define gpWmfRecordTypeCreatePalette                     for (GDIP_EMFPLUS_RECORD_BASE ior META_CREATEPALETTE)
+    define gpWmfRecordTypeCreateBrush                       for (GDIP_EMFPLUS_RECORD_BASE ior $00F8) // META_CREATEBRUSH
+    define gpWmfRecordTypeCreatePatternBrush                for (GDIP_EMFPLUS_RECORD_BASE ior META_CREATEPATTERNBRUSH)
+    define gpWmfRecordTypeCreatePenIndirect                 for (GDIP_EMFPLUS_RECORD_BASE ior META_CREATEPENINDIRECT)
+    define gpWmfRecordTypeCreateFontIndirect                for (GDIP_EMFPLUS_RECORD_BASE ior META_CREATEFONTINDIRECT)
+    define gpWmfRecordTypeCreateBrushIndirect               for (GDIP_EMFPLUS_RECORD_BASE ior META_CREATEBRUSHINDIRECT)
+    define gpWmfRecordTypeCreateBitmapIndirect              for (GDIP_EMFPLUS_RECORD_BASE ior $02FD) // META_CREATEBITMAPINDIRECT
+    define gpWmfRecordTypeCreateBitmap                      for (GDIP_EMFPLUS_RECORD_BASE ior $06FE) // META_CREATEBITMAP
+    define gpWmfRecordTypeCreateRegion                      for (GDIP_EMFPLUS_RECORD_BASE ior META_CREATEREGION)
+
+    define gpEmfRecordTypeHeader                            for EMR_HEADER
+    define gpEmfRecordTypePolyBezier                        for EMR_POLYBEZIER
+    define gpEmfRecordTypePolygon                           for EMR_POLYGON
+    define gpEmfRecordTypePolyline                          for EMR_POLYLINE
+    define gpEmfRecordTypePolyBezierTo                      for EMR_POLYBEZIERTO
+    define gpEmfRecordTypePolyLineTo                        for EMR_POLYLINETO
+    define gpEmfRecordTypePolyPolyline                      for EMR_POLYPOLYLINE
+    define gpEmfRecordTypePolyPolygon                       for EMR_POLYPOLYGON
+    define gpEmfRecordTypeSetWindowExtEx                    for EMR_SETWINDOWEXTEX
+    define gpEmfRecordTypeSetWindowOrgEx                    for EMR_SETWINDOWORGEX
+    define gpEmfRecordTypeSetViewportExtEx                  for EMR_SETVIEWPORTEXTEX
+    define gpEmfRecordTypeSetViewportOrgEx                  for EMR_SETVIEWPORTORGEX
+    define gpEmfRecordTypeSetBrushOrgEx                     for EMR_SETBRUSHORGEX
+    define gpEmfRecordTypeEOF                               for EMR_EOF
+    define gpEmfRecordTypeSetPixelV                         for EMR_SETPIXELV
+    define gpEmfRecordTypeSetMapperFlags                    for EMR_SETMAPPERFLAGS
+    define gpEmfRecordTypeSetMapMode                        for EMR_SETMAPMODE
+    define gpEmfRecordTypeSetBkMode                         for EMR_SETBKMODE
+    define gpEmfRecordTypeSetPolyFillMode                   for EMR_SETPOLYFILLMODE
+    define gpEmfRecordTypeSetROP2                           for EMR_SETROP2
+    define gpEmfRecordTypeSetStretchBltMode                 for EMR_SETSTRETCHBLTMODE
+    define gpEmfRecordTypeSetTextAlign                      for EMR_SETTEXTALIGN
+    define gpEmfRecordTypeSetColorAdjustment                for EMR_SETCOLORADJUSTMENT
+    define gpEmfRecordTypeSetTextColor                      for EMR_SETTEXTCOLOR
+    define gpEmfRecordTypeSetBkColor                        for EMR_SETBKCOLOR
+    define gpEmfRecordTypeOffsetClipRgn                     for EMR_OFFSETCLIPRGN
+    define gpEmfRecordTypeMoveToEx                          for EMR_MOVETOEX
+    define gpEmfRecordTypeSetMetaRgn                        for EMR_SETMETARGN
+    define gpEmfRecordTypeExcludeClipRect                   for EMR_EXCLUDECLIPRECT
+    define gpEmfRecordTypeIntersectClipRect                 for EMR_INTERSECTCLIPRECT
+    define gpEmfRecordTypeScaleViewportExtEx                for EMR_SCALEVIEWPORTEXTEX
+    define gpEmfRecordTypeScaleWindowExtEx                  for EMR_SCALEWINDOWEXTEX
+    define gpEmfRecordTypeSaveDC                            for EMR_SAVEDC
+    define gpEmfRecordTypeRestoreDC                         for EMR_RESTOREDC
+    define gpEmfRecordTypeSetWorldTransform                 for EMR_SETWORLDTRANSFORM
+    define gpEmfRecordTypeModifyWorldTransform              for EMR_MODIFYWORLDTRANSFORM
+    define gpEmfRecordTypeSelectObject                      for EMR_SELECTOBJECT
+    define gpEmfRecordTypeCreatePen                         for EMR_CREATEPEN
+    define gpEmfRecordTypeCreateBrushIndirect               for EMR_CREATEBRUSHINDIRECT
+    define gpEmfRecordTypeDeleteObject                      for EMR_DELETEOBJECT
+    define gpEmfRecordTypeAngleArc                          for EMR_ANGLEARC
+    define gpEmfRecordTypeEllipse                           for EMR_ELLIPSE
+    define gpEmfRecordTypeRectangle                         for EMR_RECTANGLE
+    define gpEmfRecordTypeRoundRect                         for EMR_ROUNDRECT
+    define gpEmfRecordTypeArc                               for EMR_ARC
+    define gpEmfRecordTypeChord                             for EMR_CHORD
+    define gpEmfRecordTypePie                               for EMR_PIE
+    define gpEmfRecordTypeSelectPalette                     for EMR_SELECTPALETTE
+    define gpEmfRecordTypeCreatePalette                     for EMR_CREATEPALETTE
+    define gpEmfRecordTypeSetPaletteEntries                 for EMR_SETPALETTEENTRIES
+    define gpEmfRecordTypeResizePalette                     for EMR_RESIZEPALETTE
+    define gpEmfRecordTypeRealizePalette                    for EMR_REALIZEPALETTE
+    define gpEmfRecordTypeExtFloodFill                      for EMR_EXTFLOODFILL
+    define gpEmfRecordTypeLineTo                            for EMR_LINETO
+    define gpEmfRecordTypeArcTo                             for EMR_ARCTO
+    define gpEmfRecordTypePolyDraw                          for EMR_POLYDRAW
+    define gpEmfRecordTypeSetArcDirection                   for EMR_SETARCDIRECTION
+    define gpEmfRecordTypeSetMiterLimit                     for EMR_SETMITERLIMIT
+    define gpEmfRecordTypeBeginPath                         for EMR_BEGINPATH
+    define gpEmfRecordTypeEndPath                           for EMR_ENDPATH
+    define gpEmfRecordTypeCloseFigure                       for EMR_CLOSEFIGURE
+    define gpEmfRecordTypeFillPath                          for EMR_FILLPATH
+    define gpEmfRecordTypeStrokeAndFillPath                 for EMR_STROKEANDFILLPATH
+    define gpEmfRecordTypeStrokePath                        for EMR_STROKEPATH
+    define gpEmfRecordTypeFlattenPath                       for EMR_FLATTENPATH
+    define gpEmfRecordTypeWidenPath                         for EMR_WIDENPATH
+    define gpEmfRecordTypeSelectClipPath                    for EMR_SELECTCLIPPATH
+    define gpEmfRecordTypeAbortPath                         for EMR_ABORTPATH
+    define gpEmfRecordTypeReserved_069                      for 69  // Not Used
+    define gpEmfRecordTypeGdiComment                        for EMR_GDICOMMENT
+    define gpEmfRecordTypeFillRgn                           for EMR_FILLRGN
+    define gpEmfRecordTypeFrameRgn                          for EMR_FRAMERGN
+    define gpEmfRecordTypeInvertRgn                         for EMR_INVERTRGN
+    define gpEmfRecordTypePaintRgn                          for EMR_PAINTRGN
+    define gpEmfRecordTypeExtSelectClipRgn                  for EMR_EXTSELECTCLIPRGN
+    define gpEmfRecordTypeBitBlt                            for EMR_BITBLT
+    define gpEmfRecordTypeStretchBlt                        for EMR_STRETCHBLT
+    define gpEmfRecordTypeMaskBlt                           for EMR_MASKBLT
+    define gpEmfRecordTypePlgBlt                            for EMR_PLGBLT
+    define gpEmfRecordTypeSetDIBitsToDevice                 for EMR_SETDIBITSTODEVICE
+    define gpEmfRecordTypeStretchDIBits                     for EMR_STRETCHDIBITS
+    define gpEmfRecordTypeExtCreateFontIndirect             for EMR_EXTCREATEFONTINDIRECTW
+    define gpEmfRecordTypeExtTextOutA                       for EMR_EXTTEXTOUTA
+    define gpEmfRecordTypeExtTextOutW                       for EMR_EXTTEXTOUTW
+    define gpEmfRecordTypePolyBezier16                      for EMR_POLYBEZIER16
+    define gpEmfRecordTypePolygon16                         for EMR_POLYGON16
+    define gpEmfRecordTypePolyline16                        for EMR_POLYLINE16
+    define gpEmfRecordTypePolyBezierTo16                    for EMR_POLYBEZIERTO16
+    define gpEmfRecordTypePolylineTo16                      for EMR_POLYLINETO16
+    define gpEmfRecordTypePolyPolyline16                    for EMR_POLYPOLYLINE16
+    define gpEmfRecordTypePolyPolygon16                     for EMR_POLYPOLYGON16
+    define gpEmfRecordTypePolyDraw16                        for EMR_POLYDRAW16
+    define gpEmfRecordTypeCreateMonoBrush                   for EMR_CREATEMONOBRUSH
+    define gpEmfRecordTypeCreateDIBPatternBrushPt           for EMR_CREATEDIBPATTERNBRUSHPT
+    define gpEmfRecordTypeExtCreatePen                      for EMR_EXTCREATEPEN
+    define gpEmfRecordTypePolyTextOutA                      for EMR_POLYTEXTOUTA
+    define gpEmfRecordTypePolyTextOutW                      for EMR_POLYTEXTOUTW
+    define gpEmfRecordTypeSetICMMode                        for 98  // EMR_SETICMMODE
+    define gpEmfRecordTypeCreateColorSpace                  for 99  // EMR_CREATECOLORSPACE
+    define gpEmfRecordTypeSetColorSpace                     for 100 // EMR_SETCOLORSPACE
+    define gpEmfRecordTypeDeleteColorSpace                  for 101 // EMR_DELETECOLORSPACE
+    define gpEmfRecordTypeGLSRecord                         for 102 // EMR_GLSRECORD
+    define gpEmfRecordTypeGLSBoundedRecord                  for 103 // EMR_GLSBOUNDEDRECORD
+    define gpEmfRecordTypePixelFormat                       for 104 // EMR_PIXELFORMAT
+    define gpEmfRecordTypeDrawEscape                        for 105 // EMR_RESERVED_105
+    define gpEmfRecordTypeExtEscape                         for 106 // EMR_RESERVED_106
+    define gpEmfRecordTypeStartDoc                          for 107 // EMR_RESERVED_107
+    define gpEmfRecordTypeSmallTextOut                      for 108 // EMR_RESERVED_108
+    define gpEmfRecordTypeForceUFIMapping                   for 109 // EMR_RESERVED_109
+    define gpEmfRecordTypeNamedEscape                       for 110 // EMR_RESERVED_110
+    define gpEmfRecordTypeColorCorrectPalette               for 111 // EMR_COLORCORRECTPALETTE
+    define gpEmfRecordTypeSetICMProfileA                    for 112 // EMR_SETICMPROFILEA
+    define gpEmfRecordTypeSetICMProfileW                    for 113 // EMR_SETICMPROFILEW
+    define gpEmfRecordTypeAlphaBlend                        for 114 // EMR_ALPHABLEND
+    define gpEmfRecordTypeSetLayout                         for 115 // EMR_SETLAYOUT
+    define gpEmfRecordTypeTransparentBlt                    for 116 // EMR_TRANSPARENTBLT
+    define gpEmfRecordTypeReserved_117                      for 117 // Not Used
+    define gpEmfRecordTypeGradientFill                      for 118 // EMR_GRADIENTFILL
+    define gpEmfRecordTypeSetLinkedUFIs                     for 119 // EMR_RESERVED_119
+    define gpEmfRecordTypeSetTextJustification              for 120 // EMR_RESERVED_120
+    define gpEmfRecordTypeColorMatchToTargetW               for 121 // EMR_COLORMATCHTOTARGETW
+    define gpEmfRecordTypeCreateColorSpaceW                 for 122 // EMR_CREATECOLORSPACEW
+    define gpEmfRecordTypeMax                               for 122
+    define gpEmfRecordTypeMin                               for 1
+
+    define gpEmfPlusRecordTypeInvalid                       for GDIP_EMFPLUS_RECORD_BASE
+    define gpEmfPlusRecordTypeHeader                        for (GDIP_EMFPLUS_RECORD_BASE+1)
+    define gpEmfPlusRecordTypeEndOfFile                     for (GDIP_EMFPLUS_RECORD_BASE+2)
+    define gpEmfPlusRecordTypeComment                       for (GDIP_EMFPLUS_RECORD_BASE+3)
+    define gpEmfPlusRecordTypeGetDC                         for (GDIP_EMFPLUS_RECORD_BASE+4)
+    define gpEmfPlusRecordTypeMultiFormatStart              for (GDIP_EMFPLUS_RECORD_BASE+5)
+    define gpEmfPlusRecordTypeMultiFormatSection            for (GDIP_EMFPLUS_RECORD_BASE+6)
+    define gpEmfPlusRecordTypeMultiFormatEnd                for (GDIP_EMFPLUS_RECORD_BASE+7)
+    define gpEmfPlusRecordTypeObject                        for (GDIP_EMFPLUS_RECORD_BASE+8)
+    define gpEmfPlusRecordTypeClear                         for (GDIP_EMFPLUS_RECORD_BASE+9)
+    define gpEmfPlusRecordTypeFillRects                     for (GDIP_EMFPLUS_RECORD_BASE+10)
+    define gpEmfPlusRecordTypeDrawRects                     for (GDIP_EMFPLUS_RECORD_BASE+11)
+    define gpEmfPlusRecordTypeFillPolygon                   for (GDIP_EMFPLUS_RECORD_BASE+12)
+    define gpEmfPlusRecordTypeDrawLines                     for (GDIP_EMFPLUS_RECORD_BASE+13)
+    define gpEmfPlusRecordTypeFillEllipse                   for (GDIP_EMFPLUS_RECORD_BASE+14)
+    define gpEmfPlusRecordTypeDrawEllipse                   for (GDIP_EMFPLUS_RECORD_BASE+15)
+    define gpEmfPlusRecordTypeFillPie                       for (GDIP_EMFPLUS_RECORD_BASE+16)
+    define gpEmfPlusRecordTypeDrawPie                       for (GDIP_EMFPLUS_RECORD_BASE+17)
+    define gpEmfPlusRecordTypeDrawArc                       for (GDIP_EMFPLUS_RECORD_BASE+18)
+    define gpEmfPlusRecordTypeFillRegion                    for (GDIP_EMFPLUS_RECORD_BASE+19)
+    define gpEmfPlusRecordTypeFillPath                      for (GDIP_EMFPLUS_RECORD_BASE+20)
+    define gpEmfPlusRecordTypeDrawPath                      for (GDIP_EMFPLUS_RECORD_BASE+21)
+    define gpEmfPlusRecordTypeFillClosedCurve               for (GDIP_EMFPLUS_RECORD_BASE+22)
+    define gpEmfPlusRecordTypeDrawClosedCurve               for (GDIP_EMFPLUS_RECORD_BASE+23)
+    define gpEmfPlusRecordTypeDrawCurve                     for (GDIP_EMFPLUS_RECORD_BASE+24)
+    define gpEmfPlusRecordTypeDrawBeziers                   for (GDIP_EMFPLUS_RECORD_BASE+25)
+    define gpEmfPlusRecordTypeDrawImage                     for (GDIP_EMFPLUS_RECORD_BASE+26)
+    define gpEmfPlusRecordTypeDrawImagePoints               for (GDIP_EMFPLUS_RECORD_BASE+27)
+    define gpEmfPlusRecordTypeDrawString                    for (GDIP_EMFPLUS_RECORD_BASE+28)
+    define gpEmfPlusRecordTypeSetRenderingOrigin            for (GDIP_EMFPLUS_RECORD_BASE+29)
+    define gpEmfPlusRecordTypeSetAntiAliasMode              for (GDIP_EMFPLUS_RECORD_BASE+30)
+    define gpEmfPlusRecordTypeSetTextRenderingHint          for (GDIP_EMFPLUS_RECORD_BASE+31)
+    define gpEmfPlusRecordTypeSetTextContrast               for (GDIP_EMFPLUS_RECORD_BASE+32)
+    define gpEmfPlusRecordTypeSetInterpolationMode          for (GDIP_EMFPLUS_RECORD_BASE+33)
+    define gpEmfPlusRecordTypeSetPixelOffsetMode            for (GDIP_EMFPLUS_RECORD_BASE+34)
+    define gpEmfPlusRecordTypeSetCompositingMode            for (GDIP_EMFPLUS_RECORD_BASE+35)
+    define gpEmfPlusRecordTypeSetCompositingQuality         for (GDIP_EMFPLUS_RECORD_BASE+36)
+    define gpEmfPlusRecordTypeSave                          for (GDIP_EMFPLUS_RECORD_BASE+37)
+    define gpEmfPlusRecordTypeRestore                       for (GDIP_EMFPLUS_RECORD_BASE+38)
+    define gpEmfPlusRecordTypeBeginContainer                for (GDIP_EMFPLUS_RECORD_BASE+39)
+    define gpEmfPlusRecordTypeBeginContainerNoParams        for (GDIP_EMFPLUS_RECORD_BASE+40)
+    define gpEmfPlusRecordTypeEndContainer                  for (GDIP_EMFPLUS_RECORD_BASE+41)
+    define gpEmfPlusRecordTypeSetWorldTransform             for (GDIP_EMFPLUS_RECORD_BASE+42)
+    define gpEmfPlusRecordTypeResetWorldTransform           for (GDIP_EMFPLUS_RECORD_BASE+43)
+    define gpEmfPlusRecordTypeMultiplyWorldTransform        for (GDIP_EMFPLUS_RECORD_BASE+44)
+    define gpEmfPlusRecordTypeTranslateWorldTransform       for (GDIP_EMFPLUS_RECORD_BASE+45)
+    define gpEmfPlusRecordTypeScaleWorldTransform           for (GDIP_EMFPLUS_RECORD_BASE+46)
+    define gpEmfPlusRecordTypeRotateWorldTransform          for (GDIP_EMFPLUS_RECORD_BASE+47)
+    define gpEmfPlusRecordTypeSetPageTransform              for (GDIP_EMFPLUS_RECORD_BASE+48)
+    define gpEmfPlusRecordTypeResetClip                     for (GDIP_EMFPLUS_RECORD_BASE+49)
+    define gpEmfPlusRecordTypeSetClipRect                   for (GDIP_EMFPLUS_RECORD_BASE+50)
+    define gpEmfPlusRecordTypeSetClipPath                   for (GDIP_EMFPLUS_RECORD_BASE+51)
+    define gpEmfPlusRecordTypeSetClipRegion                 for (GDIP_EMFPLUS_RECORD_BASE+52)
+    define gpEmfPlusRecordTypeOffsetClip                    for (GDIP_EMFPLUS_RECORD_BASE+53)
+    define gpEmfPlusRecordTypeDrawDriverString              for (GDIP_EMFPLUS_RECORD_BASE+54)
+    define gpEmfPlusRecordTotal                             for (GDIP_EMFPLUS_RECORD_BASE+55)
+    define gpEmfPlusRecordTypeMax                           for (gpEmfPlusRecordTotal-1)
+    define gpEmfPlusRecordTypeMin                           for gpEmfPlusRecordTypeHeader
+
+define gpCombineMode for Integer
+    Define gpCombineModeReplace     for 0 // One clipping region is replaced by another
+    Define gpCombineModeIntersect   for 1 // Two clipping regions are combined by taking their intersection
+    Define gpCombineModeUnion       for 2 // Two clipping regions are combined by taking the union of both
+    Define gpCombineModeXor         for 3 // Two clipping regions are combined by taking only the areas enclosed by one or the other region, but not both
+    Define gpCombineModeExclude     for 4 // Specifies that the existing region is replaced by the result of the new region being removed from the existing region. Said differently, the new region is excluded from the existing region
+    Define gpCombineModeComplement  for 5 // Specifies that the existing region is replaced by the result of the existing region being removed from the new region. Said differently, the existing region is excluded from the new region
+
+// GpStatus WINGDIPAPI GdipFlush(GpGraphics *graphics, GpFlushIntention intention)
+External_Function GdipFlush "GdipFlush" gdiplus.dll ;
+    Pointer graphics ;
+    gpFlushIntention intention ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateFromHDC(HDC hdc, GpGraphics **graphics)
+External_Function GdipCreateFromHDC "GdipCreateFromHDC" gdiplus.dll ;
+    Handle hdc ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateFromHDC2(HDC hdc, HANDLE hDevice, GpGraphics **graphics)
+External_Function GdipCreateFromHDC2 "GdipCreateFromHDC2" gdiplus.dll ;
+    Handle hdc ;
+    Handle hDevice ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateFromHWND(HWND hwnd, GpGraphics **graphics)
+External_Function GdipCreateFromHWND "GdipCreateFromHWND" gdiplus.dll ;
+    Handle hwnd ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateFromHWNDICM(HWND hwnd, GpGraphics **graphics)
+External_Function GdipCreateFromHWNDICM "GdipCreateFromHWNDICM" gdiplus.dll ;
+    Handle hwnd ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeleteGraphics(GpGraphics *graphics)
+External_Function GdipDeleteGraphics "GdipDeleteGraphics" gdiplus.dll ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetDC(GpGraphics* graphics, HDC * hdc)
+External_Function GdipGetDC "GdipGetDC" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer hdc ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipReleaseDC(GpGraphics* graphics, HDC hdc)
+External_Function GdipReleaseDC "GdipReleaseDC" gdiplus.dll ;
+    Pointer graphics ;
+    Handle hdc ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetCompositingMode(GpGraphics *graphics, CompositingMode compositingMode)
+External_Function GdipSetCompositingMode "GdipSetCompositingMode" gdiplus.dll ;
+    Pointer graphics ;
+    gpCompositingMode compositingMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetCompositingMode(GpGraphics *graphics, CompositingMode *compositingMode)
+External_Function GdipGetCompositingMode "GdipGetCompositingMode" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer compositingMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetRenderingOrigin(GpGraphics *graphics, INT x, INT y)
+External_Function GdipSetRenderingOrigin "GdipSetRenderingOrigin" gdiplus.dll ;
+    Pointer graphics ;
+    Integer x ;
+    Integer y ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRenderingOrigin(GpGraphics *graphics, INT *x, INT *y)
+External_Function GdipGetRenderingOrigin "GdipGetRenderingOrigin" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer x ;
+    Pointer y ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetCompositingQuality(GpGraphics *graphics, CompositingQuality compositingQuality)
+External_Function GdipSetCompositingQuality "GdipSetCompositingQuality" gdiplus.dll ;
+    Pointer graphics ;
+    gpCompositingQuality compositingQuality ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetCompositingQuality(GpGraphics *graphics, CompositingQuality *compositingQuality)
+External_Function GdipGetCompositingQuality "GdipGetCompositingQuality" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer compositingQuality ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetSmoothingMode(GpGraphics *graphics, SmoothingMode smoothingMode)
+External_Function GdipSetSmoothingMode "GdipSetSmoothingMode" gdiplus.dll ;
+    Pointer graphics ;
+    gpSmoothingMode smoothingMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetSmoothingMode(GpGraphics *graphics, SmoothingMode *smoothingMode)
+External_Function GdipGetSmoothingMode "GdipGetSmoothingMode" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer smoothingMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPixelOffsetMode(GpGraphics* graphics, PixelOffsetMode pixelOffsetMode)
+External_Function GdipSetPixelOffsetMode "GdipSetPixelOffsetMode" gdiplus.dll ;
+    Pointer graphics ;
+    gpPixelOffsetMode pixelOffsetMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPixelOffsetMode(GpGraphics *graphics, PixelOffsetMode *pixelOffsetMode)
+External_Function GdipGetPixelOffsetMode "GdipGetPixelOffsetMode" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pixelOffsetMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetTextRenderingHint(GpGraphics *graphics, TextRenderingHint mode)
+External_Function GdipSetTextRenderingHint "GdipSetTextRenderingHint" gdiplus.dll ;
+    Pointer graphics ;
+    gpTextRenderingHint mode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetTextRenderingHint(GpGraphics *graphics, TextRenderingHint *mode)
+External_Function GdipGetTextRenderingHint "GdipGetTextRenderingHint" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer mode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetTextContrast(GpGraphics *graphics, UINT contrast)
+External_Function GdipSetTextContrast "GdipSetTextContrast" gdiplus.dll ;
+    Pointer graphics ;
+    UInteger contrast ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetTextContrast(GpGraphics *graphics, UINT * contrast)
+External_Function GdipGetTextContrast "GdipGetTextContrast" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer contrast ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetInterpolationMode(GpGraphics *graphics, InterpolationMode interpolationMode)
+External_Function GdipSetInterpolationMode "GdipSetInterpolationMode" gdiplus.dll ;
+    Pointer graphics ;
+    gpInterpolationMode interpolationMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGraphicsSetAbort(GpGraphics *pGraphics, GdiplusAbort *pIAbort)
+External_Function GdipGraphicsSetAbort "GdipGraphicsSetAbort" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pIAbort ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetInterpolationMode(GpGraphics *graphics, InterpolationMode *interpolationMode)
+External_Function GdipGetInterpolationMode "GdipGetInterpolationMode" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer interpolationMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetWorldTransform(GpGraphics *graphics, GpMatrix *matrix)
+External_Function GdipSetWorldTransform "GdipSetWorldTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipResetWorldTransform(GpGraphics *graphics)
+External_Function GdipResetWorldTransform "GdipResetWorldTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMultiplyWorldTransform(GpGraphics *graphics, GDIPCONST GpMatrix *matrix, GpMatrixOrder order)
+External_Function GdipMultiplyWorldTransform "GdipMultiplyWorldTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer matrix ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslateWorldTransform(GpGraphics *graphics, REAL dx, REAL dy, GpMatrixOrder order)
+External_Function GdipTranslateWorldTransform "GdipTranslateWorldTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Float dx ;
+    Float dy ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipScaleWorldTransform(GpGraphics *graphics, REAL sx, REAL sy, GpMatrixOrder order)
+External_Function GdipScaleWorldTransform "GdipScaleWorldTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Float sx ;
+    Float sy ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipRotateWorldTransform(GpGraphics *graphics, REAL angle, GpMatrixOrder order)
+External_Function GdipRotateWorldTransform "GdipRotateWorldTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Float angle ;
+    gpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetWorldTransform(GpGraphics *graphics, GpMatrix *matrix)
+External_Function GdipGetWorldTransform "GdipGetWorldTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipResetPageTransform(GpGraphics *graphics)
+External_Function GdipResetPageTransform "GdipResetPageTransform" gdiplus.dll ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPageUnit(GpGraphics *graphics, GpUnit *unit)
+External_Function GdipGetPageUnit "GdipGetPageUnit" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer unit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPageScale(GpGraphics *graphics, REAL *scale)
+External_Function GdipGetPageScale "GdipGetPageScale" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer scale ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPageUnit(GpGraphics *graphics, GpUnit unit)
+External_Function GdipSetPageUnit "GdipSetPageUnit" gdiplus.dll ;
+    Pointer graphics ;
+    gpUnit unit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPageScale(GpGraphics *graphics, REAL scale)
+External_Function GdipSetPageScale "GdipSetPageScale" gdiplus.dll ;
+    Pointer graphics ;
+    Float scale ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetDpiX(GpGraphics *graphics, REAL* dpi)
+External_Function GdipGetDpiX "GdipGetDpiX" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer dpi ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetDpiY(GpGraphics *graphics, REAL* dpi)
+External_Function GdipGetDpiY "GdipGetDpiY" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer dpi ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTransformPoints(GpGraphics *graphics, GpCoordinateSpace destSpace, GpCoordinateSpace srcSpace, GpPointF *points, INT count)
+External_Function GdipTransformPoints "GdipTransformPoints" gdiplus.dll ;
+    Pointer graphics ;
+    gpCoordinateSpace destSpace ;
+    gpCoordinateSpace srcSpace ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTransformPointsI(GpGraphics *graphics, GpCoordinateSpace destSpace, GpCoordinateSpace srcSpace, GpPoint *points, INT count)
+External_Function GdipTransformPointsI "GdipTransformPointsI" gdiplus.dll ;
+    Pointer graphics ;
+    gpCoordinateSpace destSpace ;
+    gpCoordinateSpace srcSpace ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetNearestColor(GpGraphics *graphics, ARGB* argb)
+External_Function GdipGetNearestColor "GdipGetNearestColor" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer prgb ;
+    Returns gpStatus
+
+// HPALETTE WINGDIPAPI GdipCreateHalftonePalette()
+External_Function GdipCreateHalftonePalette "GdipCreateHalftonePalette" gdiplus.dll ;
+    Returns Handle
+
+// GpStatus WINGDIPAPI GdipDrawLine(GpGraphics *graphics, GpPen *pen, REAL x1, REAL y1, REAL x2, REAL y2)
+External_Function GdipDrawLine "GdipDrawLine" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Float x1 ;
+    Float y1 ;
+    Float x2 ;
+    Float y2 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawLineI(GpGraphics *graphics, GpPen *pen, INT x1, INT y1, INT x2, INT y2)
+External_Function GdipDrawLineI "GdipDrawLineI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Integer x1 ;
+    Integer y1 ;
+    Integer x2 ;
+    Integer y2 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawLines(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count)
+External_Function GdipDrawLines "GdipDrawLines" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawLinesI(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count)
+External_Function GdipDrawLinesI "GdipDrawLinesI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawArc(GpGraphics *graphics, GpPen *pen, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle)
+External_Function GdipDrawArc "GdipDrawArc" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawArcI(GpGraphics *graphics, GpPen *pen, INT x, INT y, INT width, INT height, REAL startAngle, REAL sweepAngle)
+External_Function GdipDrawArcI "GdipDrawArcI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawBezier(GpGraphics *graphics, GpPen *pen, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4)
+External_Function GdipDrawBezier "GdipDrawBezier" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Float x1 ;
+    Float y1 ;
+    Float x2 ;
+    Float y2 ;
+    Float x3 ;
+    Float y3 ;
+    Float x4 ;
+    Float y4 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawBezierI(GpGraphics *graphics, GpPen *pen, INT x1, INT y1, INT x2, INT y2, INT x3, INT y3, INT x4, INT y4)
+External_Function GdipDrawBezierI "GdipDrawBezierI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Integer x1 ;
+    Integer y1 ;
+    Integer x2 ;
+    Integer y2 ;
+    Integer x3 ;
+    Integer y3 ;
+    Integer x4 ;
+    Integer y4 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawBeziers(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count)
+External_Function GdipDrawBeziers "GdipDrawBeziers" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawBeziersI(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count)
+External_Function GdipDrawBeziersI "GdipDrawBeziersI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawRectangle(GpGraphics *graphics, GpPen *pen, REAL x, REAL y, REAL width, REAL height)
+External_Function GdipDrawRectangle "GdipDrawRectangle" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawRectangleI(GpGraphics *graphics, GpPen *pen, INT x, INT y, INT width, INT height)
+External_Function GdipDrawRectangleI "GdipDrawRectangleI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawRectangles(GpGraphics *graphics, GpPen *pen, GDIPCONST GpRectF *rects, INT count)
+External_Function GdipDrawRectangles "GdipDrawRectangles" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer rects ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawRectanglesI(GpGraphics *graphics, GpPen *pen, GDIPCONST GpRect *rects, INT count)
+External_Function GdipDrawRectanglesI "GdipDrawRectanglesI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer rects ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawEllipse(GpGraphics *graphics, GpPen *pen, REAL x, REAL y, REAL width, REAL height)
+External_Function GdipDrawEllipse "GdipDrawEllipse" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawEllipseI(GpGraphics *graphics, GpPen *pen, INT x, INT y, INT width, INT height)
+External_Function GdipDrawEllipseI "GdipDrawEllipseI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawPie(GpGraphics *graphics, GpPen *pen, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle)
+External_Function GdipDrawPie "GdipDrawPie" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawPieI(GpGraphics *graphics, GpPen *pen, INT x, INT y, INT width, INT height, REAL startAngle, REAL sweepAngle)
+External_Function GdipDrawPieI "GdipDrawPieI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawPolygon(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count)
+External_Function GdipDrawPolygon "GdipDrawPolygon" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawPolygonI(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count)
+External_Function GdipDrawPolygonI "GdipDrawPolygonI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawPath(GpGraphics *graphics, GpPen *pen, GpPath *path)
+External_Function GdipDrawPath "GdipDrawPath" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer ppth ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawCurve(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count)
+External_Function GdipDrawCurve "GdipDrawCurve" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawCurveI(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count)
+External_Function GdipDrawCurveI "GdipDrawCurveI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawCurve2(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count, REAL tension)
+External_Function GdipDrawCurve2 "GdipDrawCurve2" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawCurve2I(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count, REAL tension)
+External_Function GdipDrawCurve2I "GdipDrawCurve2I" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawCurve3(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count, INT offset, INT numberOfSegments, REAL tension)
+External_Function GdipDrawCurve3 "GdipDrawCurve3" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Integer offset ;
+    Integer numberOfSegments ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawCurve3I(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count, INT offset, INT numberOfSegments, REAL tension)
+External_Function GdipDrawCurve3I "GdipDrawCurve3I" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Integer offset ;
+    Integer numberOfSegments ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawClosedCurve(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count)
+External_Function GdipDrawClosedCurve "GdipDrawClosedCurve" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawClosedCurveI(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count)
+External_Function GdipDrawClosedCurveI "GdipDrawClosedCurveI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawClosedCurve2(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPointF *points, INT count, REAL tension)
+External_Function GdipDrawClosedCurve2 "GdipDrawClosedCurve2" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawClosedCurve2I(GpGraphics *graphics, GpPen *pen, GDIPCONST GpPoint *points, INT count, REAL tension)
+External_Function GdipDrawClosedCurve2I "GdipDrawClosedCurve2I" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer pen ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGraphicsClear(GpGraphics *graphics, ARGB color)
+External_Function GdipGraphicsClear "GdipGraphicsClear" gdiplus.dll ;
+    Pointer graphics ;
+    UInteger color ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillRectangle(GpGraphics *graphics, GpBrush *brush, REAL x, REAL y, REAL width, REAL height)
+External_Function GdipFillRectangle "GdipFillRectangle" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillRectangleI(GpGraphics *graphics, GpBrush *brush, INT x, INT y, INT width, INT height)
+External_Function GdipFillRectangleI "GdipFillRectangleI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillRectangles(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpRectF *rects, INT count)
+External_Function GdipFillRectangles "GdipFillRectangles" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer rects ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillRectanglesI(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpRect *rects, INT count)
+External_Function GdipFillRectanglesI "GdipFillRectanglesI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer rects ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillPolygon(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPointF *points, INT count, GpFillMode fillMode)
+External_Function GdipFillPolygon "GdipFillPolygon" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    gpFillMode fillMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillPolygonI(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPoint *points, INT count, GpFillMode fillMode)
+External_Function GdipFillPolygonI "GdipFillPolygonI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    gpFillMode fillMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillPolygon2(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPointF *points, INT count)
+External_Function GdipFillPolygon2 "GdipFillPolygon2" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillPolygon2I(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPoint *points, INT count)
+External_Function GdipFillPolygon2I "GdipFillPolygon2I" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillEllipse(GpGraphics *graphics, GpBrush *brush, REAL x, REAL y, REAL width, REAL height)
+External_Function GdipFillEllipse "GdipFillEllipse" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillEllipseI(GpGraphics *graphics, GpBrush *brush, INT x, INT y, INT width, INT height)
+External_Function GdipFillEllipseI "GdipFillEllipseI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillPie(GpGraphics *graphics, GpBrush *brush, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle)
+External_Function GdipFillPie "GdipFillPie" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillPieI(GpGraphics *graphics, GpBrush *brush, INT x, INT y, INT width, INT height, REAL startAngle, REAL sweepAngle)
+External_Function GdipFillPieI "GdipFillPieI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillPath(GpGraphics *graphics, GpBrush *brush, GpPath *path)
+External_Function GdipFillPath "GdipFillPath" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer ppth ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillClosedCurve(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPointF *points, INT count)
+External_Function GdipFillClosedCurve "GdipFillClosedCurve" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillClosedCurveI(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPoint *points, INT count)
+External_Function GdipFillClosedCurveI "GdipFillClosedCurveI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillClosedCurve2(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPointF *points, INT count, REAL tension, GpFillMode fillMode)
+External_Function GdipFillClosedCurve2 "GdipFillClosedCurve2" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    gpFillMode fillMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillClosedCurve2I(GpGraphics *graphics, GpBrush *brush, GDIPCONST GpPoint *points, INT count, REAL tension, GpFillMode fillMode)
+External_Function GdipFillClosedCurve2I "GdipFillClosedCurve2I" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    gpFillMode fillMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFillRegion(GpGraphics *graphics, GpBrush *brush, GpRegion *region)
+External_Function GdipFillRegion "GdipFillRegion" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer brush ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImage(GpGraphics *graphics, GpImage *image, REAL x, REAL y)
+External_Function GdipDrawImage "GdipDrawImage" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Float x ;
+    Float y ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImageI(GpGraphics *graphics, GpImage *image, INT x, INT y)
+External_Function GdipDrawImageI "GdipDrawImageI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Integer x ;
+    Integer y ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImageRect(GpGraphics *graphics, GpImage *image, REAL x, REAL y, REAL width, REAL height)
+External_Function GdipDrawImageRect "GdipDrawImageRect" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImageRectI(GpGraphics *graphics, GpImage *image, INT x, INT y, INT width, INT height)
+External_Function GdipDrawImageRectI "GdipDrawImageRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImagePoints(GpGraphics *graphics, GpImage *image, GDIPCONST GpPointF *dstpoints, INT count)
+External_Function GdipDrawImagePoints "GdipDrawImagePoints" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Pointer dstpoints ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImagePointsI(GpGraphics *graphics, GpImage *image, GDIPCONST GpPoint *dstpoints, INT count)
+External_Function GdipDrawImagePointsI "GdipDrawImagePointsI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Pointer dstpoints ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImagePointRect(GpGraphics *graphics, GpImage *image, REAL x, REAL y, REAL srcx, REAL srcy, REAL srcwidth, REAL srcheight, GpUnit srcUnit)
+External_Function GdipDrawImagePointRect "GdipDrawImagePointRect" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Float x ;
+    Float y ;
+    Float srcx ;
+    Float srcy ;
+    Float srcwidth ;
+    Float srcheight ;
+    gpUnit srcUnit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImagePointRectI(GpGraphics *graphics, GpImage *image, INT x, INT y, INT srcx, INT srcy, INT srcwidth, INT srcheight, GpUnit srcUnit)
+External_Function GdipDrawImagePointRectI "GdipDrawImagePointRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Integer x ;
+    Integer y ;
+    Integer srcx ;
+    Integer srcy ;
+    Integer srcwidth ;
+    Integer srcheight ;
+    gpUnit srcUnit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImageRectRect(GpGraphics *graphics, GpImage *image, REAL dstx, REAL dsty, REAL dstwidth, REAL dstheight, REAL srcx, REAL srcy, REAL srcwidth, REAL srcheight, GpUnit srcUnit, GDIPCONST GpImageAttributes* imageAttributes, DrawImageAbort callback, VOID * callbackData)
+External_Function GdipDrawImageRectRect "GdipDrawImageRectRect" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Float dstx ;
+    Float dsty ;
+    Float dstwidth ;
+    Float dstheight ;
+    Float srcx ;
+    Float srcy ;
+    Float srcwidth ;
+    Float srcheight ;
+    gpUnit srcUnit ;
+    Pointer imageAttributes ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImageRectRectI(GpGraphics *graphics, GpImage *image, INT dstx, INT dsty, INT dstwidth, INT dstheight, INT srcx, INT srcy, INT srcwidth, INT srcheight, GpUnit srcUnit, GDIPCONST GpImageAttributes* imageAttributes, DrawImageAbort callback, VOID * callbackData)
+External_Function GdipDrawImageRectRectI "GdipDrawImageRectRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Integer dstx ;
+    Integer dsty ;
+    Integer dstwidth ;
+    Integer dstheight ;
+    Integer srcx ;
+    Integer srcy ;
+    Integer srcwidth ;
+    Integer srcheight ;
+    gpUnit srcUnit ;
+    Pointer imageAttributes ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImagePointsRect(GpGraphics *graphics, GpImage *image, GDIPCONST GpPointF *points, INT count, REAL srcx, REAL srcy, REAL srcwidth, REAL srcheight, GpUnit srcUnit, GDIPCONST GpImageAttributes* imageAttributes, DrawImageAbort callback, VOID * callbackData)
+External_Function GdipDrawImagePointsRect "GdipDrawImagePointsRect" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Pointer points ;
+    Integer count ;
+    Float srcx ;
+    Float srcy ;
+    Float srcwidth ;
+    Float srcheight ;
+    gpUnit srcUnit ;
+    Pointer imageAttributes ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImagePointsRectI(GpGraphics *graphics, GpImage *image, GDIPCONST GpPoint *points, INT count, INT srcx, INT srcy, INT srcwidth, INT srcheight, GpUnit srcUnit, GDIPCONST GpImageAttributes* imageAttributes, DrawImageAbort callback, VOID * callbackData)
+External_Function GdipDrawImagePointsRectI "GdipDrawImagePointsRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Pointer points ;
+    Integer count ;
+    Integer srcx ;
+    Integer srcy ;
+    Integer srcwidth ;
+    Integer srcheight ;
+    gpUnit srcUnit ;
+    Pointer imageAttributes ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawImageFX(GpGraphics *graphics, GpImage *image, GpRectF *source, GpMatrix *xForm, CGpEffect *effect, GpImageAttributes *imageAttributes, GpUnit srcUnit)
+External_Function GdipDrawImageFX "GdipDrawImageFX" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer image ;
+    Pointer source ;
+    Pointer xForm ;
+    Pointer effect ;
+    Pointer imageAttributes ;
+    gpUnit srcUnit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileDestPoint( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST PointF & destPoint, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileDestPoint "GdipEnumerateMetafileDestPoint" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoint ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileDestPointI( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST Point & destPoint, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileDestPointI "GdipEnumerateMetafileDestPointI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoint ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileDestRect( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST RectF & destRect, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileDestRect "GdipEnumerateMetafileDestRect" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destRect ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileDestRectI( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST Rect & destRect, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileDestRectI "GdipEnumerateMetafileDestRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destRect ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileDestPoints( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST PointF * destPoints, INT count, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileDestPoints "GdipEnumerateMetafileDestPoints" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoints ;
+    Integer count ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileDestPointsI( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST Point * destPoints, INT count, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileDestPointsI "GdipEnumerateMetafileDestPointsI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoints ;
+    Integer count ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileSrcRectDestPoint( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST PointF & destPoint, GDIPCONST RectF & srcRect, Unit srcUnit, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileSrcRectDestPoint "GdipEnumerateMetafileSrcRectDestPoint" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoint ;
+    Pointer srcRect ;
+    gpUnit srcUnit ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileSrcRectDestPointI( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST Point & destPoint, GDIPCONST Rect & srcRect, Unit srcUnit, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileSrcRectDestPointI "GdipEnumerateMetafileSrcRectDestPointI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoint ;
+    Pointer srcRect ;
+    gpUnit srcUnit ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileSrcRectDestRect( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST RectF & destRect, GDIPCONST RectF & srcRect, Unit srcUnit, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileSrcRectDestRect "GdipEnumerateMetafileSrcRectDestRect" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destRect ;
+    Pointer srcRect ;
+    gpUnit srcUnit ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileSrcRectDestRectI( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST Rect & destRect, GDIPCONST Rect & srcRect, Unit srcUnit, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileSrcRectDestRectI "GdipEnumerateMetafileSrcRectDestRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destRect ;
+    Pointer srcRect ;
+    gpUnit srcUnit ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileSrcRectDestPoints( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST PointF * destPoints, INT count, GDIPCONST RectF & srcRect, Unit srcUnit, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileSrcRectDestPoints "GdipEnumerateMetafileSrcRectDestPoints" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoints ;
+    Integer count ;
+    Pointer srcRect ;
+    gpUnit srcUnit ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEnumerateMetafileSrcRectDestPointsI( GpGraphics * graphics, GDIPCONST GpMetafile * metafile, GDIPCONST Point * destPoints, INT count, GDIPCONST Rect & srcRect, Unit srcUnit, EnumerateMetafileProc callback, VOID * callbackData, GDIPCONST GpImageAttributes * imageAttributes )
+External_Function GdipEnumerateMetafileSrcRectDestPointsI "GdipEnumerateMetafileSrcRectDestPointsI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer metafile ;
+    Pointer destPoints ;
+    Integer count ;
+    Pointer srcRect ;
+    gpUnit srcUnit ;
+    Pointer callback ;
+    Pointer callbackData ;
+    Pointer imageAttributes ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipPlayMetafileRecord( GDIPCONST GpMetafile * metafile, EmfPlusRecordType recordType, UINT flags, UINT dataSize, GDIPCONST BYTE * data )
+External_Function GdipPlayMetafileRecord "GdipPlayMetafileRecord" gdiplus.dll ;
+    Pointer metafile ;
+    gpEmfPlusRecordType recordType ;
+    UInteger flags ;
+    UInteger dataSize ;
+    Pointer data ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetClipGraphics(GpGraphics *graphics, GpGraphics *srcgraphics, CombineMode combineMode)
+External_Function GdipSetClipGraphics "GdipSetClipGraphics" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer srcgraphics ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetClipRect(GpGraphics *graphics, REAL x, REAL y, REAL width, REAL height, CombineMode combineMode)
+External_Function GdipSetClipRect "GdipSetClipRect" gdiplus.dll ;
+    Pointer graphics ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetClipRectI(GpGraphics *graphics, INT x, INT y, INT width, INT height, CombineMode combineMode)
+External_Function GdipSetClipRectI "GdipSetClipRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetClipPath(GpGraphics *graphics, GpPath *path, CombineMode combineMode)
+External_Function GdipSetClipPath "GdipSetClipPath" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer ppth ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetClipRegion(GpGraphics *graphics, GpRegion *region, CombineMode combineMode)
+External_Function GdipSetClipRegion "GdipSetClipRegion" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer region ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetClipHrgn(GpGraphics *graphics, HRGN hRgn, CombineMode combineMode)
+External_Function GdipSetClipHrgn "GdipSetClipHrgn" gdiplus.dll ;
+    Pointer graphics ;
+    Handle hRgn ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipResetClip(GpGraphics *graphics)
+External_Function GdipResetClip "GdipResetClip" gdiplus.dll ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslateClip(GpGraphics *graphics, REAL dx, REAL dy)
+External_Function GdipTranslateClip "GdipTranslateClip" gdiplus.dll ;
+    Pointer graphics ;
+    Float dx ;
+    Float dy ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslateClipI(GpGraphics *graphics, INT dx, INT dy)
+External_Function GdipTranslateClipI "GdipTranslateClipI" gdiplus.dll ;
+    Pointer graphics ;
+    Integer dx ;
+    Integer dy ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetClip(GpGraphics *graphics, GpRegion *region)
+External_Function GdipGetClip "GdipGetClip" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetClipBounds(GpGraphics *graphics, GpRectF *rect)
+External_Function GdipGetClipBounds "GdipGetClipBounds" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetClipBoundsI(GpGraphics *graphics, GpRect *rect)
+External_Function GdipGetClipBoundsI "GdipGetClipBoundsI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsClipEmpty(GpGraphics *graphics, BOOL *result)
+External_Function GdipIsClipEmpty "GdipIsClipEmpty" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetVisibleClipBounds(GpGraphics *graphics, GpRectF *rect)
+External_Function GdipGetVisibleClipBounds "GdipGetVisibleClipBounds" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetVisibleClipBoundsI(GpGraphics *graphics, GpRect *rect)
+External_Function GdipGetVisibleClipBoundsI "GdipGetVisibleClipBoundsI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisibleClipEmpty(GpGraphics *graphics, BOOL *result)
+External_Function GdipIsVisibleClipEmpty "GdipIsVisibleClipEmpty" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisiblePoint(GpGraphics *graphics, REAL x, REAL y, BOOL *result)
+External_Function GdipIsVisiblePoint "GdipIsVisiblePoint" gdiplus.dll ;
+    Pointer graphics ;
+    Float x ;
+    Float y ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisiblePointI(GpGraphics *graphics, INT x, INT y, BOOL *result)
+External_Function GdipIsVisiblePointI "GdipIsVisiblePointI" gdiplus.dll ;
+    Pointer graphics ;
+    Integer x ;
+    Integer y ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisibleRect(GpGraphics *graphics, REAL x, REAL y, REAL width, REAL height, BOOL *result)
+External_Function GdipIsVisibleRect "GdipIsVisibleRect" gdiplus.dll ;
+    Pointer graphics ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisibleRectI(GpGraphics *graphics, INT x, INT y, INT width, INT height, BOOL *result)
+External_Function GdipIsVisibleRectI "GdipIsVisibleRectI" gdiplus.dll ;
+    Pointer graphics ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSaveGraphics(GpGraphics *graphics, GraphicsState *state)
+External_Function GdipSaveGraphics "GdipSaveGraphics" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer state ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipRestoreGraphics(GpGraphics *graphics, GraphicsState state)
+External_Function GdipRestoreGraphics "GdipRestoreGraphics" gdiplus.dll ;
+    Pointer graphics ;
+    Integer state ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipBeginContainer(GpGraphics *graphics, GDIPCONST GpRectF* dstrect, GDIPCONST GpRectF *srcrect, GpUnit unit, GraphicsContainer *state)
+External_Function GdipBeginContainer "GdipBeginContainer" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer dstrect ;
+    Pointer srcrect ;
+    gpUnit unit ;
+    Pointer state ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipBeginContainerI(GpGraphics *graphics, GDIPCONST GpRect* dstrect, GDIPCONST GpRect *srcrect, GpUnit unit, GraphicsContainer *state)
+External_Function GdipBeginContainerI "GdipBeginContainerI" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer dstrect ;
+    Pointer srcrect ;
+    gpUnit unit ;
+    Pointer state ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipBeginContainer2(GpGraphics *graphics, GraphicsContainer* state)
+External_Function GdipBeginContainer2 "GdipBeginContainer2" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer state ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipEndContainer(GpGraphics *graphics, GraphicsContainer state)
+External_Function GdipEndContainer "GdipEndContainer" gdiplus.dll ;
+    Pointer graphics ;
+    Integer state ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetMetafileHeaderFromEmf( HENHMETAFILE hEmf, MetafileHeader * header )
+External_Function GdipGetMetafileHeaderFromEmf "GdipGetMetafileHeaderFromEmf" gdiplus.dll ;
+    Handle hEmf ;
+    Pointer header ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetMetafileHeaderFromFile( GDIPCONST WCHAR* filename, MetafileHeader * header )
+External_Function GdipGetMetafileHeaderFromFile "GdipGetMetafileHeaderFromFile" gdiplus.dll ;
+    Pointer filename ;
+    Pointer header ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetMetafileHeaderFromStream( IStream * stream, MetafileHeader * header )
+External_Function GdipGetMetafileHeaderFromStream "GdipGetMetafileHeaderFromStream" gdiplus.dll ;
+    Pointer stream ;
+    Pointer header ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetMetafileHeaderFromMetafile( GpMetafile * metafile, MetafileHeader * header )
+External_Function GdipGetMetafileHeaderFromMetafile "GdipGetMetafileHeaderFromMetafile" gdiplus.dll ;
+    Pointer metafile ;
+    Pointer header ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetHemfFromMetafile( GpMetafile * metafile, HENHMETAFILE * hEmf )
+External_Function GdipGetHemfFromMetafile "GdipGetHemfFromMetafile" gdiplus.dll ;
+    Pointer metafile ;
+    Pointer hEmf ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateStreamOnFile(GDIPCONST WCHAR * filename, UINT access, IStream **stream)
+External_Function GdipCreateStreamOnFile "GdipCreateStreamOnFile" gdiplus.dll ;
+    Pointer filename ;
+    UInteger access ;
+    Pointer stream ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMetafileFromWmf(HMETAFILE hWmf, BOOL deleteWmf, GDIPCONST WmfPlaceableFileHeader * wmfPlaceableFileHeader, GpMetafile **metafile)
+External_Function GdipCreateMetafileFromWmf "GdipCreateMetafileFromWmf" gdiplus.dll ;
+    Handle hWmf ;
+    Boolean deleteWmf ;
+    Pointer wmfPlaceableFileHeader ;
+    Pointer metafile ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMetafileFromEmf(HENHMETAFILE hEmf, BOOL deleteEmf, GpMetafile **metafile)
+External_Function GdipCreateMetafileFromEmf "GdipCreateMetafileFromEmf" gdiplus.dll ;
+    Handle hEmf ;
+    Boolean deleteEmf ;
+    Pointer metafile ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMetafileFromFile(GDIPCONST WCHAR* file, GpMetafile **metafile)
+External_Function GdipCreateMetafileFromFile "GdipCreateMetafileFromFile" gdiplus.dll ;
+    Pointer file ;
+    Pointer metafile ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMetafileFromWmfFile(GDIPCONST WCHAR* file, GDIPCONST WmfPlaceableFileHeader * wmfPlaceableFileHeader, GpMetafile **metafile)
+External_Function GdipCreateMetafileFromWmfFile "GdipCreateMetafileFromWmfFile" gdiplus.dll ;
+    Pointer file ;
+    Pointer wmfPlaceableFileHeader ;
+    Pointer metafile ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateMetafileFromStream(IStream * stream, GpMetafile **metafile)
+External_Function GdipCreateMetafileFromStream "GdipCreateMetafileFromStream" gdiplus.dll ;
+    Pointer stream ;
+    Pointer metafile ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipRecordMetafile( HDC referenceHdc, EmfType type, GDIPCONST GpRectF * frameRect, MetafileFrameUnit frameUnit, GDIPCONST WCHAR * description, GpMetafile ** metafile )
+//----------------------------------------------------------------------------
+// Text APIs
+//----------------------------------------------------------------------------
+
+// GpStatus WINGDIPAPI GdipDrawString(GpGraphics *graphics, GDIPCONST WCHAR *String, INT length, GDIPCONST GpFont *font, GDIPCONST RectF *layoutRect, GDIPCONST GpStringFormat *stringFormat, GDIPCONST GpBrush *brush)
+External_Function GdipDrawString "GdipDrawString" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer String ;
+    Integer length ;
+    Pointer font ;
+    Pointer layoutRect ;
+    Pointer stringFormat ;
+    Pointer brush ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMeasureString(GpGraphics *graphics, GDIPCONST WCHAR *String, INT length, GDIPCONST GpFont *font, GDIPCONST RectF *layoutRect, GDIPCONST GpStringFormat *stringFormat, RectF *boundingBox, INT *codepointsFitted, INT *linesFilled)
+External_Function GdipMeasureString "GdipMeasureString" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer String ;
+    Integer length ;
+    Pointer font ;
+    Pointer layoutRect ;
+    Pointer stringFormat ;
+    Pointer boundingBox ;
+    Pointer codepointsFitted ;
+    Pointer linesFilled ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMeasureCharacterRanges(GpGraphics *graphics, GDIPCONST WCHAR *String, INT length, GDIPCONST GpFont *font, GDIPCONST RectF &layoutRect, GDIPCONST GpStringFormat *stringFormat, INT regionCount, GpRegion **regions)
+External_Function GdipMeasureCharacterRanges "GdipMeasureCharacterRanges" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer String ;
+    Integer length ;
+    Pointer font ;
+    Pointer layoutRect ;
+    Pointer stringFormat ;
+    Integer regionCount ;
+    Pointer regions;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDrawDriverString(GpGraphics *graphics, GDIPCONST UINT16 *text, INT length, GDIPCONST GpFont *font, GDIPCONST GpBrush *brush, GDIPCONST PointF *positions, INT flags, GDIPCONST GpMatrix *matrix)
+External_Function GdipDrawDriverString "GdipDrawDriverString" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer text ;
+    Integer length ;
+    Pointer font ;
+    Pointer brush ;
+    Pointer positions ;
+    Integer flags ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMeasureDriverString(GpGraphics *graphics, GDIPCONST UINT16 *text, INT length, GDIPCONST GpFont *font, GDIPCONST PointF *positions, INT flags, GDIPCONST GpMatrix *matrix, RectF *boundingBox)
+External_Function GdipMeasureDriverString "GdipMeasureDriverString" gdiplus.dll ;
+    Pointer graphics ;
+    Pointer text ;
+    Integer length ;
+    Pointer font ;
+    Pointer positions ;
+    Integer flags ;
+    Pointer matrix ;
+    Pointer boundingBox ;
+    Returns gpStatus

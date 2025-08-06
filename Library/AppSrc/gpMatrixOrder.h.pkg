@@ -1,0 +1,6 @@
+//--------------------------------------------------------------------------
+// Matrix Order
+//--------------------------------------------------------------------------
+Define gpMatrixOrder for Integer
+    Define gpMatrixOrderPrepend for 0 // Specifies that the new matrix is on the left and the existing matrix is on the right.
+    Define gpMatrixOrderAppend  for 1 // Specifies that the existing matrix is on the left and the new matrix is on the right

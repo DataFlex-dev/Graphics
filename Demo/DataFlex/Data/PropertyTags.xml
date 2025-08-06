@@ -1,0 +1,370 @@
+<PropertyTags>
+	<Category Title="Standard">
+		<Tag Title="Exif IFD" ID="$8769" Description="Private property used by the Imaging API.\nNot for public use.\nThe Imaging API uses this property to locate Exif-specific information." Type="0"/>
+		<Tag Title="GPS IFD" ID="$8825" Description="Offset to a block of GPS property items.\nProperty items whose tags have the prefix PropertyTagGps are stored in the GPS block. The GPS property items are defined in the EXIF specification.\nThe Imaging API uses this property to locate GPS information, but it does not expose this property for public use." Type="0"></Tag>
+		<Tag Title="New Subfile Type" ID="$00FE" Description="Type of data in a subfile." Type="0"></Tag>
+		<Tag Title="Subfile Type" ID="$00FF" Description="Type of data in a subfile." Type="0"></Tag>
+		<Tag Title="Image Width" ID="$0100" Description="Number of pixels per row." Type="0"></Tag>
+		<Tag Title="Image Height" ID="$0101" Description="Number of pixel rows." Type="0"></Tag>
+		<Tag Title="Bits Per Sample" ID="$0102" Description="Number of bits per color component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="Compression" ID="$0103" Description="Compression scheme used for the image data." Type="0"></Tag>
+		<Tag Title="Photometric Interp" ID="$0106" Description="How pixel data will be interpreted." Type="0"></Tag>
+		<Tag Title="Thresh Holding" ID="$0107" Description="Technique used to convert from gray pixels to black and white pixels." Type="0"></Tag>
+		<Tag Title="Cell Width" ID="$0108" Description="Width of the dithering or halftoning matrix." Type="0"></Tag>
+		<Tag Title="Cell Height" ID="$0109" Description="Height of the dithering or halftoning matrix." Type="0"></Tag>
+		<Tag Title="Fill Order" ID="$010A" Description="Logical order of bits in a byte." Type="0"></Tag>
+		<Tag Title="Document Name" ID="$010D" Description="Specifies the name of the document from which the image was scanned." Type="0"></Tag>
+		<Tag Title="Image Description" ID="$010E" Description="Specifies the title of the image." Type="0"></Tag>
+		<Tag Title="Equip Make" ID="$010F" Description="Specifies the manufacturer of the equipment used to record the image." Type="0"></Tag>
+		<Tag Title="Equip Model" ID="$0110" Description="specifies the model name or model number of the equipment used to record the image." Type="0"></Tag>
+		<Tag Title="Strip Offsets" ID="$0111" Description="For each strip, the byte offset of that strip. See also PropertyTagRowsPerStrip> and PropertyTagStripBytesCount." Type="0"></Tag>
+		<Tag Title="Orientation" ID="$0112" Description="Image orientation viewed in terms of rows and columns." Type="8">
+			<Values>
+				<Value Code="1">The 0th row is at the top of the visual image, and the 0th column is the visual left side.</Value>
+				<Value Code="2">The 0th row is at the visual top of the image, and the 0th column is the visual right side.</Value>
+				<Value Code="3">The 0th row is at the visual bottom of the image, and the 0th column is the visual right side.</Value>
+				<Value Code="4">The 0th row is at the visual bottom of the image, and the 0th column is the visual right side.</Value>
+				<Value Code="5">The 0th row is the visual left side of the image, and the 0th column is the visual top.</Value>
+				<Value Code="6">The 0th row is the visual right side of the image, and the 0th column is the visual top.</Value>
+				<Value Code="7">The 0th row is the visual right side of the image, and the 0th column is the visual bottom.</Value>
+				<Value Code="8">The 0th row is the visual left side of the image, and the 0th column is the visual bottom.</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Samples Per Pixel" ID="$0115" Description="Number of color components per pixel." Type="0"></Tag>
+		<Tag Title="Rows Per Strip" ID="$0116" Description="Number of rows per strip. See also PropertyTagStripBytesCount and PropertyTagStripOffsets." Type="0"></Tag>
+		<Tag Title="Strip Bytes Count" ID="$0117" Description="For each strip, the total number of bytes in that strip." Type="0"></Tag>
+		<Tag Title="MinSample Value" ID="$0118" Description="For each color component, the minimum value assigned to that component. See also PropertyTagSamplesPerPixel." Type="5"></Tag>
+		<Tag Title="MaxSample Value" ID="$0119" Description="For each color component, the maximum value assigned to that component. See also PropertyTagSamplesPerPixel." Type="5"></Tag>
+		<Tag Title="X Resolution" ID="$011A" Description="Image resolution in width direction. Number of pixels per unit in the image width (x) direction. The unit is specified by PropertyTagResolutionUnit"></Tag>
+		<Tag Title="Y Resolution" ID="$011B" Description="Image resolution in height direction. Number of pixels per unit in the image height (y) direction. The unit is specified by PropertyTagResolutionUnit."></Tag>
+		<Tag Title="Planar Config" ID="$011C" Description="Image data arrangement. Whether pixel components are recorded in chunky or planar format."></Tag>
+		<Tag Title="Page Name" ID="$011D" Description="Specifies the name of the page from which the image was scanned." Type="0"></Tag>
+		<Tag Title="X Position" ID="$011E" Description="Offset from the left side of the page to the left side of the image. The unit of measure is specified by PropertyTagResolutionUnit." Type="0"></Tag>
+		<Tag Title="Y Position" ID="$011F" Description="Offset from the top of the page to the top of the image. The unit of measure is specified by PropertyTagResolutionUnit." Type="0"></Tag>
+		<Tag Title="Free Offset" ID="$0120" Description="For each string of contiguous unused bytes, the byte offset of that string." Type="5"></Tag>
+		<Tag Title="Free Byte Counts" ID="$0121" Description="For each string of contiguous unused bytes, the number of bytes in that string." Type="5"></Tag>
+		<Tag Title="Gray Response Unit" ID="$0122" Description="Precision of the number specified by PropertyTagGrayResponseCurve.\n1 specifies tenths, 2 specifies hundredths, 3 specifies thousandths, and so on." Type="0"></Tag>
+		<Tag Title="Gray Response Curve" ID="$0123" Description="For each possible pixel value in a grayscale image, the optical density of that pixel value." Type="0"></Tag>
+		<Tag Title="T4 Option" ID="$0124" Description="Set of flags that relate to T4 encoding." Type="0"></Tag>
+		<Tag Title="T6 Option" ID="$0125" Description="Set of flags that relate to T6 encoding." Type="0"></Tag>
+		<Tag Title="Resolution Unit" ID="$0128" Description="Unit of X and Y resolution.\nUnit of measure for the horizontal resolution and the vertical resolution.\nA setting of 2 indicates inches and a setting of 3 indicates centimeters."></Tag>
+		<Tag Title="Page Number" ID="$0129" Description="Page number of the page from which the image was scanned." Type="0"></Tag>
+		<Tag Title="Transfer Function" ID="$012D" Description="Table of values that specify color transfer functions. Tables that specify transfer functions for the image." Type="0"></Tag>
+		<Tag Title="Software Used" ID="$0131" Description="Specifies the name and version of the software or firmware of the device used to generate the image." Type="0"></Tag>
+		<Tag Title="DateTime" ID="$0132" Description="Date and time the image was created." Type="0"></Tag>
+		<Tag Title="Artist" ID="$013B" Description="Specifies the name of the person who created the image." Type="0"></Tag>
+		<Tag Title="Host Computer" ID="$013C" Description="specifies the computer and/or operating system used to create the image." Type="0"></Tag>
+		<Tag Title="Predictor" ID="$013D" Description="Type of prediction scheme that was applied to the image data before the encoding scheme was applied." Type="0"></Tag>
+		<Tag Title="White Point" ID="$013E" Description="Chromaticity of the white point of the image." Type="0"></Tag>
+		<Tag Title="Primary Chromaticities" ID="$013F" Description="For each of the three primary colors in the image, the chromaticity of that color." Type="0"></Tag>
+		<Tag Title="Color Map" ID="$0140" Description="Color palette (lookup table) for a palette-indexed image." Type="0"></Tag>
+		<Tag Title="Halftone Hints" ID="$0141" Description="Information used by the halftone function" Type="0"></Tag>
+		<Tag Title="Tile Width" ID="$0142" Description="Number of pixel columns in each tile." Type="0"></Tag>
+		<Tag Title="Tile Length" ID="$0143" Description="Number of pixel rows in each tile." Type="0"></Tag>
+		<Tag Title="Tile Offset" ID="$0144" Description="For each tile, the byte offset of that tile." Type="0"></Tag>
+		<Tag Title="Tile Byte Counts" ID="$0145" Description="For each tile, the number of bytes in that tile." Type="0"></Tag>
+		<Tag Title="Ink Set" ID="$014C" Description="Set of inks used in a separated image" Type="0"></Tag>
+		<Tag Title="Ink Names" ID="$014D" Description="Sequence of concatenated, null-terminated, character strings that specify the names of the inks used in a separated image." Type="11"></Tag>
+		<Tag Title="Number Of Inks" ID="$014E" Description="Number of inks." Type="5"></Tag>
+		<Tag Title="Dot Range" ID="$0150" Description="Color component values that correspond to a 0 percent dot and a 100 percent dot" Type="0"></Tag>
+		<Tag Title="Target Printer" ID="$0151" Description="Describes the intended printing environment." Type="0"></Tag>
+		<Tag Title="Extra Samples" ID="$0152" Description="Number of extra color components. For example, one extra component might hold an alpha value." Type="0"></Tag>
+		<Tag Title="Sample Format" ID="$0153" Description="For each color component, the numerical format (unsigned, signed, floating point) of that component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="SMin Sample Value" ID="$0154" Description="For each color component, the minimum value of that component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="SMax Sample Value" ID="$0155" Description="For each color component, the maximum value of that component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="Transfer Range" ID="$0156" Description="Table of values that extends the range of the transfer function." Type="0"></Tag>
+		<Tag Title="JPEG Proc" ID="$0200" Description="JPEG compression process." Type="0"></Tag>
+		<Tag Title="JPEG Inter Format" ID="$0201" Description="Offset to the start of a JPEG bitstream." Type="0"></Tag>
+		<Tag Title="JPEG Inter Length" ID="$0202" Description="Length, in bytes, of the JPEG bitstream." Type="0"></Tag>
+		<Tag Title="JPEG Restart Interval" ID="$0203" Description="Length of the restart interval." Type="0"></Tag>
+		<Tag Title="JPEG Lossless Predictors" ID="$0205" Description="For each color component, a lossless predictor-selection value for that component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="JPEG Point Transforms" ID="$0206" Description="For each color component, a point transformation value for that component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="JPEG Q Tables" ID="$0207" Description="For each color component, the offset to the quantization table for that component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="JPEG DC Tables" ID="$0208" Description="For each color component, the offset to the DC Huffman table (or lossless Huffman table) for that component. See also PropertyTagSamplesPerPixel." Type="0"></Tag>
+		<Tag Title="JPEG AC Tables" ID="$0209" Description="For each color component, the offset to the AC Huffman table for that component. See also PropertyTagSamplesPerPixel" Type="0"></Tag>
+		<Tag Title="YCbCr Coefficients" ID="$0211" Description="Coefficients for transformation from RGB to YCbCr image data. " Type="0"></Tag>
+		<Tag Title="YCbCr Subsampling" ID="$0212" Description="Sampling ratio of chrominance components in relation to the luminance component." Type="0"></Tag>
+		<Tag Title="YCbCr Positioning" ID="$0213" Description="Position of chrominance components in relation to the luminance component." Type="0"></Tag>
+		<Tag Title="REF Black White" ID="$0214" Description="Reference black point value and reference white point value." Type="0"></Tag>
+		<Tag Title="ICC Profile" ID="$8773" Description="This TAG is defined by ICC embedded ICC in TIFF. International Color Consortium (ICC) profile embedded in the image."></Tag>
+		<Tag Title="Gamma" ID="$0301" Description="Gamma value attached to the image.\The gamma value is stored as a rational number (pair of long) with a numerator of 100000. For example, a gamma value of 2.2 is stored as the pair (100000, 45455)." Type="0"></Tag>
+		<Tag Title="ICC Profile Descriptor" ID="$0302" Description="Identifies an ICC profile." Type="0"></Tag>
+		<Tag Title="SRGB Rendering Intent" ID="$0303" Description="How the image should be displayed as defined by the International Color Consortium (ICC).\nIf an Image object is constructed with the useEmbeddedColorManagement parameter set to TRUE, then the Imaging API renders the image according to the specified rendering intent.\nThe following table shows the possible settings for this property." Type="8">
+			<Values>
+				<Value Code="0">Perceptual intent, which is suitable for photographs, gives good adaptation to the display device gamut at the expense of colorimetric accuracy.</Value>
+				<Value Code="1">Relative colorimetric intent is suitable for images (for example, logos) that require color appearance matching that is relative to the display device white point.</Value>
+				<Value Code="2">Saturation intent, which is suitable for charts and graphs, preserves saturation at the expense of hue and lightness.</Value>
+				<Value Code="3">Absolute colorimetric intent is suitable for proofs (previews of images destined for a different display device) that require preservation of absolute colorimetry.</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Image Title" ID="$0320" Description="Specifies the title of the image." Type="0"></Tag>
+		<Tag Title="Copyright" ID="$8298" Description="Contains copyright information" Type="0"></Tag>
+	</Category>
+	<Category Title="Extra" Description="Like Adobe Image Information tags etc.">
+		<Tag Title="Resolution X Unit" ID="$5001" Description="Units in which to display horizontal resolution.\nA setting of 1 indicates pixels per inch and a setting of 2 indicates pixels per centimeter." Type="0"></Tag>
+		<Tag Title="Resolution Y Unit" ID="$5002" Description="Units in which to display vertical resolution.\nA setting of 1 indicates pixels per inch and a setting of 2 indicates pixels per centimeter." Type="0"></Tag>
+		<Tag Title="Resolution X Length Unit" ID="$5003" Description="Units in which to display the image width." Type="8">
+			<Values>
+				<Value Code="1">Inches</Value>
+				<Value Code="2">Centimeters</Value>
+				<Value Code="3">Points</Value>
+				<Value Code="4">Picas</Value>
+				<Value Code="5">Columns</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Resolution Y Length Unit" ID="$5004" Description="Units in which to display the image height." Type="8">
+			<Values>
+				<Value Code="1">Inches</Value>
+				<Value Code="2">Centimeters</Value>
+				<Value Code="3">Points</Value>
+				<Value Code="4">Picas</Value>
+				<Value Code="5">Columns</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Print Flags" ID="$5005" Description="Sequence of one-byte Boolean values that specify printing options." Type="0"></Tag>
+		<Tag Title="Print Flags Version" ID="$5006" Description="Print flags version." Type="0"></Tag>
+		<Tag Title="Print Flags Crop" ID="$5007" Description="Print flags center crop marks." Type="0"></Tag>
+		<Tag Title="Print Flags Bleed Width" ID="$5008" Description="Print flags bleed width." Type="0"></Tag>
+		<Tag Title="Print Flags Bleed Width Scale" ID="$5009" Description="Print flags bleed width scale." Type="0"></Tag>
+		<Tag Title="Halftone LPI" ID="$500A" Description="Ink's screen frequency, in lines per inch." Type="0"></Tag>
+		<Tag Title="Halftone LPI Unit" ID="$500B" Description="Units for the screen frequency.\nA setting of 1 indicates lines per inch and a setting of 2 indicates lines per centimeter" Type="8">
+			<Values>
+				<Value Code="1">Lines per Inch</Value>
+				<Value Code="2">Lines per Centimeter</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Halftone Degree" ID="$500C" Description="Angle for screen." Type="0"></Tag>
+		<Tag Title="Halftone Shape" ID="$500D" Description="Shape of the halftone dots." Type="8">
+			<Values>
+				<Value Code="0">Round</Value>
+				<Value Code="1">Ellipse</Value>
+				<Value Code="2">Line</Value>
+				<Value Code="3">Square</Value>
+				<Value Code="4">Cross</Value>
+				<Value Code="6">Diamond</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Halftone Misc" ID="$500E" Description="Miscellaneous halftone information." Type="0"></Tag>
+		<Tag Title="Halftone Screen" ID="$500F" Description="Boolean value that specifies whether to use the printer's default screens.\nA setting of 1 indicates that the printer's default screens should be used and a setting of 2 indicates otherwise." Type="0"></Tag>
+		<Tag Title="JPEG Quality" ID="$5010" Description="Private property used by the Adobe Photoshop format.\nNot for public use." Type="0"></Tag>
+		<Tag Title="Grid Size" ID="$5011" Description="Block of information about grids and guides." Type="0"></Tag>
+		<Tag Title="Thumbnail Format" ID="$5012" Description="Format of the thumbnail image.\nA setting of 1 indicates raw RGB and a setting of 2 indicates JPEG." Type="8">
+			<Values>
+				<Value Code="1">JPEG</Value>
+				<Value Code="0">RAW RGB</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Thumbnail Width" ID="$5013" Description="Width, in pixels, of the thumbnail image." Type="0"></Tag>
+		<Tag Title="Thumbnail Height" ID="$5014" Description="Height, in pixels, of the thumbnail image." Type="0"></Tag>
+		<Tag Title="Thumbnail Color Depth" ID="$5015" Description="Bits per pixel (BPP) for the thumbnail image." Type="0"></Tag>
+		<Tag Title="Thumbnail Planes" ID="$5016" Description="Number of color planes for the thumbnail image." Type="0"></Tag>
+		<Tag Title="Thumbnail RawBytes" ID="$5017" Description="Byte offset between rows of pixel data." Type="0"></Tag>
+		<Tag Title="Thumbnail Size" ID="$5018" Description="Total size, in bytes, of the thumbnail image." Type="0"></Tag>
+		<Tag Title="Thumbnail Compressed Size" ID="$5019" Description="Compressed size, in bytes, of the thumbnail image." Type="5"></Tag>
+		<Tag Title="Color Transfer Function" ID="$501A" Description="Table of values that specify color transfer functions." Type="0"></Tag>
+		<Tag Title="Thumbnail Data" ID="$501B" Description="RAW thumbnail bits in JPEG format or RGB format depends on 'Thumbnail Format'"></Tag>
+	</Category>
+	<Category Title="Thumbnail">
+		<Tag Title="Image Width" ID="$5020" Description="Thumbnail width. Number of pixels per row in the thumbnail image"></Tag>
+		<Tag Title="Image Height" ID="$5021" Description="Thumbnail height. Number of pixel rows in the thumbnail image."></Tag>
+		<Tag Title="Bits Per Sample" ID="$5022" Description="Number of bits per component. Number of bits per color component in the thumbnail image. See also PropertyTagThumbnailSamplesPerPixel."></Tag>
+		<Tag Title="Compression" ID="$5023" Description="Compression scheme used for thumbnail image data."></Tag>
+		<Tag Title="Photometric Interp" ID="$5024" Description="Pixel composition. How thumbnail pixel data will be interpreted."></Tag>
+		<Tag Title="Image Description" ID="$5025" Description="Image Title. Specifies the title of the image."></Tag>
+		<Tag Title="Equip Make" ID="$5026" Description="Manufacturer of Image Input equipment. Specifies the manufacturer of the equipment used to record the thumbnail image"></Tag>
+		<Tag Title="Equip Model" ID="$5027" Description="Model of Image input equipment. specifies the model name or model number of the equipment used to record the thumbnail image."></Tag>
+		<Tag Title="Strip Offsets" ID="$5028" Description="Image data location. For each strip in the thumbnail image, the byte offset of that strip. See also PropertyTagThumbnailRowsPerStrip and PropertyTagThumbnailStripBytesCount."></Tag>
+		<Tag Title="Orientation" ID="$5029" Description="Orientation of image. Thumbnail image orientation in terms of rows and columns. See also PropertyTagOrientation."></Tag>
+		<Tag Title="Samples Per Pixel" ID="$502A" Description="Number of components. Number of color components per pixel in the thumbnail image."></Tag>
+		<Tag Title="Rows Per Strip" ID="$502B" Description="Number of rows per strip. Number of rows per strip in the thumbnail image. See also PropertyTagThumbnailStripBytesCount and PropertyTagThumbnailStripOffsets."></Tag>
+		<Tag Title="Strip Bytes Count" ID="$502C" Description="Bytes per compressed strip. For each thumbnail image strip, the total number of bytes in that strip."></Tag>
+		<Tag Title="Resolution X" ID="$502D" Description="Resolution in width direction. Thumbnail resolution in the width direction. The resolution unit is given in PropertyTagThumbnailResolutionUnit"></Tag>
+		<Tag Title="Resolution Y" ID="$502E" Description="Resolution in height direction. Thumbnail resolution in the height direction. The resolution unit is given in PropertyTagThumbnailResolutionUnit"></Tag>
+		<Tag Title="Planar Config" ID="$502F" Description="Image data arrangement. Whether pixel components in the thumbnail image are recorded in chunky or planar format. See also PropertyTagPlanarConfig."></Tag>
+		<Tag Title="Resolution Unit" ID="$5030" Description="Unit of X and Y Resolution. Unit of measure for the horizontal resolution and the vertical resolution of the thumbnail image. See also PropertyTagResolutionUnit."></Tag>
+		<Tag Title="Transfer Function" ID="$5031" Description="Transfer function. Tables that specify transfer functions for the thumbnail image. See also PropertyTagTransferFunction."></Tag>
+		<Tag Title="Software Used" ID="$5032" Description="Software used. Specifies the name and version of the software or firmware of the device used to generate the thumbnail image."></Tag>
+		<Tag Title="Date Time" ID="$5033" Description="File change date and time. Date and time the thumbnail image was created. See also PropertyTagDateTime."></Tag>
+		<Tag Title="Artist" ID="$5034" Description="Person who created the image. Specifies the name of the person who created the thumbnail image."></Tag>
+		<Tag Title="White Point" ID="$5035" Description="White point chromaticity. Chromaticity of the white point of the thumbnail image. See also PropertyTagWhitePoint."></Tag>
+		<Tag Title="Primary Chromaticities" ID="$5036" Description="Chromaticities of primaries. For each of the three primary colors in the thumbnail image, the chromaticity of that color. See also PropertyTagPrimaryChromaticities."></Tag>
+		<Tag Title="YCbCr Coefficients" ID="$5037" Description="Color space transformation coefficients. Coefficients for transformation from RGB to YCbCr data for the thumbnail image. See also PropertyTagYCbCrCoefficients."></Tag>
+		<Tag Title="YCbCr Subsampling" ID="$5038" Description="Subsampling ratio of Y to C. Sampling ratio of chrominance components in relation to the luminance component for the thumbnail image. See also PropertyTagYCbCrSubsampling."></Tag>
+		<Tag Title="YCbCr Positioning" ID="$5039" Description="Y and C position. Position of chrominance components in relation to the luminance component for the thumbnail image. See also PropertyTagYCbCrPositioning."></Tag>
+		<Tag Title="Ref Black White" ID="$503A" Description="Pair of black and white reference values. Reference black point value and reference white point value for the thumbnail image. See also PropertyTagREFBlackWhite."></Tag>
+		<Tag Title="CopyRight" ID="$503B" Description="CopyRight holder. Contains copyright information for the thumbnail image."></Tag>
+		<Tag Title="Luminance Table" ID="$5090" Description="Luminance table. The luminance table and the chrominance table are used to control JPEG quality.\nA valid luminance or chrominance table has 64 entries of type PropertyTagTypeShort.\nIf an image has a luminance table or a chrominance table, it must have both tables." Type="0"></Tag>
+		<Tag Title="Chrominance Table" ID="$5091" Description="Chrominance table.\nThe luminance table and the chrominance table are used to control JPEG quality.\nA valid luminance or chrominance table has 64 entries of type PropertyTagTypeShort.\nIf an image has a luminance table or a chrominance table, it must have both tables." Type="0"></Tag>
+		<Tag Title="Frame Delay" ID="$5100" Description="Time delay, in hundredths of a second, between two frames in an animated GIF image." Type="5"></Tag>
+		<Tag Title="Loop Count" ID="$5101" Description="For an animated GIF image, the number of times to display the animation.\nA value of 0 specifies that the animation should be displayed infinitely." Type="0"></Tag>
+		<Tag Title="Global Palette" ID="$5102" Description="Color palette for an indexed bitmap in a GIF image." Type="0"></Tag>
+		<Tag Title="Index Background" ID="$5103" Description="Index of the background color in the palette of a GIF image." Type="0"></Tag>
+		<Tag Title="Index Transparent" ID="$5104" Description="Index of the transparent color in the palette of a GIF image." Type="0"></Tag>
+		<Tag Title="Pixel Unit" ID="$5110" Description="Unit specifier pixel/unit.\nUnit for PropertyTagPixelPerUnitX and PropertyTagPixelPerUnitY.\nA setting of 0 indicates that property is unknown."></Tag>
+		<Tag Title="Pixel Per Unit X" ID="$5111" Description="Pixels per unit in the x direction"></Tag>
+		<Tag Title="Pixel Per Unit Y" ID="$5112" Description="Pixels per unit in the Y direction"></Tag>
+		<Tag Title="Palette Histogram" ID="$5113" Description="Palette histogram"></Tag>
+	</Category>
+	<Category Title="Exif">
+		<Tag Title="Exposure Time" ID="$829A" Description="Exposure time, measured in seconds." Format="%0.0f" Type="5"></Tag>
+		<Tag Title="FNumber" ID="$829D" Description="The F number at the time the image was taken." Format="%0.3f" Type="5"></Tag>
+		<Tag Title="Exposure Prog" ID="$8822" Description="Class of the program used by the camera to set exposure when the picture is taken.\nThe default setting for the this property is 0" Type="8">
+			<Values>
+				<Value Code="0">Not defined</Value>
+				<Value Code="1">Manual</Value>
+				<Value Code="2">Normal program</Value>
+				<Value Code="3">Aperture priority</Value>
+				<Value Code="4">Shutter priority</Value>
+				<Value Code="5">Creative program (biased toward depth of field) </Value>
+				<Value Code="6">Action program (biased toward fast shutter speed)</Value>
+				<Value Code="7">Portrait mode (for close-up photos with the background out of focus)</Value>
+				<Value Code="8">Landscape mode (for landscape photos with the background in focus)</Value>
+				<Value Code="9-255">Reserved</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Spectral Sense" ID="$8824" Description="Null-terminated character string that specifies the spectral sensitivity of each channel of the camera used.\nThe string is compatible with the standard developed by the ASTM Technical Committee." Type="0"></Tag>
+		<Tag Title="ISO Speed" ID="$8827" Description="ISO speed and ISO latitude of the camera or input device as specified in ISO 12232" Type="0"></Tag>
+		<Tag Title="OECF" ID="$8828" Description="Optoelectronic conversion function (OECF) specified in ISO 14524.\nThe OECF is the relationship between the camera optical input and the image values." Type="0"></Tag>
+		<Tag Title="Ver" ID="$9000" Description="Version of the EXIF standard supported.\nNonexistence of this field is taken to mean nonconformance to the standard.\nConformance to the standard is indicated by recording 0210 as a 4-byte ASCII string.\nBecause the type is PropertyTagTypeUndefined, there is no NULL terminator.\nThe default setting for this property is 0210." Type="0"></Tag>
+		<Tag Title="DT Orig" ID="$9003" Description="Date and time of original.\nDate and time when the original image data was generated.\nFor a digital camera, the date and time when the picture was taken.\nThe format is YYYY:MM:DD HH:MM:SS with time shown in 24-hour format and the date and time separated by one blank character (0x2000).\nThe character string length is 20 bytes including the NULL terminator.\nWhen the field is EMPTY, it is treated as unknown."></Tag>
+		<Tag Title="DT Digitized" ID="$9004" Description="Date and time of digital data generation.\nThe format is YYYY:MM:DD HH:MM:SS, with time shown in 24-hour format and the date and time separated by one blank character (0x2000).\nThe character string length is 20 bytes including the NULL terminator.\nWhen the field is EMPTY, it is treated as unknown."></Tag>
+		<Tag Title="Comp Config" ID="$9101" Description="Information specific to compressed data. The channels of each component are arranged in order from the first component to the fourth.\nFor uncompressed data, the data arrangement is given in the PropertyTagPhotometricInterp tag. However, because PropertyTagPhotometricInterp can only express the order of Y, Cb, and Cr, this property is provided for cases when compressed data uses components other than Y, Cb, and Cr and to support other sequences.\nThe default setting for the PropertyTagExifCompConfig value is '4 5 6 0' for uncompressed RGB data an '1 2 3 0' for all other cases." Type="8">
+			<Values>
+				<Value Code="0">The color component does not exist.</Value>
+				<Value Code="1">The luminance (Y) color component.</Value>
+				<Value Code="2">The blue chrominance (Cb) color component.</Value>
+				<Value Code="3">The red chrominance (Cr) color component.</Value>
+				<Value Code="4">The red (R) color component.</Value>
+				<Value Code="5">The green (G) color component.</Value>
+				<Value Code="6">The blue (B) color component.</Value>
+				<Value Code="Other">Reserved</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Comp BPP" ID="$9102" Description="Information specific to compressed data. The compression mode used for a compressed image is indicated in unit BPP." Type="0"></Tag>
+		<Tag Title="Shutter Speed" ID="$9201" Description="Shutter speed.\nThe unit is the Additive System of Photographic Exposure (APEX) value." Type="0"></Tag>
+		<Tag Title="Aperture" ID="$9202" Description="Lens aperture.\nThe unit is the APEX value" Type="0"></Tag>
+		<Tag Title="Brightness" ID="$9203" Description="Brightness value.\nThe unit is the APEX value.\nOrdinarily it is given in the range of -99.99 to 99.99" Type="0"></Tag>
+		<Tag Title="Exposure Bias" ID="$9204" Description="Exposure bias.\nThe unit is the APEX value.\nOrdinarily it is given in the range -99.99 to 99.99." Type="0"></Tag>
+		<Tag Title="MaxAperture" ID="$9205" Description="Smallest F number of the lens.\nThe unit is the APEX value.\nOrdinarily it is given in the range of 00.00 to 99.99, but it is not limited to this range." Type="0"></Tag>
+		<Tag Title="Subject Dist" ID="$9206" Description="Distance to the subject, measured in meters." Type="0"></Tag>
+		<Tag Title="Metering Mode" ID="$9207" Description="Metering mode.\nThe default setting for this property is 0." Type="8">
+		    <Values>
+		        <Value Code="0">Unknown</Value>
+		        <Value Code="1">Average</Value>
+		        <Value Code="2">Center-weighted average</Value>
+		        <Value Code="3">Spot</Value>
+		        <Value Code="4">Multi-spot</Value>
+		        <Value Code="5">Pattern</Value>
+		        <Value Code="6">Partial</Value>
+		        <Value Code="7-254">Reserved</Value>
+		        <Value Code="255">Other</Value>
+		    </Values>
+		</Tag>
+		<Tag Title="Light Source" ID="$9208" Description="Type of light source. The default setting for this property is 0." Type="8">
+		    <Values>
+		        <Value Code="0">Unknown lighting</Value>
+		        <Value Code="1">Daylight </Value>
+		        <Value Code="2">Fluorescent lighting</Value>
+		        <Value Code="3">Tungsten lighting</Value>
+		        <Value Code="17">Standard Light A</Value>
+		        <Value Code="18">Standard Light B</Value>
+		        <Value Code="19">Standard Light C</Value>
+		        <Value Code="20">D55 light</Value>
+		        <Value Code="21">D65 light</Value>
+		        <Value Code="22">D75 light</Value>
+		        <Value Code="23-254">Reserved</Value>
+		        <Value Code="255">Other lighting</Value>
+		    </Values>
+		</Tag>
+		<Tag Title="Flash" ID="$9209" Description="Flash status.\nThis property is recorded when an image is taken using a strobe light (flash).\nBit 0 indicates the flash firing status, and bits 1 and 2 indicate the flash return status.\nThe following table shows the possible values for bit 0." Type="0"></Tag>
+		<Tag Title="Focal Length" ID="$920A" Description="Actual focal length, in millimeters, of the lens.\nConversion is not made to the focal length of a 35 millimeter film camera." Format="%0.3f" Type="5"></Tag>
+		<Tag Title="Subject Area" ID="$9214" Description="exif 2.2 Subject Area"></Tag>
+		<Tag Title="Maker Note" ID="$927C" Description="Note tag. A property used by manufacturers of EXIF writers to record information. The contents are up to the manufacturer." Type="0"></Tag>
+		<Tag Title="User Comment" ID="$9286" Description="Comment tag. A property used by EXIF users to write keywords or comments about the image besides those in PropertyTagImageDescription and without the character-code limitations of the PropertyTagImageDescription tag.\nThe character code used in the PropertyTagExifUserComment property is identified based on an ID code in a fixed 8-byte area at the start of the property data area.\nThe unused portion of the area is padded with NULL (0). ID codes are assigned by means of registration.\Because the type is not ASCII, it is not necessary to use a NULL terminator." Type="11"></Tag>
+		<Tag Title="DT Subsec" ID="$9290" Description="Date and Time subseconds.\nSpecifies a fraction of a second for the PropertyTagDateTime tag."></Tag>
+		<Tag Title="DT Orig SS" ID="$9291" Description="Date and Time original subseconds.\nSpecifies a fraction of a second for the PropertyTagExifDTOrig tag."></Tag>
+		<Tag Title="DT Dig SS" ID="$9292" Description="Date and Time digitized subseconds.\nSpecifies a fraction of a second for the PropertyTagExifDTDigitized tag."></Tag>
+		<Tag Title="FPX Ver" ID="$A000" Description="FlashPix format version supported by an FPXR file.\nIf the FPXR function supports FlashPix format version 1.0, this is indicated similarly to PropertyTagExifVer by recording 0100 as a 4-byte ASCII string.\nBecause the type is PropertyTagTypeUndefined, there is no NULL terminator.\nThe default setting for this property is 0100, all other values are reserved. " Type="0"></Tag>
+		<Tag Title="Color Space" ID="$A001" Description="Color space specifier.\nNormally sRGB (=1) is used to define the color space based on the PC monitor conditions and environment.\nIf a color space other than sRGB is used, Uncalibrated (=0xFFFF) is set.\nImage data recorded as Uncalibrated can be treated as sRGB when it is converted to FlashPix." Type="8">
+			<Values>
+				<Value Code="1">RGB Color Space</Value>
+				<Value Code="65535">Uncalibrated</Value>
+				<Value Code="Other">Reserved</Value>
+			</Values>
+		</Tag>
+		<Tag Title="Pix X Dim" ID="$A002" Description="Information specific to compressed data.\nWhen a compressed file is recorded, the valid width of the meaningful image must be recorded in this tag, whether or not there is padding data or a restart marker.\nThis property should not exist in an uncompressed file" Type="0"></Tag>
+		<Tag Title="Pix Y Dim" ID="$A003" Description="Information specific to compressed data.\nWhen a compressed file is recorded, the valid height of the meaningful image must be recorded in this property's setting whether or not there is padding data or a restart marker.\nThis property should not exist in an uncompressed file.\nBecause data padding is unnecessary in the vertical direction, the number of lines recorded in this valid image height property will be the same as that recorded in the SOF." Type="0"></Tag>
+		<Tag Title="Related Wav" ID="$A004" Description="related sound file\nThe name of an audio file related to the image data.\nThe only relational information recorded is the EXIF audio file name and extension (an ASCII string that consists of 8 characters plus a period (.), plus 3 characters).\nThe path is not recorded.\nWhen you use this tag, audio files must be recorded in conformance with the EXIF audio format.\nWriters can also store audio data within APP2 as FlashPix extension stream data."></Tag>
+		<Tag Title="Interop" ID="$A005" Description="Offset to a block of property items that contain interoperability information." Type="0"></Tag>
+		<Tag Title="Flash Energy" ID="$A20B" Description="Strobe energy, in Beam Candle Power Seconds (BCPS), at the time the image was captured" Type="0"></Tag>
+		<Tag Title="Spatial FR" ID="$A20C" Description="Spatial Frequency Response\nCamera or input device spatial frequency table and SFR values in the image width, image height, and diagonal direction, as specified in ISO 12233." Type="0"></Tag>
+		<Tag Title="Focal X Res" ID="$A20E" Description="Focal Plane X Resolution\nNumber of pixels in the image width (x) direction per unit on the camera focal plane.\nThe unit is specified in PropertyTagExifFocalResUnit." Type="0"></Tag>
+		<Tag Title="Focal Y Res" ID="$A20F" Description="Focal Plane Y Resolution\nNumber of pixels in the image height (y) direction per unit on the camera focal plane.\nThe unit is specified in PropertyTagExifFocalResUnit." Type="0"></Tag>
+		<Tag Title="Focal Res Unit" ID="$A210" Description="Focal Plane Resolution Unit\nUnit of measure for PropertyTagExifFocalXRes and PropertyTagExifFocalYRes.\nA setting of 2 indicates inches and a setting of 3 indicates centimeters." Type="0"></Tag>
+		<Tag Title="Subject Loc" ID="$A214" Description="Location of the main subject in the scene.\nThe value of this property represents the pixel at the center of the main subject relative to the left edge.\nThe first value indicates the column number, and the second value indicates the row number." Type="0"></Tag>
+		<Tag Title="Exposure Index" ID="$A215" Description="Exposure index selected on the camera or input device at the time the image was captured." Type="0"></Tag>
+		<Tag Title="Sensing Method" ID="$A217" Description="Image sensor type on the camera or input device." Type="8">
+			<Values>
+				<Value Code="1">Not defined</Value>
+				<Value Code="2">One-chip color area sensor</Value>
+				<Value Code="3">Two-chip color area sensor</Value>
+				<Value Code="4">Three-chip color area sensor</Value>
+				<Value Code="5">Color sequential area sensor</Value>
+				<Value Code="7">Trilinear sensor</Value>
+				<Value Code="8">Color sequential linear sensor</Value>
+				<Value Code="*">Reserved</Value>
+			</Values>
+		</Tag>
+		<Tag Title="File Source" ID="$A300" Description="The image source.\nIf a digital camera recorded the image, the setting for this property is 3." Type="0"></Tag>
+		<Tag Title="Scene Type" ID="$A301" Description="The type of scene.\nIf a digital camera recorded the image, the value of this property must be set to 1, indicating that the image was directly photographed." Type="0"></Tag>
+		<Tag Title="Cfa Pattern" ID="$A302" Description="The color filter array (CFA) geometric pattern of the image sensor when a one-chip color area sensor is used. It does not apply to all sensing methods" Type="0"></Tag>
+	</Category>
+	<Category Title="Exif 2.2">
+		<Tag Title="Custom Rendered" ID="$A401" Description="" Type="0"></Tag>
+		<Tag Title="Exposure Mode" ID="$A402" Description="" Type="0"></Tag>
+		<Tag Title="White Balance" ID="$A403" Description="" Type="0"></Tag>
+		<Tag Title="Digital Zoom Ratio" ID="$A404" Description="" Type="0"></Tag>
+		<Tag Title="Focal Length In 35mm Film" ID="$A405" Description="" Type="0"></Tag>
+		<Tag Title="Scene Capture Type" ID="$A406" Description="" Type="0"></Tag>
+		<Tag Title="Gain Control" ID="$A407" Description="" Type="0"></Tag>
+		<Tag Title="Contrast" ID="$A408" Description="" Type="0"></Tag>
+		<Tag Title="Saturation" ID="$A409" Description="" Type="0"></Tag>
+		<Tag Title="Sharpness" ID="$A40A" Description="" Type="0"></Tag>
+		<Tag Title="Device Setting Desc" ID="$A40B" Description="" Type="0"></Tag>
+		<Tag Title="Subject Distance Range" ID="$A40C" Description="" Type="0"></Tag>
+		<Tag Title="Unique Image ID" ID="$A420" Description="" Type="0"></Tag>
+	</Category>
+	<Category Title="GPS">
+		<Tag Title="Ver" ID="$0000" Description="Version of the Global Positioning Systems (GPS) IFD, given as 2.0.0.0.\nThis property is mandatory when the PropertyTagGpsIFD property is present.\nWhen the version is 2.0.0.0, the property value is 0x02000000." Type="0"></Tag>
+		<Tag Title="Latitude Ref" ID="$0001" Description="Specifies whether the latitude is north or south. N specifies north latitude, and S specifies south latitude." Type="0"></Tag>
+		<Tag Title="Latitude" ID="$0002" Description="Latitude. Latitude is expressed as three rational values giving the degrees, minutes, and seconds respectively.\nWhen degrees, minutes, and seconds are expressed, the format is dd/1, mm/1, ss/1.\nWhen degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format is dd/1, mmmm/100, 0/1." Type="0"></Tag>
+		<Tag Title="Longitude Ref" ID="$0003" Description="Specifies whether the longitude is east or west longitude.\nE specifies east longitude, and W specifies west longitude." Type="0"></Tag>
+		<Tag Title="Longitude" ID="$0004" Description="Longitude. Longitude is expressed as three rational values giving the degrees, minutes, and seconds respectively.\nWhen degrees, minutes and seconds are expressed, the format is ddd/1, mm/1, ss/1.\nWhen degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format is ddd/1, mmmm/100, 0/1." Type="0"></Tag>
+		<Tag Title="Altitude Ref" ID="$0005" Description="Reference altitude, in meters." Type="0"></Tag>
+		<Tag Title="Altitude" ID="$0006" Description="Altitude, in meters, based on the reference altitude specified by PropertyTagGpsAltitudeRef." Type="0"></Tag>
+		<Tag Title="Gps Time" ID="$0007" Description="Time as coordinated universal time (UTC).\nThe value is expressed as three rational numbers that give the hour, minute, and second." Type="0"></Tag>
+		<Tag Title="Gps Satellites" ID="$0008" Description="Specifies the GPS satellites used for measurements.\nThis property can be used to specify the ID number, angle of elevation, azimuth, SNR, and other information about each satellite. The format is not specified.\nIf the GPS receiver is incapable of taking measurements, the value of the property must be set to NULL." Type="0"></Tag>
+		<Tag Title="Gps Status" ID="$0009" Description="Specifies the status of the GPS receiver when the image is recorded.\nA means measurement is in progress, and V means the measurement is Interoperability." Type="0"></Tag>
+		<Tag Title="Gps Measure Mode" ID="$000A" Description="Specifies the GPS measurement mode.\n2 specifies 2-D measurement, and 3 specifies 3-D measurement." Type="0"></Tag>
+		<Tag Title="Gps Dop" ID="$000B" Description="Measurement precision\nGPS DOP (data degree of precision).\nAn HDOP value is written during 2-D measurement, and a PDOP value is written during 3-D measurement."></Tag>
+		<Tag Title="Speed Ref" ID="$000C" Description="Specifies the unit used to express the GPS receiver speed of movement.\nK, M, and N represent kilometers per hour, miles per hour, and knots respectively" Type="0"></Tag>
+		<Tag Title="Speed" ID="$000D" Description="Speed of the GPS receiver movement" Type="0"></Tag>
+		<Tag Title="Track Ref" ID="$000E" Description="Specifies the reference for giving the direction of GPS receiver movement.\nT specifies true direction, and M specifies magnetic direction." Type="0"></Tag>
+		<Tag Title="Track" ID="$000F" Description="Direction of GPS receiver movement.\nThe range of values is from 0.00 to 359.99." Type="0"></Tag>
+		<Tag Title="Img Dir Ref" ID="$0010" Description="Specifies the reference for the direction of the image when it is captured.\nT specifies true direction, and M specifies magnetic direction." Type="0"></Tag>
+		<Tag Title="Img Dir" ID="$0011" Description="Direction of the image when it was captured.\nThe range of values is from 0.00 to 359.99." Type="0"></Tag>
+		<Tag Title="Map Datum" ID="$0012" Description="Specifies geodetic survey data used by the GPS receiver.\nIf the survey data is restricted to Japan, the value of this property is TOKYO or WGS-84." Type="0"></Tag>
+		<Tag Title="Dest Lat Ref" ID="$0013" Description="Specifies whether the latitude of the destination point is north or south latitude.\nN specifies north latitude, and S specifies south latitude." Type="0"></Tag>
+		<Tag Title="Dest Lat" ID="$0014" Description="Latitude of the destination point. The latitude is expressed as three rational values giving the degrees, minutes, and seconds respectively.\nWhen degrees, minutes, and seconds are expressed, the format is dd/1, mm/1, ss/1.\nWhen degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format is dd/1, mmmm/100, 0/1." Type="0"></Tag>
+		<Tag Title="Dest Long Ref" ID="$0015" Description="Specifies whether the longitude of the destination point is east or west longitude.\nE specifies east longitude, and W specifies west longitude." Type="0"></Tag>
+     	<Tag Title="Dest Long" ID="$0016" Description="Longitude of the destination point. The longitude is expressed as three rational values giving the degrees, minutes, and seconds respectively.\nWhen degrees, minutes, and seconds are expressed, the format is ddd/1, mm/1, ss/1.\nWhen degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format is ddd/1, mmmm/100, 0/1." Type="0"></Tag>
+		<Tag Title="Dest Bear Ref" ID="$0017" Description="Specifies the reference used for giving the bearing to the destination point. \nT specifies true direction, and M specifies magnetic direction." Type="0"></Tag>
+		<Tag Title="Dest Bear" ID="$0018" Description="Bearing to the destination point.\nThe range of values is from 0.00 to 359.99." Type="0"></Tag>
+		<Tag Title="Dest Dist Ref" ID="$0019" Description="Specifies the unit used to express the distance to the destination point.\nK, M, and N represent kilometers, miles, and knots respectively." Type="0"></Tag>
+		<Tag Title="Dest Dist" ID="$001A" Description="Distance to the destination point." Type="0"></Tag>
+		<Tag Title="Processing Method" ID="$001B" Description="" Type="0"></Tag>
+		<Tag Title="Area Information" ID="$001C" Description="" Type="0"></Tag>
+		<Tag Title="Date" ID="$001D" Description="" Type="0"></Tag>
+		<Tag Title="Differential" ID="$001E" Description="" Type="0"></Tag>
+	</Category>
+</PropertyTags>

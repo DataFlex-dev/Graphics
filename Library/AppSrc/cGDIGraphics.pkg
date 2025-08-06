@@ -1,0 +1,2333 @@
+﻿Use cGDIPlus.pkg
+Use cGDIGraphics.h.pkg
+Use cGDIImage.h.pkg
+Use tWinStructs.pkg
+Use cGDIPen.pkg
+Use cGDILinearGradientBrush.pkg
+Use cGDIPathGradientBrush.pkg
+Use cGDIImage.pkg
+Use cGDIFont.pkg
+Use cGDIStringFormat.pkg
+Use Structs\tRectF.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIGraphics }
+{ Description = "The Graphics class provides methods for drawing lines, curves, figures, images, and text." }
+{ Description += "a Graphics Object stores attributes of the display device and attributes of the items to be drawn" }
+Class cGDIGraphics is a cObject
+    { Description = "Creation of property to store the Pointer to the graphics object" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { DesignTime = False }
+        { Description = "Contains the Pointer to the GDI Graphics object." }
+        Property Pointer ppGraphics
+
+        { Visibility = Private }
+        { Description = "Contains an array of container states returned by BeginContainer" }
+        Property Pointer[] ppStates
+    End_Procedure
+
+    { Description = "Creates a Bitmap object based on a Graphics object, a width, and a height." }
+    { Description += "The function returns a DataFlex cGDIImage object if succesful." }
+    { MethodType = Method }
+    Function CreateImageFromGraphics Integer iWidth Integer iHeight Returns Handle
+        gpStatus eStatus
+        Pointer pGraphics pImage
+        Handle hoImage
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move 0 to pImage
+            Move (GdipCreateBitmapFromGraphics (iWidth, iHeight, pGraphics, AddressOf (pImage))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateGDIImageObject of ghoGDIPlusHandler "ImageFromGraphics" to hoImage
+                Set ppImage of hoImage to pImage
+                #IFDEF IS$WEBAPP
+                #ELSE
+                Send ConfigureMultiFrameImageDisplay of hoImage
+                #ENDIF
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Create Graphics Object from Bitmap"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return hoImage
+    End_Function
+
+    { Description = "Before destroying the object send a message to remove the graphics Object from memory" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Destroy_Object
+        Send DeleteGraphics
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Deletes the graphics if present." }
+    { MethodType = Method }
+    Procedure DeleteGraphics
+        gpStatus eStatus
+        Pointer pGraphics
+        Integer iError
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipDeleteGraphics (pGraphics)) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppGraphics to 0
+            End
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Creates a Graphics object that is associated with a specified device context." }
+    { Description += "Returns the GDI+ status code when the function fails, handle by caller" }
+    Function AttachDC Handle hDC Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        If (hDC <> 0) Begin
+            Move 0 to pGraphics
+            Move (GdipCreateFromHDC (hDC, AddressOf (pGraphics))) to eStatus
+            If (eStatus = gpOk) Begin
+                Send DeleteGraphics
+                Set ppGraphics to pGraphics
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_DeviceHandleRequired
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a Graphics object that is associated with a specified window." }
+    { Description += "Returns the GDI+ status code when the function fails, handle by caller" }
+    { MethodType = Method }
+    Function AttachWnd Handle hWnd Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        If (hWnd <> 0) Begin
+            Move 0 to pGraphics
+            Move (GdipCreateFromHWND (hWnd, AddressOf (pGraphics))) to eStatus
+            If (eStatus = gpOk) Begin
+                Send DeleteGraphics
+                Set ppGraphics to pGraphics
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_WindowHandleRequired
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Creates a Graphics object that is associated with an Image object." }
+    { Description += "Removes a possibly present reference to a previous graphics object when successful and keep track of the new graphics object." }
+    { Description += "Returns the GDI+ status code when the function fails, handle by caller" }
+    { MethodType = Method }
+    Function AttachImage Handle hoImage Returns gpStatus
+        Boolean bIsImage
+        gpStatus eStatus
+        Pointer pGraphics pImage
+        Integer iError
+
+        If (hoImage <> 0) Begin
+            Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+            If (bIsImage) Begin
+                Move 0 to pGraphics
+                Get ppImage of hoImage to pImage
+                If (pImage <> 0) Begin
+                    Move (GdipGetImageGraphicsContext (pImage, AddressOf (pGraphics))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        Send DeleteGraphics
+                        Set ppGraphics to pGraphics
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Begin a new - nested - graphics container based on rectangles with float" }
+    { Description += "Graphics containers are used to retain graphics state, such as transformations, clipping regions, and various rendering properties." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { Description += "When you have finished using a container, call the EndContainer method." }
+    Function BeginContainer tPointF DestRect tPointF SrcRect gpUnit eUnit Returns gpStatus
+        Pointer pGraphics pState
+        Pointer[] pStates
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move 0 to pState
+            Move (GdipBeginContainer (pGraphics, DestRect, SrcRect, eUnit, AddressOf (pState))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get ppStates to pStates
+                Move pState to pStates[SizeOfArray (pStates)]
+                Set ppStates to pStates
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Begin a new - nested - graphics container based on integer rectangles" }
+    { Description += "Graphics containers are used to retain graphics state, such as transformations, clipping regions, and various rendering properties." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { Description += "When you have finished using a container, call the EndContainer method." }
+    Function BeginContainerI tWinPoint DestRect tWinPoint SrcRect gpUnit eUnit Returns Handle
+        Pointer pGraphics pState
+        Pointer[] pStates
+        gpStatus eStatus
+        Handle hoContainer
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move 0 to pState
+            Move (GdipBeginContainerI (pGraphics, DestRect, SrcRect, eUnit, AddressOf (pState))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get ppStates to pStates
+                Move pState to pStates[SizeOfArray (pStates)]
+                Set ppStates to pStates
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return hoContainer
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Begin a new - nested - graphics container based on the current container" }
+    { Description += "Graphics containers are used to retain graphics state, such as transformations, clipping regions, and various rendering properties." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { Description += "When you have finished using a container, call the EndContainer method." }
+    Function BeginContainer2 Returns gpStatus
+        Pointer pGraphics pState
+        Pointer[] pStates
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move 0 to pState
+            Move (GdipBeginContainer2 (pGraphics, AddressOf (pState))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get ppStates to pStates
+                Move pState to pStates[SizeOfArray (pStates)]
+                Set ppStates to pStates
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Clears the graphics container with the passed color" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function Clear UInteger uiColor Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipGraphicsClear (pGraphics, uiColor)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Gets the horizontal resolution, in dots per inch, of the display device associated with this Graphics object" }
+    { MethodType = Method }
+    Function DpiX Returns Float
+        Pointer pGraphics
+        gpStatus eStatus
+        Float fDpiX
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move 0 to fDpiX
+            Move (GdipGetDpiX (pGraphics, AddressOf (fDpiX))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting DpiX"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return fDpiX
+    End_Function
+
+    { Description = "Gets the vertical resolution, in dots per inch, of the display device associated with this Graphics object" }
+    { MethodType = Method }
+    Function DpiY Returns Float
+        Pointer pGraphics
+        gpStatus eStatus
+        Float fDpiY
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move 0 to fDpiY
+            Move (GdipGetDpiY (pGraphics, AddressOf (fDpiY))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting DpiY"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return fDpiY
+    End_Function
+
+    { Description = "Draws an arc. The arc is part of an ellipse." }
+    { Description += "The difference between this function and the DrawArc function is the datatype of the first four arguments, float point values versus integer values" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawArc Handle hoPen Float fX Float fY Float fWidth Float fHeight Float fStart Float fSweep Returns gpStatus
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Get ppPen of hoPen to pPen
+            If (pPen <> 0) Begin
+                Move (GdipDrawArc (pGraphics, pPen, fX, fY, fWidth, fHeight, fStart, fSweep)) to eStatus
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws an arc. The arc is part of an ellipse." }
+    { Description += "The difference between this function and the DrawArc function is the datatype of the first four arguments, integer versus floating point values" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawArcI Handle hoPen Integer iX Integer iY Integer iWidth Integer iHeight Float fStart Float fSweep Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawArcI (pGraphics, pPen, iX, iY, iWidth, iHeight, fStart, fSweep)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Bézier spline based on passed float point values" }
+    { Description += "A Bézier spline does not pass through its control points. The control points act as magnets, pulling the curve in certain directions to influence the way the Bézier spline bends" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawBezier Handle hoPen tPointF StartingPoint tPointF FirstControlPoint tPointF SecondControlPoint tPointF EndPoint Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawBezier (pGraphics, pPen, StartingPoint.fX, StartingPoint.fY, FirstControlPoint.fX, FirstControlPoint.fY, SecondControlPoint.fX, SecondControlPoint.fY, EndPoint.fX, EndPoint.fY)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Bézier spline based on passed integer point values" }
+    { Description += "A Bézier spline does not pass through its control points. The control points act as magnets, pulling the curve in certain directions to influence the way the Bézier spline bends" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawBezierI Handle hoPen tWinPoint StartingPoint tWinPoint FirstControlPoint tWinPoint SecondControlPoint tWinPoint EndPoint Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawBezierI (pGraphics, pPen, StartingPoint.x, StartingPoint.Y, FirstControlPoint.X, FirstControlPoint.Y, SecondControlPoint.X, SecondControlPoint.Y, EndPoint.X, EndPoint.Y)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Bézier spline based on passed float values" }
+    { Description += "A Bézier spline does not pass through its control points. The control points act as magnets, pulling the curve in certain directions to influence the way the Bézier spline bends" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawBezier2 Handle hoPen Float fStartingPointX Float fStartingPointY Float fFirstControlPointX Float fFirstControlPointY Float fSecondControlPointX Float fSecondControlPointY Float fEndPointX Float fEndPointY Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawBezier (pGraphics, pPen, fStartingPointX, fStartingPointY, fFirstControlPointX, fFirstControlPointY, fSecondControlPointX, fSecondControlPointY, fEndPointX, fEndPointY)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Bézier spline based on passed integer values" }
+    { Description += "A Bézier spline does not pass through its control points. The control points act as magnets, pulling the curve in certain directions to influence the way the Bézier spline bends" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawBezierI2 Handle hoPen Integer iStartingPointX Integer iStartingPointY Integer iFirstControlPointX Integer iFirstControlPointY Integer iSecondControlPointX Integer iSecondControlPointY Integer iEndPointX Integer iEndPointY Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawBezierI (pGraphics, pPen, iStartingPointX, iStartingPointY, iFirstControlPointX, iFirstControlPointY, iSecondControlPointX, iSecondControlPointY, iEndPointX, iEndPointY)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Bézier spline based on passed array of float point values" }
+    { Description += "A Bézier spline does not pass through its control points. The control points act as magnets, pulling the curve in certain directions to influence the way the Bézier spline bends" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawBeziers Handle hoPen tPointF[] BezierPoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawBeziers (pGraphics, pPen, AddressOf (BezierPoints), SizeOfArray (BezierPoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Bézier spline based on passed array of integer point values" }
+    { Description += "A Bézier spline does not pass through its control points. The control points act as magnets, pulling the curve in certain directions to influence the way the Bézier spline bends" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawBeziersI Handle hoPen tWinPoint[] BezierPoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawBeziersI (pGraphics, pPen, BezierPoints, SizeOfArray (BezierPoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+
+    { Description = "Draws a closed Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "In a closed cardinal spline, the curve continues through the last point in the points array and connects with the first point in the array." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawClosedCurve Handle hoPen tPointF[] CurvePoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawClosedCurve (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a closed Cardinal Spline from the passed array with integer Curve point values" }
+    { Description += "In a closed cardinal spline, the curve continues through the last point in the points array and connects with the first point in the array." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawClosedCurveI Handle hoPen tWinPoint[] CurvePoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawClosedCurveI (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a closed Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "In a closed cardinal spline, the curve continues through the last point in the points array and connects with the first point in the array." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawClosedCurve2 Handle hoPen tPointF[] CurvePoints Float fTension Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawClosedCurve2 (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints), fTension)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a closed Cardinal Spline from the passed array with integer Curve point values" }
+    { Description += "In a closed cardinal spline, the curve continues through the last point in the points array and connects with the first point in the array." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawClosedCurve2I Handle hoPen tWinPoint[] CurvePoints Float fTension Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawClosedCurve2I (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints), fTension)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "A segment is defined as a curve that connects two consecutive points in the cardinal spline." }
+    { Description += "The ending point of each segment is the starting point for the next." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawCurve Handle hoPen tPointF[] CurvePoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawCurve (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "A segment is defined as a curve that connects two consecutive points in the cardinal spline." }
+    { Description += "The ending point of each segment is the starting point for the next." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawCurveI Handle hoPen tWinPoint[] CurvePoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawCurveI (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "A segment is defined as a curve that connects two consecutive points in the cardinal spline." }
+    { Description += "The ending point of each segment is the starting point for the next." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawCurve2 Handle hoPen tPointF[] CurvePoints Float fTension Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawCurve2 (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints), fTension)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "A segment is defined as a curve that connects two consecutive points in the cardinal spline." }
+    { Description += "The ending point of each segment is the starting point for the next." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawCurve2I Handle hoPen tWinPoint[] CurvePoints Float fTension Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawCurve2I (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints), fTension)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "A segment is defined as a curve that connects two consecutive points in the cardinal spline." }
+    { Description += "The ending point of each segment is the starting point for the next." }
+    { Description += "The numberOfSegments parameter must not be greater than the count parameter minus the offset parameter plus one." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawCurve3 Handle hoPen tPointF[] CurvePoints Integer iOffset Integer iSegments Float fTension Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawCurve3 (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints), iOffset, iSegments, fTension)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a Cardinal Spline from the passed array with float Curve point values" }
+    { Description += "A segment is defined as a curve that connects two consecutive points in the cardinal spline." }
+    { Description += "The ending point of each segment is the starting point for the next." }
+    { Description += "The numberOfSegments parameter must not be greater than the count parameter minus the offset parameter plus one." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawCurve3I Handle hoPen tWinPoint[] CurvePoints Integer iOffset Integer iSegments Float fTension Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawCurve3I (pGraphics, pPen, AddressOf (CurvePoints), SizeOfArray (CurvePoints), iOffset, iSegments, fTension)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws an ellipse with the passed width and height." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawEllipse Handle hoPen Float fFromX Float fFromY Float fWidth Float fHeight Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawEllipse (pGraphics, pPen, fFromX, fFromY, fWidth, fHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws an ellipse with the passed width and height." }
+    { Description += "The difference between this function and the DrawEllipse function is the datatype of the arguments, integer versus floating point values" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawEllipseI Handle hoPen Integer iX Integer iY Integer iWidth Integer iHeight Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawEllipseI (pGraphics, pPen, iX, iY, iWidth, iHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws an image from the information stored in the cGDIImage object passed to the method" }
+    { Description += "The width and height arguments are optional." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImage Handle hoImage Float fX Float fY Float fWidth Float fHeight Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        If (num_arguments > 3) Begin
+                            Move (GdipDrawImageRect (pGraphics, pImage, fX, fY, fWidth, fHeight)) to eStatus
+                        End
+                        Else Begin
+                            Move (GdipDrawImage (pGraphics, pImage, fX, fY)) to eStatus
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws an image from the information stored in the cGDIImage object passed to the method" }
+    { Description += "The width and height arguments are optional." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImageI Handle hoImage Integer iX Integer iY Integer iWidth Integer iHeight Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        If (num_arguments > 3) Begin
+                            Move (GdipDrawImageRectI (pGraphics, pImage, iX, iY, iWidth, iHeight)) to eStatus
+                        End
+                        Else Begin
+                            Move (GdipDrawImageI (pGraphics, pImage, iX, iY)) to eStatus
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws an image from the information stored in the cGDIImage object passed to the method" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImagePoints Handle hoImage tPointF[] DestPoints Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        Move (GdipDrawImagePoints (pGraphics, pImage, AddressOf (DestPoints), SizeOfArray (DestPoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws an image from the information stored in the cGDIImage object passed to the method" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImagePointsI Handle hoImage tWinPoint[] DestPoints Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        Move (GdipDrawImagePointsI (pGraphics, pImage, AddressOf (DestPoints), SizeOfArray (DestPoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws part of the image from the information stored in the cGDIImage object passed to the method." }
+    { Description += "The part that gets drawn is defined by Src parameter." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImageRect Handle hoImage tRectf Src Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        Move (GdipDrawImageRect (pGraphics, pImage, Src.x, Src.y, Src.width - Src.x, Src.height - Src.y)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws part of the image from the information stored in the cGDIImage object passed to the method." }
+    { Description += "The part that gets drawn is defined by Src parameter." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImageRectI Handle hoImage tWinRect Src Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        Move (GdipDrawImageRectI (pGraphics, pImage, Src.left, Src.top, Src.right - Src.left, Src.bottom - Src.top)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws part of the image from the information stored in the cGDIImage object passed to the method." }
+    { Description += "The part that gets drawn is defined by Src parameters and scaled to fill Dest parameters." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImageRectRect Handle hoImage tRectF Dest tRectF Src gpUnit iUnit Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        Move (GdipDrawImageRectRect (pGraphics, pImage, Dest.x, Dest.y, Dest.width - Dest.x, Dest.height - Dest.y, Src.x, Src.y, Src.width - Src.x, Src.height - Src.y, iUnit, 0, 0, 0)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws part of the image from the information stored in the cGDIImage object passed to the method." }
+    { Description += "The part that gets drawn is defined by Src parameter and scaled to fill Dest." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawImageRectRectI Handle hoImage tWinRect Dest tWinRect Src gpUnit iUnit Returns gpStatus
+        Boolean bIsImage
+        Pointer pGraphics pImage
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoImage <> 0) Begin
+                Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+                If (bIsImage) Begin
+                    Get ppImage of hoImage to pImage
+                    If (pImage <> 0) Begin
+                        Move (GdipDrawImageRectRectI (pGraphics, pImage, Dest.left, Dest.top, Dest.right - Dest.left, Dest.bottom - Dest.top, Src.left, Src.top, Src.right - Src.left, Src.bottom - Src.top, iUnit, 0, 0, 0)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_ImageObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a line with the passed pen from a given point to a given point." }
+    { Description += "The coordinates can be floating point values." }
+    { Description += "This may produce a smoother line as the coordinates are rounded not truncated." }
+    { Description += "The function requires a Graphics GDI+ object to be available and a valid Pen object to be passed" }
+    { Description += "The Pen object is a DataFlex object handle." }
+    { MethodType = Method }
+    Function DrawLine Handle hoPen Float fFromX Float fFromY Float fToX Float fToY Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawLine (pGraphics, pPen, fFromX, fFromY, fToX, fToY)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a line with the passed pen from a given point to a given point." }
+    { Description += "The coordinates must be integer values." }
+    { Description += "The function requires a Graphics GDI+ object to be available and a valid Pen object to be passed" }
+    { Description += "The Pen object is a DataFlex object handle." }
+    { MethodType = Method }
+    Function DrawLineI Handle hoPen Integer iFromX Integer iFromY Integer iToX Integer iToY Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawLineI (pGraphics, pPen, iFromX, iFromY, iToX, iToY)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a sequence of connected lines with the passed pen." }
+    { Description += "The coordinates must be float values." }
+    { Description += "The function requires a Graphics GDI+ object to be available and a valid Pen object to be passed" }
+    { Description += "The Pen object is a DataFlex object handle." }
+    { MethodType = Method }
+    Function DrawLines Handle hoPen tPointF[] LinePoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawLines (pGraphics, pPen, AddressOf (LinePoints), SizeOfArray (LinePoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a sequence of connected lines with the passed pen." }
+    { Description += "The coordinates must be float values." }
+    { Description += "The function requires a Graphics GDI+ object to be available and a valid Pen object to be passed" }
+    { Description += "The Pen object is a DataFlex object handle." }
+    { MethodType = Method }
+    Function DrawLinesI Handle hoPen tWinPoint[] LinePoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawLinesI (pGraphics, pPen, AddressOf (LinePoints), SizeOfArray (LinePoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a path to the graphics object" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawPath Handle hoPen Handle hoGraphicsPath Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen pPath
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Get ppPath of hoGraphicsPath to pPath
+                        If (pPath <> 0) Begin
+                            Move (GdipDrawPath (pGraphics, pPen, pPath)) to eStatus
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Create a pie starting at X,Y with the size passed via Width and Height." }
+    { Description += "The Startangle is the angle between X and the starting point of the arc that defines the pie." }
+    { Description += "The Sweepangle is the angle between starting and ending points of the arc that defines the pie." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawPie Handle hoPen Float fFromX Float fFromY Float fWidth Float fHeight Float fStartAngle Float fSweepAngle Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawPie (pGraphics, pPen, fFromX, fFromY, fWidth, fHeight, fStartAngle, fSweepAngle)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Create a pie starting at X,Y with the size passed via Width and Height." }
+    { Description += "The Startangle is the angle between X and the starting point of the arc that defines the pie." }
+    { Description += "The Sweepangle is the angle between starting and ending points of the arc that defines the pie." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawPieI Handle hoPen Integer iFromX Integer iFromY Integer iWidth Integer iHeight Float fStartAngle Float fSweepAngle Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawPieI (pGraphics, pPen, iFromX, iFromY, iWidth, iHeight, fStartAngle, fSweepAngle)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a polygon from the passed array with float polygon point values" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawPolygon Handle hoPen tPointF[] PolygonPoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawPolygon (pGraphics, pPen, AddressOf (PolygonPoints), SizeOfArray (PolygonPoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a polygon from the passed array with integer polygon point values" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawPolygonI Handle hoPen tWinPoint[] PolygonPoints Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawPolygonI (pGraphics, pPen, AddressOf (PolygonPoints), SizeOfArray (PolygonPoints))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Create a rectangle starting at X,Y with the size passed via Width and Height" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawRectangle Handle hoPen Float fX Float fY Float fWidth Float fHeight Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawRectangle (pGraphics, pPen, fX, fY, fWidth, fHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Create a rectangle starting at X,Y with the size passed via Width and Height" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawRectangleI Handle hoPen Integer iX Integer iY Integer iWidth Integer iHeight Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawRectangleI (pGraphics, pPen, iX, iY, iWidth, iHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a sequence of rectangles" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawRectangles Handle hoPen tPointF[] Rectangles Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawRectangles (pGraphics, pPen, AddressOf (Rectangles))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Draws a sequence of rectangles" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function DrawRectanglesI Handle hoPen tWinPoint[] Rectangles Returns gpStatus
+        Boolean bIsPen
+        Pointer pGraphics pPen
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoPen <> 0) Begin
+                Get IsObjectOfClass of hoPen (RefClass (cGDIPen)) to bIsPen
+                If (bIsPen) Begin
+                    Get ppPen of hoPen to pPen
+                    If (pPen <> 0) Begin
+                        Move (GdipDrawRectanglesI (pGraphics, pPen, AddressOf (Rectangles))) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "draws a string based on a font, a layout rectangle, and a format." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { Description += "Calls HandleGDIError when the Graphics, Font, StringFormat or Brush objects are not available." }
+    { MethodType = Method }
+    Function DrawString WString wValue Handle hoFont Handle hoStringFormat Handle hoBrush tRectF LayoutRect Returns gpStatus
+        gpStatus eStatus
+        Pointer pGraphics pFont pStringFormat pBrush
+        tRectF Lau
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Get ppFont of hoFont to pFont
+            If (pFont <> 0) Begin
+                Get ppStringFormat of hoStringFormat to pStringFormat
+                If (pStringFormat <> 0) Begin
+                    Get ppBrush of hoBrush to pBrush
+                    If (pBrush <> 0) Begin
+                        Move (GdipDrawString (pGraphics, AddressOf(wValue), SizeOfWString (wValue), pFont, AddressOf (LayoutRect), pStringFormat, pBrush)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Closes a graphics container that was previously opened by the BeginContainer method" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function EndContainer Returns gpStatus
+        Pointer[] pStates
+        Pointer pState
+        Integer iElements
+        gpStatus eStatus
+
+        Get ppStates to pStates
+        Move (SizeOfArray (pStates)) to iElements
+        If (iElements > 0) Begin
+            Decrement iElements
+            Move pStates[iElements] to pState
+            If (pState <> 0) Begin
+                Move (ResizeArray (pStates, iElements)) to pStates
+                Set ppStates to pStates
+                Move (GdipEndContainer (pState)) to eStatus
+            End
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Fills the path with the passed GDI+ Brush. Brush and Path are passed as DataFlex object handles" }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function FillPath Handle hoBrush Handle hoGraphicsPath Returns gpStatus
+        Boolean bIsBrush
+        gpStatus eStatus
+        Pointer pGraphics pBrush pPath
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoBrush <> 0) Begin
+                Get IsObjectOfClass of hoBrush (RefClass (cGDIBrush)) to bIsBrush
+                If (bIsBrush) Begin
+                    Get ppBrush of hoBrush to pBrush
+                    If (pBrush <> 0) Begin
+                        Get ppPath of hoGraphicsPath to pPath
+                        If (pPath <> 0) Begin
+                            Move (GdipFillPath (pGraphics, pBrush, pPath)) to eStatus
+                        End
+                        Else Begin
+                            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsPathObjectNotAvailable
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Fills a ellipse using the passed brush starting at X and Y with Width and Height". }
+    { Description += "Brush is a DataFlex object handle." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function FillEllipse Handle hoBrush Float fX Float fY Float fWidth Float fHeight Returns gpStatus
+        Boolean bIsBrush
+        Pointer pGraphics pBrush
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoBrush <> 0) Begin
+                Get IsObjectOfClass of hoBrush (RefClass (cGDIBrush)) to bIsBrush
+                If (bIsBrush) Begin
+                    Get ppBrush of hoBrush to pBrush
+                    If (pBrush <> 0) Begin
+                        Move (GdipFillEllipse (pGraphics, pBrush, fX, fY, fWidth, fHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Fills a ellipse using the passed brush starting at X and Y with Width and Height". }
+    { Description += "Brush is a DataFlex object handle." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function FillEllipseI Handle hoBrush Integer iX Integer iY Integer iWidth Integer iHeight Returns gpStatus
+        Boolean bIsBrush
+        Pointer pGraphics pBrush
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoBrush <> 0) Begin
+                Get IsObjectOfClass of hoBrush (RefClass (cGDIBrush)) to bIsBrush
+                If (bIsBrush) Begin
+                    Get ppBrush of hoBrush to pBrush
+                    If (pBrush <> 0) Begin
+                        Move (GdipFillEllipseI (pGraphics, pBrush, iX, iY, iWidth, iHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Fills a rectangle using the passed brush starting at X and Y with Width and Height". }
+    { Description += "Brush is a DataFlex object handle." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function FillRectangle Handle hoBrush Float fX Float fY Float fWidth Float fHeight Returns gpStatus
+        Boolean bIsBrush
+        Pointer pGraphics pBrush
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoBrush <> 0) Begin
+                Get IsObjectOfClass of hoBrush (RefClass (cGDIBrush)) to bIsBrush
+                If (bIsBrush) Begin
+                    Get ppBrush of hoBrush to pBrush
+                    If (pBrush <> 0) Begin
+                        Move (GdipFillRectangle (pGraphics, pBrush, fX, fY, fWidth, fHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Fills a rectangle using the passed brush starting at X and Y with Width and Height". }
+    { Description += "Brush is a DataFlex object handle." }
+    { Description += "The function returns the GDI+ status code. Handle by caller" }
+    { MethodType = Method }
+    Function FillRectangleI Handle hoBrush Integer iX Integer iY Integer iWidth Integer iHeight Returns gpStatus
+        Boolean bIsBrush
+        Pointer pGraphics pBrush
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            If (hoBrush <> 0) Begin
+                Get IsObjectOfClass of hoBrush (RefClass (cGDIBrush)) to bIsBrush
+                If (bIsBrush) Begin
+                    Get ppBrush of hoBrush to pBrush
+                    If (pBrush <> 0) Begin
+                        Move (GdipFillRectangleI (pGraphics, pBrush, iX, iY, iWidth, iHeight)) to eStatus
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Measures the extent of the string in the specified font, format, and layout rectangle." }
+    { Description += "Calls HandleGDIError when the Font or StringFormat object are not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ GetFontUnit function fails" }
+    { MethodType = Method }
+    Function MeasureString WString wValue Handle hoFont Handle hoStringFormat tRectF OriginRect Returns tWinRect
+        gpStatus eStatus
+        tWinRect ResultRect
+        tRectF BoundingBox
+        Integer iCodePointsFitted iLinesFilled
+        Pointer pGraphics pFont pStringFormat
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Get ppFont of hoFont to pFont
+            If (pFont <> 0) Begin
+                Get ppStringFormat of hoStringFormat to pStringFormat
+                If (pStringFormat <> 0) Begin
+                    Move 0 to iCodePointsFitted
+                    Move 0 to iLinesFilled
+                    Move (GdipMeasureString (pGraphics, AddressOf (wValue), SizeOfWString (wValue), pFont, AddressOf (OriginRect), pStringFormat, AddressOf (BoundingBox), AddressOf (iCodePointsFitted), AddressOf (iLinesFilled))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        Move BoundingBox.x to ResultRect.left
+                        Move BoundingBox.y to ResultRect.top
+                        Move (ResultRect.left + BoundingBox.width) to ResultRect.right
+                        Move (ResultRect.top + BoundingBox.height) to ResultRect.bottom
+                    End
+                    Else Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler eStatus "MeasureString"
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_StringFormatObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_FontObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return ResultRect
+    End_Function
+
+    // ******************************************************************************************** //
+    // ** Wrapped properties                                                                     ** //
+    // ******************************************************************************************** //
+
+    { Description = "Sets the smoothing mode" }
+    { Description += "The smoothing mode specifies whether lines, curves, and the edges of filled areas use smoothing (also called antialiasing)." }
+    { MethodType = Property }
+    { DesignTime = False }
+    { EnumList = "gpSmoothingModeInvalid, gpSmoothingModeDefault, gpSmoothingModeHighSpeed, gpSmoothingModeHighQuality" }
+    { EnumList += "gpSmoothingModeNone, gpSmoothingModeAntiAlias8x4, gpSmoothingModeAntiAlias, gpSmoothingModeAntiAlias8x8" }
+    Procedure Set peSmoothingMode gpSmoothingMode eMode
+        Pointer pGraphics
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipSetSmoothingMode (pGraphics, eMode)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting SmoothingMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+    End_Procedure
+
+    { Description = "Returns the current smoothing mode." }
+    { Description += "The smoothing mode specifies whether lines, curves, and the edges of filled areas use smoothing (also called antialiasing)." }
+    { Description += "Calls HandleGDIError when the Graphics object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ GetSmoothingMode function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    { EnumList = "gpSmoothingModeInvalid, gpSmoothingModeDefault, gpSmoothingModeHighSpeed, gpSmoothingModeHighQuality" }
+    { EnumList += "gpSmoothingModeNone, gpSmoothingModeAntiAlias8x4, gpSmoothingModeAntiAlias, gpSmoothingModeAntiAlias8x8" }
+    Function peSmoothingMode Returns gpSmoothingMode
+        gpSmoothingMode eMode
+        gpStatus eStatus
+        Pointer pGraphics
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move 0 to eMode
+            Move (GdipGetSmoothingMode (pGraphics, AddressOf (eMode))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting SmoothingMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eMode
+    End_Function
+
+    { Description = "Sets the world transformation matrix of this Graphics object to the identity matrix." }
+    { Description += "Calls HandleGDIError when the Graphics object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ ResetWorldTransform function fails" }
+    { Description += "Returns the gpStatus result of the ResetWorldTransform function" }
+    { MethodType = Method }
+    Function ResetWorldTransform Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipResetWorldTransform (pGraphics)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Reset WorldTransform"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Updates the world transformation matrix of this Graphics object with the product of itself and a rotation matrix." }
+    { Description += "Calls HandleGDIError when the Graphics object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ RotateWorldTransform function fails" }
+    { Description += "Returns the gpStatus result of the RotateWorldTransform function" }
+    { MethodType = Method }
+    Function RotateWorldTransform Float fAngle gpMatrixOrder eOrder Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipRotateWorldTransform (pGraphics, fAngle, eOrder)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Rotate WorldTransform"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+    
+    { Description = "Updates this Graphics object's world transformation matrix with the product of itself and a scaling matrix." }
+    { Description += "Calls HandleGDIError when the Graphics object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ SetScaleWorldTransform function fails" }
+    { Description += "Returns the gpStatus result of the SetScaledWorldTransform function" }
+    { MethodType = Method }
+    Function ScaleWorldTransform Float dx Float dy gpMatrixOrder eOrder Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipScaleWorldTransform (pGraphics, dx, dy, eOrder)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting ScaleWorldTransform"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Updates the clipping region of this Graphics object to a region that is the combination of itself and a rectangle." }
+    { Description += "Calls HandleGDIError when the Graphics object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ SetClipRectI function fails" }
+    { Description += "Returns the gpStatus result of the SetClipRectI function" }
+    { MethodType = Method }
+    Function SetClip tWinRect ClipRect gpCombineMode eMode Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipSetClipRectI (pGraphics, ClipRect.left, ClipRect.top, ClipRect.right - ClipRect.left, ClipRect.bottom - ClipRect.top, eMode)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting ClipRectangle"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { Description = "Sets the interpolation mode of this Graphics object." }
+    { Description += "The interpolation mode determines the algorithm that is used when images are scaled or rotated." }
+    { Description += "Calls HandleGDIError when the Graphics object is not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ SetInterPolationMode function fails" }
+    { Description += "Returns the gpStatus result of the SetInterPolationMode function" }
+    { MethodType = Method }
+    Function SetInterpolationMode gpInterpolationMode eMode Returns gpStatus
+        Pointer pGraphics
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Move (GdipSetInterpolationMode (pGraphics, eMode)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting InterpolationMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+    
+    { Description = "Sets the world transformation of this Graphics object." }
+    { Description += "Calls HandleGDIError when the Matrix or Graphics object are not available." }
+    { Description += "Sends HandleGDIResult if the GDI+ SetWorldTransform function fails" }
+    { Description += "Returns the gpStatus result of the SetWorldTransform function" }
+    { MethodType = Method }
+    Function SetWorldTransform Handle hoMatrix Returns gpStatus
+        Pointer pGraphics pMatrix
+        gpStatus eStatus
+
+        Get ppGraphics to pGraphics
+        If (pGraphics <> 0) Begin
+            Get ppMatrix of hoMatrix to pMatrix
+            If (pMatrix <> 0) Begin
+                Move (GdipSetWorldTransform (pGraphics, pMatrix)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting Worldtransform"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_GraphicsObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+End_Class

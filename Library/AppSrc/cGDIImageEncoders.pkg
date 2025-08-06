@@ -1,0 +1,170 @@
+﻿Use VdfBase.pkg
+Use cGDIPlus.pkg
+Use cGDIImageEncoders.h.pkg
+
+Use Structs\tImageCodecInfo.pkg
+Use Structs\tImageCodec.pkg
+
+{ ClassLibrary = Common }
+{ HelpTopic = cGDIImageEncoders }
+{ Description = "This class can be used to return the Codec CLSID (GUID) belonging to a certain mimetype, a mimetype" }
+{ Description += "belonging to a file extension or a file extension belonging to a mimetype" }
+Class cGDIImageEncoders is a cObject
+    { Description = "Enumerates through the available decoders installed on the PC and" }
+    { Description += "returns an array of encoder name info." }
+    Function ImageEncoders Returns tImageCodec[]
+        tImageCodec[] ImageEncoders
+        tImageCodecInfo[] ImageCodecInfos
+        UInteger uiEncoders uiSize uiEncoder
+        Pointer pImageCodecInfo
+        gpStatus eStatus
+        Boolean bOk bRetval
+
+        Move 0 to uiSize
+        Move 0 to uiEncoders
+
+        // In some situations this functions returns all zeroes, but a second call is correct :-S
+        // How many decoders are there? How big (in bytes) is the array of all ImageCodecInfo objects?
+        Move (GdipGetImageEncodersSize (AddressOf (uiEncoders), AddressOf (uiSize))) to eStatus
+        If (eStatus = gpOk and uiSize = 0) Begin
+            Move (GdipGetImageEncodersSize (AddressOf (uiEncoders), AddressOf (uiSize))) to eStatus
+        End
+
+        If (eStatus = gpOk and uiSize > 0 and uiEncoders > 0) Begin
+            // Create a buffer large enough to hold the array of ImageCodecInfo
+            // objects that will be returned by GetImageEncoders.
+            Move (Alloc (uiSize)) to pImageCodecInfo
+            // GetImageEncoders creates an array of ImageCodecInfo objects
+            // and copies that array into a previously allocated buffer.
+            Move (GdipGetImageEncoders (uiEncoders, uiSize, pImageCodecInfo)) to eStatus
+            If (eStatus = gpOK) Begin
+                Move (ResizeArray (ImageCodecInfos, uiEncoders)) to ImageCodecInfos
+                Move (MemCopy (AddressOf (ImageCodecInfos), pImageCodecInfo, uiEncoders * SizeOfType (tImageCodecInfo))) to bOk
+                If (not (bOk)) Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MemcopyEncoderCodecFailed
+                End
+                Decrement uiEncoders
+                For uiEncoder from 0 to uiEncoders
+                    Move (PointerToWString (ImageCodecInfos[uiEncoder].pszwCodecName)) to ImageEncoders[uiEncoder].sCodecName
+                    Move (PointerToWString (ImageCodecInfos[uiEncoder].pszwDllName)) to ImageEncoders[uiEncoder].sDllName
+                    Move (PointerToWString (ImageCodecInfos[uiEncoder].pszwFormatDescription)) to ImageEncoders[uiEncoder].sFormatDescription
+                    Move (PointerToWString (ImageCodecInfos[uiEncoder].pszwFileNameExtension)) to ImageEncoders[uiEncoder].sFileNameExtension
+                    Move (PointerToWString (ImageCodecInfos[uiEncoder].pszwMimeType)) to ImageEncoders[uiEncoder].sMimeType
+                Loop
+            End
+            Move (Free (pImageCodecInfo)) to bRetval
+        End
+
+        Function_Return ImageEncoders
+    End_Function
+
+    { Description = "Enumerates through the available encoders installed on the PC and" }
+    { Description += "for each encoder compare its mimetype with the parameter passed." }
+    { Description += "If the mimetype has been found then it will retrieve the CLSID structure and return" }
+    { Description += "this as a copy of the CLSID." }
+    Function CodecCLSID String sMimeType Returns tUUID
+        tUUID clsIdEncoder
+        gpStatus eStatus
+        UInteger uiEncoders uiSize uiEncoder
+        Pointer pImageCodecInfo
+        tImageCodecInfo[] ImageCodecInfos
+        Boolean bRetVal bOk
+        String sCodecMimeType
+
+        Move 0 to uiSize
+        Move 0 to uiEncoders
+
+        // In some situations this functions returns all zeroes, but a second call is correct :-S
+        // How many decoders are there? How big (in bytes) is the array of all ImageCodecInfo objects?
+        Move (GdipGetImageEncodersSize (AddressOf (uiEncoders), AddressOf (uiSize))) to eStatus
+        If (eStatus = gpOk and uiSize = 0) Begin
+            Move (GdipGetImageEncodersSize (AddressOf (uiEncoders), AddressOf (uiSize))) to eStatus
+        End
+
+        If (eStatus = gpOk and uiSize > 0 and uiEncoders > 0) Begin
+            // Create a buffer large enough to hold the array of ImageCodecInfo
+            // objects that will be returned by GetImageEncoders.
+            Move (Alloc (uiSize)) to pImageCodecInfo
+            // GetImageEncoders creates an array of ImageCodecInfo objects
+            // and copies that array into a previously allocated buffer.
+            Move (GdipGetImageEncoders (uiEncoders, uiSize, pImageCodecInfo)) to eStatus
+            If (eStatus = gpOK) Begin
+                Move (ResizeArray (ImageCodecInfos, uiEncoders)) to ImageCodecInfos
+                Move (MemCopy (AddressOf (ImageCodecInfos), pImageCodecInfo, uiEncoders * SizeOfType (tImageCodecInfo))) to bOk
+                If (not (bOk)) Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MemcopyEncoderCodecFailed
+                End
+                Decrement uiEncoders
+                For uiEncoder from 0 to uiEncoders
+                    Move (PointerToWString (ImageCodecInfos[uiEncoder].pszwMimeType)) to sCodecMimeType
+                    If (sCodecMimeType = sMimeType) Begin
+                        Move ImageCodecInfos[uiEncoder].CLSID to clsIdEncoder
+                        Move uiEncoders to uiEncoder
+                    End
+                Loop
+            End
+            Move (Free (pImageCodecInfo)) to bRetval
+        End
+
+        Function_Return clsIdEncoder
+    End_Function
+
+    { Description = "Returns the 3 letter file extension for the following mimetypes" }
+    { Description += "The extension contains NO include the dot. For 'image/jpeg' the function will return 'jpg'" }
+    { Description += "Supported mimetypes are:" }
+    { Description += "image/bmp" }
+    { Description += "image/jpeg" }
+    { Description += "image/gif" }
+    { Description += "image/tiff" }
+    { Description += "image/png" }
+    Function MimeTypeToFileType String sMimeType Returns String
+        String sExtension
+
+        Case Begin
+            Case (sMimeType = CS_BMP_Mimetype)
+                Move "bmp" to sExtension
+                Case Break
+            Case (sMimeType = CS_JPG_Mimetype)
+                Move "jpg" to sExtension
+                Case Break
+            Case (sMimeType = CS_GIF_Mimetype)
+                Move "gif" to sExtension
+                Case Break
+            Case (sMimeType = CS_TIF_Mimetype)
+                Move "tif" to sExtension
+                Case Break
+            Case (sMimeType = CS_PNG_Mimetype)
+                Move "png" to sExtension
+                Case Break
+        Case End
+
+        Function_Return sExtension
+    End_Function
+
+    { Description = "Takes the 3 letter file extension and returns one of the following mimetypes" }
+    { Description += "The extension contains NO contain the dot. For 'jpg' the function will return 'image/jpeg'" }
+    { Description += "Returns empty string if no mimetype was found" }
+    Function FileTypeToMimeType String sExtension Returns String
+        String sMimeType
+
+        Case Begin
+            Case (sExtension = "bmp")
+                Move CS_BMP_Mimetype to sMimeType
+                Case Break
+            Case (sExtension = "jpg")
+                Move CS_JPG_Mimetype to sMimeType
+                Case Break
+            Case (sExtension = "gif")
+                Move CS_GIF_Mimetype to sMimeType
+                Case Break
+            Case (sExtension = "tif")
+                Move CS_TIF_Mimetype to sMimeType
+                Case Break
+            Case (sExtension = "png")
+                Move CS_PNG_Mimetype to sMimeType
+                Case Break
+        Case End
+
+        Function_Return sMimeType
+    End_Function
+End_Class

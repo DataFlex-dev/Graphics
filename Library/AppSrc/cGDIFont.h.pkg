@@ -1,0 +1,141 @@
+﻿Use cGDIPlus.h.pkg
+
+//---------------------------------------------------------------------------
+// Unit constants
+//---------------------------------------------------------------------------
+Define gpUnit for Integer
+    Define gpUnitWorld                                      for 0
+    Define gpUnitDisplay                                    for 1
+    Define gpUnitPixel                                      for 2
+    Define gpUnitPoint                                      for 3
+    Define gpUnitInch                                       for 4
+    Define gpUnitDocument                                   for 5
+    Define gpUnitMillimeter                                 for 6
+
+Define gpFontStyle for Integer
+    Define gpFontStyleRegular                               for 0
+    Define gpFontStyleBold                                  for 1
+    Define gpFontStyleItalic                                for 2
+    Define gpFontStyleBoldItalic                            for 3
+    Define gpFontStyleUnderline                             for 4
+    Define gpFontStyleStrikeout                             for 8
+
+// GpStatus WINGDIPAPI GdipCreateFontFromDC(HDC hdc, GpFont **font);
+External_Function GdipCreateFontFromDC "GdipCreateFontFromDC" gdiplus.dll ;
+    Handle hdc ;
+    Pointer font ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateFontFromLogfontW(HDC hdc, GDIPCONST LOGFONTW *logfont, GpFont **font);
+External_Function GdipCreateFontFromLogfontW "GdipCreateFontFromLogfontW" gdiplus.dll ;
+    Handle hdc ;
+    Pointer logfont ;
+    Pointer font ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateFont(GDIPCONST GpFontFamily *fontFamily, Real emSize, INT style, Unit unit, GpFont **font);
+External_Function GdipCreateFont "GdipCreateFont" gdiplus.dll ;
+    Pointer fontFamily ;
+    Float emSize ;
+    Integer style ;
+    GpUnit unit ;
+    Pointer font ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCloneFont(GpFont* font, GpFont** cloneFont);
+External_Function GdipCloneFont "GdipCloneFont" gdiplus.dll ;
+    Pointer font ;
+    Pointer cloneFont ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeleteFont(GpFont* font);
+External_Function GdipDeleteFont "GdipDeleteFont" gdiplus.dll ;
+    Pointer font ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFamily(GpFont *font, GpFontFamily **family);
+External_Function GdipGetFamily "GdipGetFamily" gdiplus.dll ;
+    Pointer font ;
+    Pointer family ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFontStyle(GpFont *font, INT *style);
+External_Function GdipGetFontStyle "GdipGetFontStyle" gdiplus.dll ;
+    Pointer font ;
+    Pointer style ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFontSize(GpFont *font, Real *size);
+External_Function GdipGetFontSize "GdipGetFontSize" gdiplus.dll ;
+    Pointer font ;
+    Pointer size ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFontUnit(GpFont *font, Unit *unit);
+External_Function GdipGetFontUnit "GdipGetFontUnit" gdiplus.dll ;
+    Pointer font ;
+    Pointer unit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFontHeight(GDIPCONST GpFont *font, GDIPCONST GpGraphics *graphics, Real *height);
+External_Function GdipGetFontHeight "GdipGetFontHeight" gdiplus.dll ;
+    Pointer font ;
+    Pointer graphics ;
+    Pointer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFontHeightGivenDPI(GDIPCONST GpFont *font, Real dpi, Real *height);
+External_Function GdipGetFontHeightGivenDPI "GdipGetFontHeightGivenDPI" gdiplus.dll ;
+    Pointer font ;
+    Float dpi ;
+    Pointer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetLogFontW(GpFont * font, GpGraphics *graphics, LOGFONTW * logfontW);
+External_Function GdipGetLogFontW "GdipGetLogFontW" gdiplus.dll ;
+    Pointer font ;
+    Pointer graphics ;
+    Pointer logfontW ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipNewInstalledFontCollection(GpFontCollection** fontCollection);
+External_Function GdipNewInstalledFontCollection "GdipNewInstalledFontCollection" gdiplus.dll ;
+    Pointer fontCollection ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipNewPrivateFontCollection(GpFontCollection** fontCollection);
+External_Function GdipNewPrivateFontCollection "GdipNewPrivateFontCollection" gdiplus.dll ;
+    Pointer fontCollection ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeletePrivateFontCollection(GpFontCollection** fontCollection);
+External_Function GdipDeletePrivateFontCollection "GdipDeletePrivateFontCollection" gdiplus.dll ;
+    Pointer fontCollection ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFontCollectionFamilyCount(GpFontCollection* fontCollection, INT * numFound);
+External_Function GdipGetFontCollectionFamilyCount "GdipGetFontCollectionFamilyCount" gdiplus.dll ;
+    Pointer fontCollection ;
+    Pointer numFound ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFontCollectionFamilyList(GpFontCollection* fontCollection, INT numSought, GpFontFamily* gpfamilies[], INT* numFound);
+External_Function GdipGetFontCollectionFamilyList "GdipGetFontCollectionFamilyList" gdiplus.dll ;
+    Pointer fontCollection ;
+    Integer numSought ;
+    Pointer gpfamilies ;
+    Pointer numFound ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipPrivateAddFontFile(GpFontCollection* fontCollection, GDIPCONST WCHAR* filename);
+External_Function GdipPrivateAddFontFile "GdipPrivateAddFontFile" gdiplus.dll ;
+    Pointer fontCollection ;
+    Pointer filename ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipPrivateAddMemoryFont(GpFontCollection* fontCollection, GDIPCONST void* memory, INT length);
+External_Function GdipPrivateAddMemoryFont "GdipPrivateAddMemoryFont" gdiplus.dll ;
+    Pointer fontCollection ;
+    Pointer memory ;
+    Integer length ;
+    Returns gpStatus

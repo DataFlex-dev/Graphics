@@ -1,0 +1,89 @@
+﻿Use cCJCommandBarSystem.pkg
+
+Class cImageFormatMenuItem is a cCJMenuItem
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { Description = "Holds the current and destination image format" }
+        { EnumList = "gpImageFormatUndefined, gpImageFormatMemoryBMP, gpImageFormatBMP, gpImageFormatEMF" }
+        { EnumList += "gpImageFormatWMF, gpImageFormatJPEG, gpImageFormatPNG, gpImageFormatGIF, gpImageFormatTIFF" }
+        { EnumList += "gpImageFormatIcon, gpImageFormatHEIF" }
+        Property gpImageFormat peImageFormat
+        { Description = "Holds the DataFlex Object ID of a cImageContainer object" }
+        Property Handle phoImageContainer
+    End_Procedure
+
+    Function IsEnabled Returns Boolean
+        Handle hoImage hoImageContainer
+        gpImageFormat eFormat eImageFormat
+        Boolean bEnabled
+
+        Get phoImageContainer to hoImageContainer
+        If (hoImageContainer <> 0) Begin
+            Get phoImage of hoImageContainer to hoImage
+            If (hoImage <> 0) Begin
+                Get ImageFileFormat of hoImage to eFormat
+                Get peImageFormat to eImageFormat
+            End
+        End
+
+        If (eImageFormat <> gpImageFormatEMF and eImageFormat <> gpImageFormatWMF and eImageFormat <> gpImageFormatIcon) Begin
+            // Encoding to these 3 formats is not built-in
+            Move (eFormat <> eImageFormat) to bEnabled
+        End
+
+        Function_Return bEnabled
+    End_Function
+
+    Function IsChecked Returns Boolean
+        Handle hoImage hoImageContainer
+        gpImageFormat eFormat eImageFormat
+
+        Get phoImageContainer to hoImageContainer
+        If (hoImageContainer <> 0) Begin
+            Get phoImage of hoImageContainer to hoImage
+            If (hoImage <> 0) Begin
+                Get ImageFileFormat of hoImage to eFormat
+                Get peImageFormat to eImageFormat
+            End
+        End
+
+        Function_Return (eFormat = eImageFormat)
+    End_Function
+
+    Procedure OnExecute Variant vCommandBarControl
+        gpImageFormat eImageFormat
+        Handle hoImageContainer
+
+        Get phoImageContainer to hoImageContainer
+        If (hoImageContainer <> 0) Begin
+            Get peImageFormat to eImageFormat
+            Case Begin
+                Case (eImageFormat = gpImageFormatEMF)
+                    // It is not possible to encode an image to this format, there is no encoder built-in
+                    Case Break
+                Case (eImageFormat = gpImageFormatIcon)
+                    // It is not possible to encode an image to this format, there is no encoder built-in
+                    Case Break
+                Case (eImageFormat = gpImageFormatWMF)
+                    // It is not possible to encode an image to this format, there is no encoder built-in
+                    Case Break
+                Case (eImageFormat = gpImageFormatPNG)
+                    Send ConvertImage of hoImageContainer CS_PNG_Mimetype
+                    Case Break
+                Case (eImageFormat = gpImageFormatGIF)
+                    Send ConvertImage of hoImageContainer CS_GIF_Mimetype
+                    Case Break
+                Case (eImageFormat = gpImageFormatBMP)
+                    Send ConvertImage of hoImageContainer CS_BMP_Mimetype
+                    Case Break
+                Case (eImageFormat = gpImageFormatTIFF)
+                    Send ConvertImage of hoImageContainer CS_TIF_Mimetype
+                    Case Break
+                Case (eImageFormat = gpImageFormatJPEG)
+                    Send ConvertImage of hoImageContainer CS_JPG_Mimetype
+                    Case Break
+            Case End
+        End
+    End_Procedure
+End_Class

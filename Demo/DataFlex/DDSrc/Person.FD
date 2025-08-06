@@ -1,0 +1,9 @@
+#REPLACE FILE2 Person
+#REPLACE Person.Recnum |FN2,0
+#REPLACE Person.ID |FN2,1
+#REPLACE Person.LastName |FS2,2
+#REPLACE Person.FirstName |FS2,3
+#REPLACE Person.MiddleInitials |FS2,4
+#REPLACE Person.Birthdate |FD2,5
+#REPLACE Person.Comments |FS2,6
+#REPLACE Person.StartedWithDF |FN2,7

@@ -1,0 +1,472 @@
+﻿Use cGDIPlus.pkg
+Use cImageContainer.pkg
+Use Nesting.pkg
+Use Navigate.pkg
+Use Server.pkg
+Use refmodes.pkg
+Use Ole32.h.pkg
+Use cGDIImageEncoders.pkg
+
+{ ClassLibrary = Windows }
+{ DesignerClass = cDTContainer3D }
+{ OverrideProperty = psImage Visibility = Private }
+{ OverrideProperty = pbSelectImage InitialValue = True }
+{ DataBindable = True }
+{ DataAware = True }
+{ HelpTopic = cDbImageContainer }
+{ Description = "Database aware version of the cImageContainer class. Supports the Entry_Item statement." }
+Class cDbImageContainer is a cImageContainer
+    { MethodType = Event }
+    { Description = "Setup the object defaults:" }
+    { Description += "- Allows image replacement selection by setting pbSelectImage to True. " }
+    { Description += "- Do not store the path of an image. In most cases not desired as it will be a local path." }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set pbSelectImage to True
+
+        { Category = "Image" }
+        { Description = "Indicates if the path of the image should be stored or not. In most cases not desired as it will be a local path." }
+        Property Boolean pbStorePath False
+        { Category = "Image" }
+        { Description = "Use this mimetype when writing the image to disk or database" }
+        { EnumList = "CS_BMP_Mimetype, CS_JPG_Mimetype, CS_GIF_Mimetype, CS_TIF_Mimetype, CS_PNG_Mimetype" }
+        Property String psMimeType CS_JPG_Mimetype
+        { Category = "Image" }
+        { Description = "When saving an image this property determines the quality of the image. The default value of 100 stands for 100% or high quality." }
+        Property Integer piImageQuality 100
+
+        // Private properties
+        { Visibility = Private }
+        Property Integer ppiDataFile
+        { Visibility = Private }
+        Property Integer ppiDataField
+
+        Send Define_Nesting
+        Send Define_Navigation
+        Send Define_Server
+    End_Procedure
+
+    Import_Class_Protocol Nesting_Mixin
+    Import_Class_Protocol Navigate_Mixin
+    Import_Class_Protocol Server_Mixin
+
+    // ******************************************************************************************** //
+    // ** Database support                                                                       ** //
+    // ******************************************************************************************** //
+
+    { Description = "Binds to a database field" }
+    { Visibility = Private }
+    Procedure Bind_Data Integer iFile Integer iField
+        Set Data_File to iFile
+        Set Data_Field to iField
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Sets the changed state of the database column for the image if the image is connected to a DDO" }
+    Procedure Set Changed_State Boolean bChanged
+        Integer iDataFile iDataField
+        Handle hoServer
+
+        Forward Set Changed_State to bChanged
+
+        Get Server to hoServer
+        If (hoServer <> 0) Begin
+            Get Object_Id of hoServer to hoServer
+            If (hoServer <> 0) Begin
+                Get Data_File to iDataFile
+                Get Data_Field to iDataField
+        
+                If (iDataFile <> 0 and iDataField <> 0) Begin
+                    Set File_Field_Changed_State of hoServer iDataFile iDataField to bChanged
+                End                
+            End
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Removes the current image. When the image is file based the filename property will be set to an empty string" }
+    { Description += "When the image comes from a database the image object will be destroyed, removed from screen." }
+    Procedure Clear_Data
+        Integer iDataFile iDataField iType iResult
+        String sValue
+        Handle hoImage
+        UChar[] ucaValue
+
+        Get Data_File to iDataFile
+        Get Data_Field to iDataField
+
+        If (iDataFile <> 0 and iDataField <> 0) Begin
+            Get_Attribute DF_FIELD_TYPE of iDataFile iDataField to iType
+            If (iType <> DF_BINARY) Begin
+                Set psImage to ""
+            End
+            Else Begin
+                Get phoImage to hoImage
+                If (hoImage <> 0) Begin
+                    Send Destroy of hoImage
+                    Set phoImage to 0
+                    Send RemoveBitmap
+                    Send RedrawImage
+                End
+            End
+        End
+    End_Procedure
+
+    { Description = "Returns the Data_File reference" }
+    { Visibility = Private }
+    Function Data_File Integer iItem Returns Integer
+        Integer iDataFile
+
+        Get ppiDataFile to iDataFile
+
+        Function_Return iDataFile
+    End_Function
+
+    { Description = "Sets the Data_File reference" }
+    { Visibility = Private }
+    Procedure Set Data_File Integer iItem Integer iFile
+        Set ppiDataFile to iFile
+    End_Procedure
+
+    { Description = "Returns the Data_Field reference" }
+    { Visibility = Private }
+    Function Data_Field Integer iItem Returns Integer
+        Integer iDataField
+
+        Get ppiDataField to iDataField
+
+        Function_Return iDataField
+    End_Function
+
+    { Description = "Returns the Data_Field reference" }
+    { Visibility = Private }
+    Procedure Set Data_Field Integer iItem Integer iField
+        Set ppiDataField to iField
+    End_Procedure
+
+    { Description = "Always returns true to indicate this is a DEO control object" }
+    { Visibility = Private }
+    Function DEO_Control_Object Returns Integer
+        Function_Return 1
+    End_Function
+
+    { Visibility = Private }
+    { Description = "Responds to the display request by reading image data and displaying the image" }
+    { MethodType = Event }
+    Procedure Entry_Display Integer iFile Integer iFlag
+        Integer iDataFile iDataField
+        Boolean bFound
+
+        Get Data_File to iDataFile
+        Get Data_Field to iDataField
+
+        If (iFile = 0) Begin
+            Is_File_Included iDataFile 1
+        End
+
+        Move (Found) to bFound
+        If (iFile <> 0) Begin
+            Move (iFile = iDataFile or iFlag = True) to bFound
+        End
+        If (bFound) Begin
+            Send Read_Data
+            Set Changed_State to False
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "If a request to clear the object is received clear the data and set the changed_state to false" }
+    Procedure Entry_Clear Integer iFile
+        Boolean bFound
+        Integer iDataFile
+
+        Move (iFile = 0) to bFound
+        If (not (bFound)) Begin
+            Get Data_File to iDataFile
+            Is_File_Included iDataFile 0
+        End
+        Move (Found) to bFound
+        If (bFound) Begin
+            Send Clear_Data
+            Set Changed_State to False
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Make no difference between Clear and Clear All" }
+    Procedure Entry_Clear_All Integer iFile
+        Send Entry_Clear iFile
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Determines if a Write_Data message should be send or not." }
+    Procedure Entry_Update Integer iFile Integer iFlag
+        Integer iDataFile iDataField iItem iStat
+        Handle hoServer
+        Boolean bFound bChanged
+        String sValue
+
+        Get Server to hoServer
+        Get Data_File to iDataFile
+        Get Data_Field to iDataField
+
+        If (iFile = 0 and iFlag = 3) Begin
+            Is_File_Included iDataFile 1
+            Move (Found) to bFound
+        End
+        Else Begin
+            Move (iFile = iDataFile or iFile = 0) to bFound
+        End
+        If (bFound) Begin
+            Get Changed_State to bChanged
+            If (iFlag <> 1 and (not (bChanged))) Begin
+                Get_Attribute DF_FILE_STATUS of iDataFile to iStat
+                If (iStat <> DF_FILE_INACTIVE) Begin
+                    Move False to bFound
+                End
+            End
+            If (bFound) Begin
+                Send Write_Data
+            End
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Returns true if the object is connected to a database table and column" }
+    Function IsDataBound Returns Boolean
+        Boolean bIsBound
+        Integer iDataFile iDataField
+
+        Get Data_File to iDataFile
+        Get Data_Field to iDataField
+        Move (iDataFile <> 0 and iDataField <> 0) to bIsBound
+
+        Function_Return bIsBound
+    End_Function
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Returns true when the object is connected to a database table and column AND the column's data-type is binary" }
+    Function IsBinaryField Returns Boolean
+        Boolean bIsBinary bIsDataBound
+        Integer iDataFile iDataField iType
+
+        Get IsDataBound to bIsDataBound
+        If (bIsDataBound) Begin
+            Get Data_File to iDataFile
+            Get Data_Field to iDataField
+            Get_Attribute DF_FIELD_TYPE of iDataFile iDataField to iType
+            Move (iType = DF_BINARY) to bIsBinary
+        End
+
+        Function_Return bIsBinary
+    End_Function
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Consider this a single item object" }
+    Function Item_Count Returns Integer
+        Function_Return 1
+    End_Function
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "If the object is connected to a database table and column the data-type determines if the image data" }
+    { Description += "will be read from a file on disk or from the column directly considering the data being a BLOB" }
+    Procedure Read_Data
+        Integer iDataFile iDataField iType iResult
+        String sValue
+        Handle hoImage
+        UChar[] ucaValue
+
+        Get Data_File to iDataFile
+        Get Data_Field to iDataField
+
+        If (iDataFile <> 0 and iDataField <> 0) Begin
+            Get_Attribute DF_FIELD_TYPE of iDataFile iDataField to iType
+            If (iType <> DF_BINARY) Begin
+                Get_Field_Value iDataFile iDataField to sValue
+                Set psImage to (Trim (sValue))
+            End
+            Else Begin
+                Get phoImage to hoImage
+                If (hoImage <> 0) Begin
+                    Send Destroy of hoImage
+                End
+                Get_Field_Value iDataFile iDataField to ucaValue
+                Get CreateImageFromUCharArray of ghoGDIPlusHandler ucaValue to hoImage
+                Move (ResizeArray (ucaValue, 0)) to ucaValue
+                Set phoImage to hoImage
+                Send RedrawImage
+            End
+            Send ReadImageMimeType
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Determines the image mimetype as string and store this value in the psMimeType property" }
+    Procedure ReadImageMimeType
+        Handle hoImage
+        String sMimeType
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get ImageMimeType of hoImage to sMimeType
+            Set psMimeType to sMimeType
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "Send a clear/clear all request and remove the image from the display" }
+    { Description += "Does not clear and redraw on save or delete" }
+    Procedure Refresh Integer eMode
+        If (eMode <= MODE_CLEAR_ALL) Begin
+            If (eMode = MODE_CLEAR_ALL) Begin
+                Send Entry_Clear_All 1
+            End
+            Else Begin
+                Send Entry_Clear 1
+                Send Entry_Display 0 0
+            End
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "Used to save the image information to a database table and column. The column must be a binary column" }
+    Procedure SaveToBinaryField
+        Handle hoImage
+        Boolean bIsBinary
+        UChar[] ucaValue
+        Integer eImageType iDataFile iDataField iImageQuality iLength
+        String sMimeType
+        tEncoderParameters EncoderParameters
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get IsBinaryField to bIsBinary
+            If (bIsBinary) Begin
+                Get ImageType of hoImage to eImageType
+                If (eImageType = gpImageTypeBitmap) Begin
+                    Get psMimeType to sMimeType
+                    Get piImageQuality to iImageQuality
+                    Move (ResizeArray (EncoderParameters.Parameter, 1)) to EncoderParameters.Parameter
+                    Move 1 to EncoderParameters.uiCount
+                    Get CreateEncoderQualityParameter of ghoGDIPlusHandler iImageQuality to EncoderParameters.Parameter[0]
+                    Set pEncoderParameters of hoImage to EncoderParameters
+                    Get SaveImageToUCharArray of hoImage sMimeType to ucaValue
+                    Get Data_File to iDataFile
+                    Get Data_Field to iDataField
+                    Get_Attribute DF_FIELD_LENGTH of iDataFile iDataField to iLength
+                    If (iLength >= SizeOfArray (ucaValue)) Begin
+                        Set_Field_Value iDataFile iDataField to ucaValue
+                    End
+                    Else Begin
+                        Error DFERR_TEXT_TOO_LARGE_FOR_FIELD (sFormat (C_$MaxLenAndCurrentLen, iLength, SizeOfArray (ucaValue)))
+                    End
+                End
+            End
+        End
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "Used to save the image information to a file on disk and store the name of the file in the connected database table and column" }
+    Procedure SaveToStringField
+        String sName
+        Handle hoSaveAsDialog
+        Boolean bOk bStorePath bFileExists
+        gpStatus eStatus
+        Integer iDataFile iDataField iLength
+
+        Get psImage to sName
+        If (sName = '') Begin
+            Get Create (RefClass (SaveAsDialog)) to hoSaveAsDialog
+            Get psImagePath to sName
+            Set Initial_Folder of hoSaveAsDialog to sName
+            Get Show_Dialog of hoSaveAsDialog to bOk
+            If (bOk) Begin
+                Get File_Name of hoSaveAsDialog to sName
+            End
+            Send Destroy of hoSaveAsDialog
+            // If the user does not enter/select a file the SaveImageToFile returns an error
+        End
+        File_Exist sName bFileExists
+        If (not (bFileExists)) Begin
+            Get SaveImageToFile sName to eStatus
+        End
+        If (eStatus = gpOk) Begin
+            Get pbStorePath to bStorePath
+            If (not (bStorePath)) Begin
+                Move (ExtractFileName (sName)) to sName
+            End
+            Get Data_File to iDataFile
+            Get Data_Field to iDataField
+            
+            Get_Attribute DF_FIELD_LENGTH of iDataFile iDataField to iLength
+            If (iLength >= Length (sName)) Begin
+                Set_Field_Value iDataFile iDataField to sName
+            End
+            Else Begin
+                Error DFERR_TEXT_TOO_LARGE_FOR_FIELD (sFormat (C_$MaxLenAndCurrentLen, iLength, Length (sName)))
+            End
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Send the instruction to select an image from disk and determine the mime type of the image based on the filename extension." }
+    Function SelectImage Returns String
+        String sFileName sFileType sMimeType
+        Handle hoImageEncoders
+        Integer iDataFile iDataField iType
+
+        Forward Get SelectImage to sFileName
+
+        Get Create (RefClass (cGDIImageEncoders)) to hoImageEncoders
+
+        Get FileExtension sFileName to sFileType
+        Get FileTypeToMimeType of hoImageEncoders sFileType to sMimeType
+        Set psMimeType to sMimeType
+
+        Send Destroy of hoImageEncoders
+
+        Function_Return sFileName
+    End_Function
+
+    { Visibility = Private }
+    Procedure Update_Dependent_Items
+    End_Procedure
+
+    { Description = "Allow validation" }
+    { Visibility = Private }
+    Function Validate_Items Integer iFlag Returns Integer
+    End_Function
+
+    { Visibility = Private }
+    { Description = "Write the image data to a disk file or to a database table column" }
+    Procedure Write_Data
+        Handle hoImage
+        Boolean bIsDataBound bIsBinaryField
+
+        Get phoImage to hoImage
+        If (hoImage <> 0) Begin
+            Get IsDataBound to bIsDataBound
+            If (bIsDataBound) Begin
+                Get IsBinaryField to bIsBinaryField
+                If (bIsBinaryField) Begin
+                    Send SaveToBinaryField
+                End
+                Else Begin
+                    Send SaveToStringField
+                End
+            End
+        End
+    End_Procedure
+End_Class

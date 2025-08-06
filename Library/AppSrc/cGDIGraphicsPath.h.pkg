@@ -1,0 +1,528 @@
+﻿Use cGDIPlus.h.pkg
+
+//--------------------------------------------------------------------------
+// Default bezier flattening tolerance in device pixels.
+//--------------------------------------------------------------------------
+Define gpFlatnessDefault for 0.25
+
+Define gpPathPointType for Integer
+    Define gpPathPointTypeStart         for 0      // Indicates that the point is the start of a figure
+    Define gpPathPointTypeLine          for 1      // Indicates that the point is one of the two endpoints of a line
+    Define gpPathPointTypeBezier        for 2      // Indicates that the point is an endpoint or control point of a cubic Bézier spline
+    Define gpPathPointTypePathTypeMask  for |CI$7  // Masks all bits except for the three low-order bits, which indicate the point type
+    Define gpPathPointTypePathDashMode  for |CI$10 // Not used.
+    Define gpPathPointTypePathMarker    for |CI$20 // Specifies that the point is a marker
+    Define gpPathPointTypeCloseSubpath  for |CI$80 // Specifies that the point is the last point in a closed subpath (figure)
+    Define gpPathPointTypeBezier3       for 3      // Indicates that the point is an endpoint or control point of a cubic Bézier spline
+
+Define gpWarpMode for Integer
+    Define gpWarpModePerspective    for 0 // Specifies a perspective warp
+    Define gpWarpModeBilinear       for 1 // Specifies a bilinear warp
+
+// GpStatus WINGDIPAPI GdipCreatePath(GpFillMode brushMode, GpPath **path)
+External_Function GdipCreatePath "GdipCreatePath" gdiplus.dll ;
+    gpFillMode brushMode ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreatePath2(GDIPCONST GpPointF* points, GDIPCONST BYTE* types, INT count, GpFillMode fillMode, GpPath **path)
+External_Function GdipCreatePath2 "GdipCreatePath2" gdiplus.dll ;
+    Pointer points ;
+    Pointer types ;
+    Integer count ;
+    gpFillMode fillMode ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreatePath2I(GDIPCONST GpPoint* points, GDIPCONST BYTE* types, INT count, GpFillMode fillMode, GpPath **path)
+External_Function GdipCreatePath2I "GdipCreatePath2I" gdiplus.dll ;
+    Pointer points ;
+    Pointer types ;
+    Integer count ;
+    gpFillMode fillMode ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipClonePath(GpPath* path, GpPath **clonePath)
+External_Function GdipClonePath "GdipClonePath" gdiplus.dll ;
+    Pointer path ;
+    Pointer clonePath ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeletePath(GpPath* path)
+External_Function GdipDeletePath "GdipDeletePath" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipResetPath(GpPath* path)
+External_Function GdipResetPath "GdipResetPath" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPointCount(GpPath* path, INT* count)
+External_Function GdipGetPointCount "GdipGetPointCount" gdiplus.dll ;
+    Pointer path ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathTypes(GpPath* path, BYTE* types, INT count)
+External_Function GdipGetPathTypes "GdipGetPathTypes" gdiplus.dll ;
+    Pointer path ;
+    Pointer types ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathPoints(GpPath* path, GpPointF* points, INT count)
+External_Function GdipGetPathPoints "GdipGetPathPoints" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathPointsI(GpPath* path, GpPoint* points, INT count)
+External_Function GdipGetPathPointsI "GdipGetPathPointsI" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathFillMode(GpPath *path, GpFillMode *fillmode)
+External_Function GdipGetPathFillMode "GdipGetPathFillMode" gdiplus.dll ;
+    Pointer path ;
+    Pointer fillmode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathFillMode(GpPath *path, GpFillMode fillmode)
+External_Function GdipSetPathFillMode "GdipSetPathFillMode" gdiplus.dll ;
+    Pointer path ;
+    gpFillMode fillmode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathData(GpPath *path, GpPathData* pathData)
+External_Function GdipGetPathData "GdipGetPathData" gdiplus.dll ;
+    Pointer path ;
+    Pointer pathData ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipStartPathFigure(GpPath *path)
+External_Function GdipStartPathFigure "GdipStartPathFigure" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipClosePathFigure(GpPath *path)
+External_Function GdipClosePathFigure "GdipClosePathFigure" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipClosePathFigures(GpPath *path)
+External_Function GdipClosePathFigures "GdipClosePathFigures" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPathMarker(GpPath* path)
+External_Function GdipSetPathMarker "GdipSetPathMarker" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipClearPathMarkers(GpPath* path)
+External_Function GdipClearPathMarkers "GdipClearPathMarkers" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipReversePath(GpPath* path)
+External_Function GdipReversePath "GdipReversePath" gdiplus.dll ;
+    Pointer path ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathLastPoint(GpPath* path, GpPointF* lastPoint)
+External_Function GdipGetPathLastPoint "GdipGetPathLastPoint" gdiplus.dll ;
+    Pointer path ;
+    Pointer lastPoint ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathLine(GpPath *path, Real x1, Real y1, Real x2, Real y2)
+External_Function GdipAddPathLine "GdipAddPathLine" gdiplus.dll ;
+    Pointer path ;
+    Float x1 ;
+    Float y1 ;
+    Float x2 ;
+    Float y2 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathLine2(GpPath *path, GDIPCONST GpPointF *points, INT count)
+External_Function GdipAddPathLine2 "GdipAddPathLine2" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathArc(GpPath *path, Real x, Real y, Real width, Real height, Real startAngle, Real sweepAngle)
+External_Function GdipAddPathArc "GdipAddPathArc" gdiplus.dll ;
+    Pointer path ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathBezier(GpPath *path, Real x1, Real y1, Real x2, Real y2, Real x3, Real y3, Real x4, Real y4)
+External_Function GdipAddPathBezier "GdipAddPathBezier" gdiplus.dll ;
+    Pointer path ;
+    Float x1 ;
+    Float y1 ;
+    Float x2 ;
+    Float y2 ;
+    Float x3 ;
+    Float y3 ;
+    Float x4 ;
+    Float y4 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathBeziers(GpPath *path, GDIPCONST GpPointF *points, INT count)
+External_Function GdipAddPathBeziers "GdipAddPathBeziers" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathCurve(GpPath *path, GDIPCONST GpPointF *points, INT count)
+External_Function GdipAddPathCurve "GdipAddPathCurve" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathCurve2(GpPath *path, GDIPCONST GpPointF *points, INT count, Real tension)
+External_Function GdipAddPathCurve2 "GdipAddPathCurve2" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathCurve3(GpPath *path, GDIPCONST GpPointF *points, INT count, INT offset, INT numberOfSegments, Real tension)
+External_Function GdipAddPathCurve3 "GdipAddPathCurve3" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Integer offset ;
+    Integer numberOfSegments ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathClosedCurve(GpPath *path, GDIPCONST GpPointF *points, INT count)
+External_Function GdipAddPathClosedCurve "GdipAddPathClosedCurve" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathClosedCurve2(GpPath *path, GDIPCONST GpPointF *points, INT count, Real tension)
+External_Function GdipAddPathClosedCurve2 "GdipAddPathClosedCurve2" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathRectangle(GpPath *path, Real x, Real y, Real width, Real height)
+External_Function GdipAddPathRectangle "GdipAddPathRectangle" gdiplus.dll ;
+    Pointer path ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathRectangles(GpPath *path, GDIPCONST GpRectF *rects, INT count)
+External_Function GdipAddPathRectangles "GdipAddPathRectangles" gdiplus.dll ;
+    Pointer path ;
+    Pointer rects ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathEllipse(GpPath *path, Real x, Real y, Real width, Real height)
+External_Function GdipAddPathEllipse "GdipAddPathEllipse" gdiplus.dll ;
+    Pointer path ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathPie(GpPath *path, Real x, Real y, Real width, Real height, Real startAngle, Real sweepAngle)
+External_Function GdipAddPathPie "GdipAddPathPie" gdiplus.dll ;
+    Pointer path ;
+    Float x ;
+    Float y ;
+    Float width ;
+    Float height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathPolygon(GpPath *path, GDIPCONST GpPointF *points, INT count)
+External_Function GdipAddPathPolygon "GdipAddPathPolygon" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathPath(GpPath *path, GDIPCONST GpPath* addingPath, BOOL connect)
+External_Function GdipAddPathPath "GdipAddPathPath" gdiplus.dll ;
+    Pointer path ;
+    Pointer addingPath ;
+    Boolean connect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathString(GpPath *path, GDIPCONST WCHAR *String, INT length, GDIPCONST GpFontFamily *family, INT style, Real emSize, GDIPCONST RectF *layoutRect, GDIPCONST GpStringFormat *format)
+External_Function GdipAddPathString "GdipAddPathString" gdiplus.dll ;
+    Pointer path ;
+    Pointer String ;
+    Integer length ;
+    Pointer family ;
+    Integer style ;
+    Float emSize ;
+    Pointer layoutRect ;
+    Pointer format ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathStringI(GpPath *path, GDIPCONST WCHAR *String, INT length, GDIPCONST GpFontFamily *family, INT style, Real emSize, GDIPCONST Rect *layoutRect, GDIPCONST GpStringFormat *format)
+External_Function GdipAddPathStringI "GdipAddPathStringI" gdiplus.dll ;
+    Pointer path ;
+    Pointer String ;
+    Integer length ;
+    Pointer family ;
+    Integer style ;
+    Float emSize ;
+    Pointer layoutRect ;
+    Pointer format ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathLineI(GpPath *path, INT x1, INT y1, INT x2, INT y2)
+External_Function GdipAddPathLineI "GdipAddPathLineI" gdiplus.dll ;
+    Pointer path ;
+    Integer x1 ;
+    Integer y1 ;
+    Integer x2 ;
+    Integer y2 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathLine2I(GpPath *path, GDIPCONST GpPoint *points, INT count)
+External_Function GdipAddPathLine2I "GdipAddPathLine2I" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathArcI(GpPath *path, INT x, INT y, INT width, INT height, Real startAngle, Real sweepAngle)
+External_Function GdipAddPathArcI "GdipAddPathArcI" gdiplus.dll ;
+    Pointer path ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathBezierI(GpPath *path, INT x1, INT y1, INT x2, INT y2, INT x3, INT y3, INT x4, INT y4)
+External_Function GdipAddPathBezierI "GdipAddPathBezierI" gdiplus.dll ;
+    Pointer path ;
+    Integer x1 ;
+    Integer y1 ;
+    Integer x2 ;
+    Integer y2 ;
+    Integer x3 ;
+    Integer y3 ;
+    Integer x4 ;
+    Integer y4 ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathBeziersI(GpPath *path, GDIPCONST GpPoint *points, INT count)
+External_Function GdipAddPathBeziersI "GdipAddPathBeziersI" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathCurveI(GpPath *path, GDIPCONST GpPoint *points, INT count)
+External_Function GdipAddPathCurveI "GdipAddPathCurveI" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathCurve2I(GpPath *path, GDIPCONST GpPoint *points, INT count, Real tension)
+External_Function GdipAddPathCurve2I "GdipAddPathCurve2I" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathCurve3I(GpPath *path, GDIPCONST GpPoint *points, INT count, INT offset, INT numberOfSegments, Real tension)
+External_Function GdipAddPathCurve3I "GdipAddPathCurve3I" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Integer offset ;
+    Integer numberOfSegments ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathClosedCurveI(GpPath *path, GDIPCONST GpPoint *points, INT count)
+External_Function GdipAddPathClosedCurveI "GdipAddPathClosedCurveI" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathClosedCurve2I(GpPath *path, GDIPCONST GpPoint *points, INT count, Real tension)
+External_Function GdipAddPathClosedCurve2I "GdipAddPathClosedCurve2I" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Float tension ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathRectangleI(GpPath *path, INT x, INT y, INT width, INT height)
+External_Function GdipAddPathRectangleI "GdipAddPathRectangleI" gdiplus.dll ;
+    Pointer path ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathRectanglesI(GpPath *path, GDIPCONST GpRect *rects, INT count)
+External_Function GdipAddPathRectanglesI "GdipAddPathRectanglesI" gdiplus.dll ;
+    Pointer path ;
+    Pointer rects ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathEllipseI(GpPath *path, INT x, INT y, INT width, INT height)
+External_Function GdipAddPathEllipseI "GdipAddPathEllipseI" gdiplus.dll ;
+    Pointer path ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathPieI(GpPath *path, INT x, INT y, INT width, INT height, Real startAngle, Real sweepAngle)
+External_Function GdipAddPathPieI "GdipAddPathPieI" gdiplus.dll ;
+    Pointer path ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Float startAngle ;
+    Float sweepAngle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipAddPathPolygonI(GpPath *path, GDIPCONST GpPoint *points, INT count)
+External_Function GdipAddPathPolygonI "GdipAddPathPolygonI" gdiplus.dll ;
+    Pointer path ;
+    Pointer points ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFlattenPath(GpPath *path, GpMatrix* matrix, Real flatness)
+External_Function GdipFlattenPath "GdipFlattenPath" gdiplus.dll ;
+    Pointer path ;
+    Pointer matrix ;
+    Float flatness ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipWindingModeOutline( GpPath *path, GpMatrix *matrix, Real flatness )
+External_Function GdipWindingModeOutline "GdipWindingModeOutline" gdiplus.dll ;
+    Pointer path ;
+    Pointer matrix ;
+    Float flatness ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipWidenPath( GpPath *nativePath, GpPen *pen, GpMatrix *matrix, Real flatness )
+External_Function GdipWidenPath "GdipWidenPath" gdiplus.dll ;
+    Pointer nativePath ;
+    Pointer pen ;
+    Pointer matrix ;
+    Float flatness ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipWarpPath(GpPath *path, GpMatrix* matrix, GDIPCONST GpPointF *points, INT count, Real srcx, Real srcy, Real srcwidth, Real srcheight, WarpMode warpMode, Real flatness)
+External_Function GdipWarpPath "GdipWarpPath" gdiplus.dll ;
+    Pointer path ;
+    Pointer matrix ;
+    Pointer points ;
+    Integer count ;
+    Float srcx ;
+    Float srcy ;
+    Float srcwidth ;
+    Float srcheight ;
+    gpWarpMode warpMode ;
+    Float flatness ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTransformPath(GpPath* path, GpMatrix* matrix)
+External_Function GdipTransformPath "GdipTransformPath" gdiplus.dll ;
+    Pointer path ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathWorldBounds(GpPath* path, GpRectF* bounds, GDIPCONST GpMatrix *matrix, GDIPCONST GpPen *pen)
+External_Function GdipGetPathWorldBounds "GdipGetPathWorldBounds" gdiplus.dll ;
+    Pointer path ;
+    Pointer bounds ;
+    Pointer matrix ;
+    Pointer pen ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPathWorldBoundsI(GpPath* path, GpRect* bounds, GDIPCONST GpMatrix *matrix, GDIPCONST GpPen *pen)
+External_Function GdipGetPathWorldBoundsI "GdipGetPathWorldBoundsI" gdiplus.dll ;
+    Pointer path ;
+    Pointer bounds ;
+    Pointer matrix ;
+    Pointer pen ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisiblePathPoint(GpPath* path, Real x, Real y, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsVisiblePathPoint "GdipIsVisiblePathPoint" gdiplus.dll ;
+    Pointer path ;
+    Float x ;
+    Float y ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisiblePathPointI(GpPath* path, INT x, INT y, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsVisiblePathPointI "GdipIsVisiblePathPointI" gdiplus.dll ;
+    Pointer path ;
+    Integer x ;
+    Integer y ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsOutlineVisiblePathPoint(GpPath* path, Real x, Real y, GpPen *pen, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsOutlineVisiblePathPoint "GdipIsOutlineVisiblePathPoint" gdiplus.dll ;
+    Pointer path ;
+    Float x ;
+    Float y ;
+    Pointer pen ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsOutlineVisiblePathPointI(GpPath* path, INT x, INT y, GpPen *pen, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsOutlineVisiblePathPointI "GdipIsOutlineVisiblePathPointI" gdiplus.dll ;
+    Pointer path ;
+    Integer x ;
+    Integer y ;
+    Pointer pen ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus

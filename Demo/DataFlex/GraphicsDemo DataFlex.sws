@@ -1,0 +1,11 @@
+[Properties]
+Version=25.0
+[WorkspacePaths]
+ConfigFile=.\Programs\Config.ws
+[Conditionals]
+Is$WebApp=False
+Is$Win64=True
+[Projects]
+Project0=DataDemo.src
+[Libraries]
+Lib1=..\..\Library\Graphics.sws

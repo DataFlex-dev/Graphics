@@ -1,0 +1,9 @@
+Use VdfBase.pkg
+Use Structs\tUUID.Pkg
+
+Struct tEncoderParameter
+    tUUID Guid
+    UInteger uiNumberOfValues
+    UInteger uiType
+    Pointer pValue
+End_Struct

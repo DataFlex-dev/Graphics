@@ -1,0 +1,328 @@
+﻿Use Windows.pkg
+Use cHtmlHelp.pkg
+Use cApplication.pkg
+Use cCJCommandBarSystem.pkg
+Use File_dlg.pkg
+Use Dferror.pkg
+Use cConnection.pkg
+
+Use cImageContainer.pkg
+
+Use Classes\cImageFormatMenuItem.pkg
+Use Functions\PathRenameExtension.pkg
+
+Use Dialogs\CodecsInfo.dg
+
+Object oHtmlHelp is a cHtmlHelp
+End_Object
+
+Object oApplication is a cApplication
+    Set pbPreserveEnvironment to False
+    Set peHelpType to htNoHelp
+
+    Object oConnection is a cConnection
+        Use LoginEncryption.pkg
+        Use DatabaseLoginDialog.dg
+    End_Object
+
+    Set psProduct to "DataFlex Graphics Library Examples"
+    Set psVersion to "25.0"
+End_Object
+
+Object oEditImagePanel is a BasicPanel
+    Set Size to 293 443
+    Set Label to "Edit Image"
+    Set peNeighborhood to nhPublic
+
+    // Image container object must be defined BEFORE the commandbar system else we don't have a working
+    // cImageFormatMenuItem object set
+    Object oImageContainer is a cImageContainer
+        Set Size to 258 431
+        Set Location to 19 6
+
+        Procedure Set psImage String sImage
+            Handle hoCommandBars hoStatusBar hoImage
+            String sMimeType
+
+            Forward Set psImage to sImage
+
+            Get phoCommandBars to hoCommandBars
+            Get phoStatusBar of hoCommandBars to hoStatusBar
+            Send UpdateImageName of hoStatusBar sImage
+            Get phoImage to hoImage
+            If (hoImage <> 0) Begin
+                Get ImageMimeType of hoImage to sMimeType
+                Send UpdateMimeType of hoStatusBar sMimeType
+            End
+        End_Procedure
+
+        Procedure ConvertImage String sMimeType
+            tEncoderParameters EncoderParameters
+            Handle hoImage hoNewImage hoCommandBars hoStatusBar
+            UChar[] ucImageData
+            Boolean bLoadThumbnail bAutoTooltip
+
+            Get phoImage to hoImage
+
+            // High quality encoding
+            Move (ResizeArray (EncoderParameters.Parameter, 1)) to EncoderParameters.Parameter
+            Move 1 to EncoderParameters.uiCount
+            Get CreateEncoderQualityParameter of ghoGDIPlusHandler 100 to EncoderParameters.Parameter[0]
+            Set pEncoderParameters of hoImage to EncoderParameters
+
+            Get SaveImageToUCharArray of hoImage sMimeType to ucImageData
+            If (SizeOfArray (ucImageData) > 0) Begin
+                Get CreateImageFromUCharArray of ghoGDIPlusHandler ucImageData to hoNewImage
+                If (hoNewImage <> 0) Begin
+                    Send Destroy of hoImage
+                    Set phoImage to hoNewImage
+                    Get pbLoadThumbnail to bLoadThumbnail
+                    If (bLoadThumbnail) Begin
+                        Send LoadThumbnail
+                    End
+                    Send ResetScrollbars
+
+                    Send SetupAnimation
+
+                    Get pbAutoTooltip to bAutoTooltip
+                    If (bAutoTooltip) Begin
+                        Send AssignTooltip
+                    End
+
+                    Send RedrawImage
+
+                    Get phoCommandBars to hoCommandBars
+                    Get phoStatusBar of hoCommandBars to hoStatusBar
+                    Send UpdateMimeType of hoStatusBar sMimeType
+                End
+            End
+            Else Begin
+                Send UserError ("Conversion to" * sMimeType * "failed")
+            End
+        End_Procedure
+    End_Object
+
+    Object oCJCommandBarSystem is a cCJCommandBarSystem
+        Delegate Set phoCommandBars to Self
+
+        Object oToolbar is a cCJToolbar
+            Set peStretched to stStretch
+            Set pbEnableDocking to False
+            Set pbGripper to False
+
+            Object oOpenFileMenuItem is a cCJMenuItem
+                Set psCaption to "Open"
+                Set psDescription to "Open Image File"
+                Set psToolTip to "Open Image File"
+                Set psImage to "ActionOpen.ico"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoDialog
+                    Boolean bFileSelected
+                    String sFileName
+
+                    Get Create (RefClass (OpenDialog)) to hoDialog
+                    Set Filter_String of hoDialog to "Images|*.jpg;*.bmp;*.tiff;*png;*ico;*.gif|All Files|*.*"
+                    Get Show_Dialog of hoDialog to bFileSelected
+                    If (bFileSelected) Begin
+                        Get File_Name of hoDialog to sFileName
+                        Set psImage of oImageContainer to sFileName
+                    End
+                    Send Destroy of hoDialog
+                End_Procedure
+            End_Object
+
+            Object oSaveMenuItem is a cCJMenuItem
+                Set psImage to "ActionSave.ico"
+                Set psCaption to "Save"
+                Set psDescription to "Save the image"
+                Set psToolTip to "Save the image"
+                Set pbActiveUpdate to True
+
+                Function IsEnabled Returns Boolean
+                    Handle hoImage
+
+                    Get phoImage of oImageContainer to hoImage
+
+                    Function_Return (hoImage <> 0)
+                End_Function
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Handle hoImage
+                    String sFileName sMimeType
+                    Integer iChannel iRetval
+                    tEncoderParameters EncoderParameters
+                    UChar[] ucImageData
+
+                    Move (Seq_New_Channel ()) to iChannel
+                    If (iChannel >= 0) Begin
+                        Get phoImage of oImageContainer to hoImage
+                        Get ImageMimeType of hoImage to sMimeType
+
+                        // High quality encoding
+                        Move (ResizeArray (EncoderParameters.Parameter, 1)) to EncoderParameters.Parameter
+                        Move 1 to EncoderParameters.uiCount
+                        Get CreateEncoderQualityParameter of ghoGDIPlusHandler 100 to EncoderParameters.Parameter[0]
+
+                        Set pEncoderParameters of hoImage to EncoderParameters
+                        Get SaveImageToUCharArray of hoImage sMimeType to ucImageData
+                        If (SizeOfArray (ucImageData) > 0) Begin
+                            Get psImage of oImageContainer to sFileName
+
+                            Case Begin
+                                Case (sMimeType = CS_BMP_Mimetype)
+                                    Get PathRenameExtension sFileName '.bmp' to sFileName
+                                    Case Break
+                                Case (sMimeType = CS_EMF_Mimetype)
+                                    Get PathRenameExtension sFileName '.emf' to sFileName
+                                    Case Break
+                                Case (sMimeType = CS_WMF_Mimetype)
+                                    Get PathRenameExtension sFileName '.wmf' to sFileName
+                                    Case Break
+                                Case (sMimeType = CS_JPG_Mimetype)
+                                    Get PathRenameExtension sFileName '.jpg' to sFileName
+                                    Case Break
+                                Case (sMimeType = CS_PNG_Mimetype)
+                                    Get PathRenameExtension sFileName '.png' to sFileName
+                                    Case Break
+                                Case (sMimeType = CS_GIF_Mimetype)
+                                    Get PathRenameExtension sFileName '.gif' to sFileName
+                                    Case Break
+                                Case (sMimeType = CS_TIF_Mimetype)
+                                    Get PathRenameExtension sFileName '.tif' to sFileName
+                                    Case Break
+                                Case (sMimeType = CS_ICO_Mimetype)
+                                    Get PathRenameExtension sFileName '.ico' to sFileName
+                                    Case Break
+                            Case End
+
+                            Direct_Output channel iChannel ("BINARY:" * sFileName)
+                            Write channel iChannel ucImageData
+                            Close_Output channel iChannel
+                        End
+
+                        Send Seq_Release_Channel iChannel
+                    End
+                End_Procedure
+            End_Object
+
+            Object oConvertImageMenuItem is a cCJMenuItem
+                Set peControlType to xtpControlSplitButtonPopup
+                Set psImage to "convert.ico"
+                Set psCaption to "Convert"
+                Set psDescription to "Convert Image"
+                Set psToolTip to "Convert Image"
+                Set pbControlBeginGroup to True
+                Set pbActiveUpdate to True
+
+                Function IsEnabled Returns Boolean
+                    Handle hoImage
+
+                    Get phoImage of oImageContainer to hoImage
+
+                    Function_Return (hoImage <> 0)
+                End_Function
+
+                Object oJPEGMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "JPEG"
+                    Set psDescription to "Convert Image to JPEG"
+                    Set peImageFormat to gpImageFormatJPEG
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+
+                Object oTIFFMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "TIFF"
+                    Set psDescription to "Convert Image to TIFF"
+                    Set peImageFormat to gpImageFormatTIFF
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+
+                Object oBMPMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "BMP"
+                    Set psDescription to "Convert Image to BMP"
+                    Set peImageFormat to gpImageFormatBMP
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+
+                Object oGIFMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "GIF"
+                    Set psDescription to "Convert Image to GIF"
+                    Set peImageFormat to gpImageFormatGIF
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+
+                Object oPNGMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "PNG"
+                    Set psDescription to "Convert Image to PNG"
+                    Set peImageFormat to gpImageFormatPNG
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+
+                Object oWMFMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "WMF"
+                    Set psDescription to "Convert Image to WMF"
+                    Set peImageFormat to gpImageFormatWMF
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+
+                Object oEMFMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "EMF"
+                    Set psDescription to "Convert Image to EMF"
+                    Set peImageFormat to gpImageFormatEMF
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+
+                Object oIconMenuItem is a cImageFormatMenuItem
+                    Set psCaption to "Icon"
+                    Set psDescription to "Convert Image to Icon"
+                    Set peImageFormat to gpImageFormatIcon
+                    Set phoImageContainer to (oImageContainer)
+                End_Object
+            End_Object
+
+            Object oCodeInfoMenuItem is a cCJMenuItem
+                Set pbControlBeginGroup to True
+                Set psDescription to "Codec Info"
+                Set psToolTip to "Codec Info"
+                Set psImage to "codecs.ico"
+                Set psCaption to "Codecs"
+                Set psDescription to "Show a list of image codecs in memory"
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Send Popup of oCodecsInfoDialog
+                End_Procedure
+            End_Object
+        End_Object
+
+        Object oCJStatusBar is a cCJStatusBar
+            Object oStatusHelpPane is a cCJStatusBarPane
+                Set pbStyleStretch to True
+                Set piId to sbpIDIdlePane
+                Set psToolTip to "Info"
+            End_Object
+
+            Object oImageNamePane is a cCJStatusBarPane
+                Set psToolTip to "Name of the image file opened"
+            End_Object
+
+            Object oCurrentTypePane is a cCJStatusBarPane
+                Set psToolTip to "Mime type of the opened image file"
+            End_Object
+
+            Procedure UpdateImageName String sImageName
+                Set psText of oImageNamePane to sImageName
+            End_Procedure
+
+            Procedure UpdateMimeType String sMimeType
+                Set psText of oCurrentTypePane to sMimeType
+            End_Procedure
+        End_Object
+
+        Procedure OnComResizeClient Integer iLeft Integer iTop Integer iRight Integer iBottom
+            Set GuiSize of oImageContainer to (iBottom - iTop) (iRight - iLeft)
+            Set GuiLocation of oImageContainer to iTop iLeft
+        End_Procedure
+    End_Object
+End_Object
+
+Start_UI oEditImagePanel

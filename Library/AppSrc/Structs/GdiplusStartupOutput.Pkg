@@ -1,0 +1,6 @@
+Use VdfBase.pkg
+
+Struct GdiplusStartupOutput
+    Pointer NotificationHook
+    Pointer NotificationUnhook
+End_Struct

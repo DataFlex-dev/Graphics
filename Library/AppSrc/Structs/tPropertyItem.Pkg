@@ -1,0 +1,12 @@
+﻿Use VdfBase.pkg
+
+Struct tPropertyItem
+    UInteger id
+    UInteger length
+    UShort type
+    Short __filler // Needed because each member in the struct is at a 4 byte offset
+#IFDEF IS$WIN64
+    Integer MissingAlignment
+#ENDIF
+    Pointer value
+End_Struct

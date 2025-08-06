@@ -1,0 +1,9 @@
+﻿Use VDFBase.pkg
+
+Struct tImageCodec
+    String sCodecName
+    String sDllName
+    String sFormatDescription
+    String sFileNameExtension
+    String sMimeType
+End_Struct

@@ -1,0 +1,151 @@
+Use Windows.pkg
+Use cHistogramContainer.pkg
+Use Colr_dlg.pkg
+
+Object oHistogramDialog is a ModalPanel
+    Set Size to 149 311
+    Set Label to "Histogram"
+    Set piMinSize to 89 211
+    Set Locate_Mode to CENTER_ON_PANEL
+    Set Border_Style to Border_Thick
+    Set Icon to "Default.Ico"
+    
+    // Augmented to set an icon in the dialog
+    Procedure Page_Object Boolean bPage
+        Forward Send Page_Object bPage
+        
+        If (bPage) Begin
+            Set Icon to "Default.Ico"
+        End
+    End_Procedure
+
+    Object oColorDialog is a ColorDialog
+    End_Object
+
+    Object oHistogramTypeComboForm is a ComboForm
+        Set Size to 13 100
+        Set Location to 3 27
+        Set Label to "Type:"
+        Set Label_Col_Offset to 2
+        Set Label_Justification_Mode to JMode_Right
+        Set Entry_State to False
+        Set Combo_Sort_State to False
+    
+        Procedure Combo_Fill_List
+            Send Combo_Add_Item "ARGB"
+            Send Combo_Add_Item "PARGB"
+            Send Combo_Add_Item "RGB"
+            Send Combo_Add_Item "Gray"
+            Send Combo_Add_Item "Blue"
+            Send Combo_Add_Item "Green"
+            Send Combo_Add_Item "Red"
+            Send Combo_Add_Item "Alpha"
+        End_Procedure
+        
+        Procedure Activating
+            Integer eHistogramFormat
+            String sHistogramFormat
+            
+            Forward Send Activating
+            
+            Get peFormat of oHistogram to eHistogramFormat
+            Get Combo_Value eHistogramFormat to sHistogramFormat
+            Set Value to sHistogramFormat
+        End_Procedure
+        
+        Procedure OnChange
+            String sHistogramFormat
+            Integer eHistogramFormat
+            
+            Get Value to sHistogramFormat
+            Get Combo_Item_Matching sHistogramFormat to eHistogramFormat
+            Set peFormat of oHistogram to eHistogramFormat
+            Send RecreateHistogram of oHistogram                            
+        End_Procedure
+    End_Object
+
+    Object oColorSelectButton is a Button
+        Set Location to 3 132
+        Set Label to "Color"
+        Set psToolTip to "Sets the Background Color of the Histogram"
+        Set peAnchors to anTopRight
+    
+        Procedure OnClick
+            Boolean bColorSelected
+            Integer eColor
+            
+            Get Show_Dialog of oColorDialog to bColorSelected
+            If (bColorSelected) Begin
+                Get SelectedColor of oColorDialog to eColor
+                Set pcBackColor of oHistogram to eColor
+            End
+        End_Procedure    
+    End_Object
+    
+    Object oHistogram is a cHistogramContainer
+        Set Location to 21 5
+        Set Size to 105 298
+        Set peAnchors to anAll
+    End_Object
+
+    Object oCloseButton is a Button
+        Set Label to "&Close"
+        Set Location to 131 257
+        Set peAnchors To anBottomRight
+
+        Procedure OnClick
+            Send Close_Panel
+        End_Procedure
+    End_Object
+    
+    Procedure DrawHistogram Handle hoImage
+        Send CreateHistogram of oHistogram hoImage
+        Send Popup
+    End_Procedure
+
+    Object oHistogramTypeComboForm is a ComboForm
+        Set Size to 13 100
+        Set Location to 3 27
+        Set Label to "Type:"
+        Set Label_Col_Offset to 2
+        Set Label_Justification_Mode to JMode_Right
+        Set Entry_State to False
+        Set Combo_Sort_State to False
+        Set peAnchors to anTopLeftRight
+    
+        Procedure Combo_Fill_List
+            Send Combo_Add_Item "ARGB"
+            Send Combo_Add_Item "PARGB"
+            Send Combo_Add_Item "RGB"
+            Send Combo_Add_Item "Gray"
+            Send Combo_Add_Item "Blue"
+            Send Combo_Add_Item "Green"
+            Send Combo_Add_Item "Red"
+            Send Combo_Add_Item "Alpha"
+        End_Procedure
+        
+        Procedure Activating
+            Integer eHistogramFormat
+            String sHistogramFormat
+            
+            Forward Send Activating
+            
+            Get peFormat of oHistogram to eHistogramFormat
+            Get Combo_Value eHistogramFormat to sHistogramFormat
+            Set Value to sHistogramFormat
+        End_Procedure
+        
+        Procedure OnChange
+            String sHistogramFormat
+            Integer eHistogramFormat
+            
+            Get Value to sHistogramFormat
+            Get Combo_Item_Matching sHistogramFormat to eHistogramFormat
+            Set peFormat of oHistogram to eHistogramFormat
+            Send RecreateHistogram of oHistogram                            
+        End_Procedure
+    End_Object
+
+    On_Key Key_Alt+Key_C Send KeyAction of oCloseButton
+    On_Key Key_Escape Send KeyAction of oCloseButton
+End_Object

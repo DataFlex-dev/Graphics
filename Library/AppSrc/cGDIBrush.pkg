@@ -1,0 +1,90 @@
+﻿Use cGDIPlus.pkg
+Use cGDIBrush.h.pkg
+
+{ ClassLibrary = Windows }
+{ ClassType = Abstract }
+{ HelpTopic = cGDIBrush }
+{ Description = "A Brush object is used to paint the interior of graphics shapes, such as rectangles, ellipses, pies, polygons, and paths." }
+Class cGDIBrush is a cObject
+    { Description = "Create a property to store the brush in" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { DesignTime = False }
+        { Description = "A pointer to the connected brush" }
+        Property Pointer ppBrush
+    End_Procedure
+
+    { Description = "Augmented to send a message to delete the brush" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Destroy_Object
+        Send DeleteBrush
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Returns the brush type. Is one of the predefined brush types." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { EnumList = "gpBrushTypeSolidColor, gpBrushTypeHatchFill, gpBrushTypeTextureFill, gpBrushTypePathGradient, gpBrushTypeLinearGradient" }
+    Function BrushType Returns gpBrushType
+        gpStatus eStatus
+        GpBrushType eType
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to eType
+            Move (GdipGetBrushType (pBrush, AddressOf (eType))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Brushtype"
+            End
+        End
+
+        Function_Return eType
+    End_Function
+
+    { Description = "Creates a copy of an existing brush." }
+    { Description += "Return value is a new cGDIBrush Object or zero when the operation fails." }
+    { MethodType = Method }
+    Function CloneBrush Returns Handle
+        gpStatus eStatus
+        Pointer pSourceBrush pClonedBrush
+        Handle hoBrush
+
+        Get ppBrush to pSourceBrush
+        If (pSourceBrush <> 0) Begin
+            Move 0 to pClonedBrush
+            Move (GdipCloneBrush (pSourceBrush, AddressOf (pClonedBrush))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIBrush)) "ClonedBrush" to hoBrush
+                Set ppBrush of hoBrush to pClonedBrush
+            End
+        End
+
+        Function_Return hoBrush
+    End_Function
+
+    { Description = "Deletes the brush when it exists." }
+    { Description += "Only functions when there is a brush created stored." }
+    { Description += "Sends HandleGDIResult if the GDI+ DeleteBrush function fails" }
+    { MethodType = Method }
+    Procedure DeleteBrush
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipDeleteBrush (pBrush)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Delete Brush"
+            End
+            Else Begin
+                Set ppBrush to 0
+            End
+        End
+    End_Procedure
+End_Class

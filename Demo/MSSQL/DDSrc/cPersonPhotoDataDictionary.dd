@@ -1,0 +1,89 @@
+Use DataDict.pkg
+
+Open PersonPhoto
+Open Person
+Open System
+
+Class cPersonPhotoDataDictionary is a DataDictionary
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Main_file to PersonPhoto.File_Number
+
+        Set Add_System_File to System.File_Number DD_Lock_On_New_Save
+
+        Set Add_Server_File to Person.File_Number
+
+        Set Foreign_Field_Option DD_KEYFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_KEYFIELD DD_FINDREQ to True
+        Set Foreign_Field_Option DD_INDEXFIELD DD_NOPUT to True
+        Set Foreign_Field_Option DD_DEFAULT DD_DISPLAYONLY to True
+
+        Set Field_Label_Long Field PersonPhoto.ID to "ID"
+        Set Field_Label_Short Field PersonPhoto.ID to "ID"
+        Set Field_Class_Name Field PersonPhoto.ID to "dbForm"
+        Set Status_Help Field PersonPhoto.ID to "Auto Assigned ID for this Person/Photo combination"
+        Set Key_Field_State Field PersonPhoto.ID to True
+        Set Field_Auto_Increment Field PersonPhoto.ID to File_Field System.PersonPhoto_ID
+        Set Field_Option Field PersonPhoto.ID DD_AUTOFIND to True
+
+        Set Field_Label_Long Field PersonPhoto.Person_ID to "Person ID"
+        Set Field_Label_Short Field PersonPhoto.Person_ID to "Person ID"
+        Set Field_Class_Name Field PersonPhoto.Person_ID to "dbForm"
+        Set Status_Help Field PersonPhoto.Person_ID to "ID of the Person Linked to"
+
+        Set Field_Class_Name Field PersonPhoto.Added to "dbForm"
+        Set Field_Mask_Type Field PersonPhoto.Added to Mask_Date_Window
+        Set Field_Label_Short Field PersonPhoto.Added to "Added"
+        Set Field_Label_Long Field PersonPhoto.Added to "Added at"
+        Set Status_Help Field PersonPhoto.Added to "Photo added at"
+
+        Set Field_Label_Long Field PersonPhoto.Comments to "Comments"
+        Set Field_Label_Short Field PersonPhoto.Comments to "Comments"
+        Set Field_Class_Name Field PersonPhoto.Comments to "cDbTextEdit"
+        Set Status_Help Field PersonPhoto.Comments to "Comments for this photo"
+
+        Set Field_Label_Long Field PersonPhoto.Where to "Where"
+        Set Field_Label_Short Field PersonPhoto.Where to "Where"
+        Set Status_Help Field PersonPhoto.Where to "Where was this photo taken?"
+        Set Field_Class_Name Field PersonPhoto.Where to "dbForm"
+
+        Set Field_Label_Long Field PersonPhoto.MadeInYear to "Year"
+        Set Field_Label_Short Field PersonPhoto.MadeInYear to "Year"
+        Set Field_Class_Name Field PersonPhoto.MadeInYear to "dbForm"
+        Set Status_Help Field PersonPhoto.MadeInYear to "In which year was this photo made?"
+        Set Field_Value_Range Field PersonPhoto.MadeInYear to 1850 2100
+        Set Field_Error Field PersonPhoto.MadeInYear to 122 "The year must be between @PARAM1 and @PARAM2"
+
+        Set Field_Label_Long Field PersonPhoto.MakeInMonth to "Month"
+        Set Field_Label_Short Field PersonPhoto.MakeInMonth to "Month"
+        Set Field_Class_Name Field PersonPhoto.MakeInMonth to "dbSpinForm"
+        Set Status_Help Field PersonPhoto.MakeInMonth to "In which month was this photo made?"
+        Set Field_Value_Range Field PersonPhoto.MakeInMonth to 1 12
+        Set Field_Error Field PersonPhoto.MakeInMonth to 121 "The month must be between @PARAM1 and @PARAM2"
+    End_Procedure
+
+    Function Today Returns Date
+        Date dToday
+
+        Sysdate dToday
+
+        Function_Return dToday
+    End_Function
+
+    Function CurrentYear Returns Integer
+        Integer iYear
+
+        Move (DateGetYear (CurrentDateTime ())) to iYear
+
+        Function_Return iYear
+    End_Function
+
+    Procedure Field_Defaults
+        Set Field_Changed_Value Field PersonPhoto.Added to (Today (Self))
+        Set Field_Changed_Value Field PersonPhoto.MadeInYear to (CurrentYear (Self))
+        Set Field_Changed_Value Field PersonPhoto.MakeInMonth to 1
+
+        Forward Send Field_Defaults
+    End_Procedure
+End_Class

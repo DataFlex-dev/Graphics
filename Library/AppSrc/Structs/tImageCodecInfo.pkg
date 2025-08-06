@@ -1,0 +1,18 @@
+Use VDFBase.pkg
+Use Structs\tUUID.Pkg
+
+Struct tImageCodecInfo
+    tUUID CLSID
+    tUUID formatID
+    Pointer pszwCodecName
+    Pointer pszwDllName
+    Pointer pszwFormatDescription
+    Pointer pszwFileNameExtension
+    Pointer pszwMimeType
+    UInteger Flags
+    UInteger Version
+    UInteger SigCount
+    UInteger SigSize
+    Pointer SigPattern
+    Pointer SigMask
+End_Struct

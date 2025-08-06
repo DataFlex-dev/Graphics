@@ -1,0 +1,234 @@
+﻿Use cGDIPlus.h
+
+define gpCombineMode for Integer
+    Define gpCombineModeReplace     for 0 // One clipping region is replaced by another
+    Define gpCombineModeIntersect   for 1 // Two clipping regions are combined by taking their intersection
+    Define gpCombineModeUnion       for 2 // Two clipping regions are combined by taking the union of both
+    Define gpCombineModeXor         for 3 // Two clipping regions are combined by taking only the areas enclosed by one or the other region, but not both
+    Define gpCombineModeExclude     for 4 // Specifies that the existing region is replaced by the result of the new region being removed from the existing region. Said differently, the new region is excluded from the existing region
+    Define gpCombineModeComplement  for 5 // Specifies that the existing region is replaced by the result of the existing region being removed from the new region. Said differently, the existing region is excluded from the new region
+
+// GpStatus WINGDIPAPI GdipCreateRegion(GpRegion **region)
+External_Function GdipCreateRegion "GdipCreateRegion" gdiplus.dll ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateRegionRect(GDIPCONST GpRectF *rect, GpRegion **region)
+External_Function GdipCreateRegionRect "GdipCreateRegionRect" gdiplus.dll ;
+    Pointer rect ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateRegionRectI(GDIPCONST GpRect *rect, GpRegion **region)
+External_Function GdipCreateRegionRectI "GdipCreateRegionRectI" gdiplus.dll ;
+    Pointer rect ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateRegionPath(GpPath *path, GpRegion **region)
+External_Function GdipCreateRegionPath "GdipCreateRegionPath" gdiplus.dll ;
+    Pointer path ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateRegionRgnData(GDIPCONST BYTE *regionData, INT size, GpRegion **region)
+External_Function GdipCreateRegionRgnData "GdipCreateRegionRgnData" gdiplus.dll ;
+    Pointer regionData ;
+    Integer size ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreateRegionHrgn(HRGN hRgn, GpRegion **region)
+External_Function GdipCreateRegionHrgn "GdipCreateRegionHrgn" gdiplus.dll ;
+    Handle hRgn ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCloneRegion(GpRegion *region, GpRegion **cloneRegion)
+External_Function GdipCloneRegion "GdipCloneRegion" gdiplus.dll ;
+    Pointer region ;
+    Pointer cloneRegion ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeleteRegion(GpRegion *region)
+External_Function GdipDeleteRegion "GdipDeleteRegion" gdiplus.dll ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetInfinite(GpRegion *region)
+External_Function GdipSetInfinite "GdipSetInfinite" gdiplus.dll ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetEmpty(GpRegion *region)
+External_Function GdipSetEmpty "GdipSetEmpty" gdiplus.dll ;
+    Pointer region ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCombineRegionRect(GpRegion *region, GDIPCONST GpRectF *rect, CombineMode combineMode)
+External_Function GdipCombineRegionRect "GdipCombineRegionRect" gdiplus.dll ;
+    Pointer region ;
+    Pointer rect ;
+    gpCombineMode combinemode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCombineRegionRectI(GpRegion *region, GDIPCONST GpRect *rect, CombineMode combineMode)
+External_Function GdipCombineRegionRectI "GdipCombineRegionRectI" gdiplus.dll ;
+    Pointer region ;
+    Pointer rect ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCombineRegionPath(GpRegion *region, GpPath *path, CombineMode combineMode)
+External_Function GdipCombineRegionPath "GdipCombineRegionPath" gdiplus.dll ;
+    Pointer region ;
+    Pointer path ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCombineRegionRegion(GpRegion *region, GpRegion *region2, CombineMode combineMode)
+External_Function GdipCombineRegionRegion "GdipCombineRegionRegion" gdiplus.dll ;
+    Pointer region ;
+    Pointer region2 ;
+    gpCombineMode combineMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslateRegion(GpRegion *region, REAL dx, REAL dy)
+External_Function GdipTranslateRegion "GdipTranslateRegion" gdiplus.dll ;
+    Pointer region ;
+    Real dx ;
+    Real dy ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslateRegionI(GpRegion *region, INT dx, INT dy)
+External_Function GdipTranslateRegionI "GdipTranslateRegionI" gdiplus.dll ;
+    Pointer region ;
+    Integer dx ;
+    Integer dy ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTransformRegion(GpRegion *region, GpMatrix *matrix)
+External_Function GdipTransformRegion "GdipTransformRegion" gdiplus.dll ;
+    Pointer region ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionBounds(GpRegion *region, GpGraphics *graphics, GpRectF *rect)
+External_Function GdipGetRegionBounds "GdipGetRegionBounds" gdiplus.dll ;
+    Pointer region ;
+    Pointer graphics ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionBoundsI(GpRegion *region, GpGraphics *graphics, GpRect *rect)
+External_Function GdipGetRegionBoundsI "GdipGetRegionBoundsI" gdiplus.dll ;
+    Pointer region ;
+    Pointer graphics ;
+    Pointer rect ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionHRgn(GpRegion *region, GpGraphics *graphics, HRGN *hRgn)
+External_Function GdipGetRegionHRgn "GdipGetRegionHRgn" gdiplus.dll ;
+    Pointer region ;
+    Pointer graphics ;
+    Pointer hRgn ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsEmptyRegion(GpRegion *region, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsEmptyRegion "GdipIsEmptyRegion" gdiplus.dll ;
+    Pointer region ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsInfiniteRegion(GpRegion *region, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsInfiniteRegion "GdipIsInfiniteRegion" gdiplus.dll ;
+    Pointer region ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsEqualRegion(GpRegion *region, GpRegion *region2, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsEqualRegion "GdipIsEqualRegion" gdiplus.dll ;
+    Pointer region ;
+    Pointer region2 ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionDataSize(GpRegion *region, UINT * bufferSize)
+External_Function GdipGetRegionDataSize "GdipGetRegionDataSize" gdiplus.dll ;
+    Pointer region ;
+    Pointer bufferSize ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionData(GpRegion *region, BYTE * buffer, UINT bufferSize, UINT * sizeFilled)
+External_Function GdipGetRegionData "GdipGetRegionData" gdiplus.dll ;
+    Pointer region ;
+    Pointer buffer ;
+    UInteger buffersize ;
+    Pointer sizeFilled ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisibleRegionPoint(GpRegion *region, REAL x, REAL y, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsVisibleRegionPoint "GdipIsVisibleRegionPoint" gdiplus.dll ;
+    Pointer region ;
+    Real x ;
+    Real y ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisibleRegionPointI(GpRegion *region, INT x, INT y, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsVisibleRegionPointI "GdipIsVisibleRegionPointI" gdiplus.dll ;
+    Pointer region ;
+    Integer x ;
+    Integer y ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisibleRegionRect(GpRegion *region, REAL x, REAL y, REAL width, REAL height, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsVisibleRegionRect "GdipIsVisibleRegionRect" gdiplus.dll ;
+    Pointer region ;
+    Real x ;
+    Real y ;
+    Real width ;
+    Real height ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsVisibleRegionRectI(GpRegion *region, INT x, INT y, INT width, INT height, GpGraphics *graphics, BOOL *result)
+External_Function GdipIsVisibleRegionRectI "GdipIsVisibleRegionRectI" gdiplus.dll ;
+    Pointer region ;
+    Integer x ;
+    Integer y ;
+    Integer width ;
+    Integer height ;
+    Pointer graphics ;
+    Pointer result ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionScansCount(GpRegion *region, UINT* count, GpMatrix* matrix)
+External_Function GdipGetRegionScansCount "GdipGetRegionScansCount" gdiplus.dll ;
+    Pointer region ;
+    Pointer count ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionScans(GpRegion *region, GpRectF* rects, INT* count, GpMatrix* matrix)
+External_Function GdipGetRegionScans "GdipGetRegionScans" gdiplus.dll ;
+    Pointer region ;
+    Pointer rects ;
+    Pointer count ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetRegionScansI(GpRegion *region, GpRect* rects, INT* count, GpMatrix* matrix)
+External_Function GdipGetRegionScansI "GdipGetRegionScansI" gdiplus.dll ;
+    Pointer region ;
+    Pointer rects ;
+    Pointer count ;
+    Pointer matrix ;
+    Returns gpStatus

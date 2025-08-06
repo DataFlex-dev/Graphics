@@ -1,0 +1,761 @@
+﻿Use VdfBase.pkg
+Use Windows.pkg
+Use Wingdi.pkg
+Use cGDIPlus.pkg
+Use cGDIGraphics.pkg
+Use cGDIImage.h.pkg
+Use cGDISolidBrush.pkg
+Use tWinStructs.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cHistogramContainer }
+{ DesignerClass = cDTContainer3D }
+{ OverrideProperty = Bitmap Visibility = Private }
+{ OverrideProperty = Bitmap_Style Visibility = Private }
+{ OverrideProperty = Border_Style Visibility = Private }
+{ OverrideProperty = Visible_State Visibility = Private }
+{ OverrideProperty = Attach_Parent_State Visibility = Private }
+{ OverrideProperty = Block_Mouse_State Visibility = Private }
+{ OverrideProperty = Popup_State Visibility = Private }
+{ OverrideProperty = peNeighborHood Visibility = Private }
+{ OverrideProperty = Ring_State Visibility = Private }
+{ OverrideProperty = Scope_State Visibility = Private }
+{ OverrideProperty = Search_Case Visibility = Private }
+{ OverrideProperty = Skip_State Visibility = Private }
+{ OverrideProperty = FontPointHeight Visibility = Private }
+{ OverrideProperty = Focus_Mode Visibility = Private }
+{ OverrideProperty = Oem_Translate_State Visibility = Private }
+{ OverrideProperty = Color Visibility = Private }
+{ OverrideProperty = FontItalics Visibility = Private }
+{ OverrideProperty = FontSize Visibility = Private }
+{ OverrideProperty = FontUnderline Visibility = Private }
+{ OverrideProperty = FontWeight Visibility = Private }
+{ OverrideProperty = TextColor Visibility = Private }
+{ OverrideProperty = Typeface Visibility = Private }
+{ OverrideProperty = Transparent_State Visibility = Private }
+{ OverrideProperty = pbUseFormWindowHandle Visibility = Private }
+{ OverrideProperty = Client_Area_State Visibility = Private }
+{ Description = "The cHistogramContainer can be used to paint a chart showing the use of a color in an image." }
+{ Description += "Pick the format from the enumerationlist in peFormat and send RecreateHistogram." }
+Class cHistogramContainer is a DfBaseControl
+    Import_Class_Protocol ToolTip_Support_Mixin
+
+    { MethodType = Event }
+    { Description = "Constructs a borderless object that hooks up the Windows PAINT message to the routine to paint" }
+    { Description += "the histogram." }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        Set Border_Style to Border_None
+        Set Client_Area_State to False
+
+        Set External_Class_Name "cImageHistogramContainer" to "static"
+
+        Send Define_ToolTip_Support_Mixin
+
+        Set Window_Style to SS_NOTIFY True
+        Set Window_Style to WS_VISIBLE True
+        Set Window_Style to WS_CHILD True
+        Set Window_Style to WS_VSCROLL False
+        Set Window_Style to WS_HSCROLL False
+
+        Set External_Message WM_PAINT to msg_OnPaint
+
+        { Visibility = Private }
+        { Description = "This private property keeps track of the enabled state of the control." }
+        { Description += "This lets the developer set the enabled state (pbEnabled) when the control is not yet paged." }
+        Property Boolean ppbEnabled True
+        { Visibility = Private }
+        { Description = "This private property keeps track of the visible state of the control." }
+        { Description += "This lets the developer set the visible state (pbVisible) when the control is not yet paged." }
+        Property Boolean ppbVisible True
+        { Visibility = Private }
+        { Description = "This private property keeps track of the background color of the control." }
+        { Description += "This lets the developer set the background color when the control is not yet paged." }
+        Property UInteger ppcBackColor (GetSysColor (clBtnFace iand $FFFFFF))
+        { Visibility = Private }
+        { Description = "The control creates a cGDIGraphics object and stores the DataFlex object handle to Pointer the object" }
+        Property Handle phoGraphics
+        { Visibility = Private }
+        { Description = "For the speed of repainting the class creates an in memory bitmap after painting the histogram and stores the handle in this property." }
+        Property Handle phBmp
+
+        { Category = Color }
+        { PropertyType = Color }
+        { EnumList = "clAqua, clBlack, clBlue, clDkGray, clFuchsia, clGray, clGreen, clLime, clLtGray, clMaroon, clNavy, clOlive, clPurple, clRed, clSilver, clTeal, clWhite, clYellow" }
+        Property UInteger pcRectColor clWhite
+
+        { EnumList = "gpHistogramFormatARGB, gpHistogramFormatPARGB, gpHistogramFormatRGB, gpHistogramFormatGray, gpHistogramFormatB, gpHistogramFormatG, gpHistogramFormatR, gpHistogramFormatA" }
+        { Category = "Histogram" }
+        Property gpHistogramFormat peFormat gpHistogramFormatRGB
+        { DesignTime = False }
+        { Description = "Needs to be set to a cGDIImage DataFlex object. This is typically done in a dynamic way, so not on design time." }
+        Property Handle phoImage
+        { Category = "Histogram" }
+        { Description = "If this property is set to true, the object shows a white rectangle around the histogram" }
+        Property Boolean pbShowRect True
+
+        { Description = "The offset, in pixels, from the control margins." }
+        { Category = "Histogram" }
+        Property Integer piOffset 15
+
+        Set phoGraphics to (CreateNamed (ghoGDIPlusHandler, RefClass (cGDIGraphics), Name (Self) - "_Canvas"))
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Call this method to create one or more histogram pictures from an image. Pass the DataFlex object handle to the image" }
+    Procedure CreateHistogram Handle hoImage
+        Set phoImage to hoImage
+        Send RecreateHistogram
+    End_Procedure
+
+    { Description = "Sets the background color. Redraws the histogram when changed after the histogram has been painted." }
+    { MethodType = Property }
+    { Category = "Color" }
+    { PropertyType = Color }
+    { EnumList = "clScrollBar, clBackground, clActiveCaption, clInactiveCaption, clMenu, clWindow, clWindowFrame, clMenuText, clWindowText, clCaptionText, clActiveBorder, clInactiveBorder" }
+    { EnumList += "clAppWorkSpace, clHighlight, clHighlightText, clBtnFace, clBtnShadow, clGrayText, clBtnText, clInactiveCaptionText, clBtnHighlight, cl3DDkShadow, cl3DLight, clInfoText, clInfoBk, clDefault, clNone" }
+    { EnumList += "clAqua, clBlack, clBlue, clDkGray, clFuchsia, clGray, clGreen, clLime, clLtGray, clMaroon, clNavy, clOlive, clPurple, clRed, clSilver, clTeal, clWhite, clYellow" }
+    { InitialValue = clBtnFace }
+    Procedure Set pcBackColor UInteger uiColor
+        If ((uiColor iand $FFFFFF) <> uiColor) Begin
+            Move (GetSysColor (uiColor iand $FFFFFF)) to uiColor
+        End
+
+        Set ppcBackColor to uiColor
+        Send RecreateHistogram
+    End_Procedure
+
+    { Description = "Returns the background color of the histogram using the private property to store the color value" }
+    { MethodType = Property }
+    Function pcBackColor Returns UInteger
+        Integer uiBackColor
+
+        Get ppcBackColor to uiBackColor
+
+        Function_Return uiBackColor
+    End_Function
+
+    { Description = "Augmented to redraw the histogram" }
+    { Visibility = Private }
+    Procedure Set GUISize Integer iHeight Integer iWidth
+        Forward Set GuiSize to iHeight iWidth
+
+        Send RecreateHistogram
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Do not allow the border style to be changed by always enforcing the style to none." }
+    Procedure Set Border_Style Integer eBorderStyle
+        Forward Set Border_Style to Border_None
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Can be called to have the histogram redrawn. Called when the histogram resizes or when the background color changes." }
+    Procedure RecreateHistogram
+        Send RemoveBitmap
+        Send RedrawHistogram
+    End_Procedure
+
+    { Description = "Called by Page_Object. Handles tooltip creation." }
+    { Description += "A dedicated method is used to perform AddToolTip because it is often the case that Page_Object is implemented in a mixin class." }
+    { Visibility = Private }
+    { MethodType = Method }
+    Procedure RequestAddToolTip
+        Send AddToolTip
+    End_Procedure
+
+    { Description = "Called by Page_Object. Handles tooltip removal." }
+    { Visibility = Private }
+    { MethodType = Method }
+    Procedure RequestDeleteToolTip
+        Send DeleteToolTip
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "The class has no need to handle the Notify (WM_NOTIFY) messages send by Windows." }
+    Procedure Notify Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Visibility = Private }
+    { MethodType = Event }
+    { Description = "The class has no need to handle the Command (WM_COMMAND) messages send by Windows." }
+    Procedure Command Longptr wParam LongPtr lParam
+    End_Procedure
+
+    { Description = "Set the visible and enabled state, adds/removes the tooltip" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Page_Object Boolean bPage
+        Boolean bEnabled bVisible
+        Handle hWnd
+
+        Get ppbEnabled to bEnabled
+        Get ppbVisible to bVisible
+
+        Set Window_Style to WS_DISABLED (not (bEnabled))
+        Set Window_Style to WS_VISIBLE bVisible
+
+        Forward Send Page_Object bPage
+
+        // Handle tooltip support....
+        If (not (bPage)) Begin
+            Send RequestDeleteToolTip
+        End
+        Else Begin
+            Send RequestAddToolTip
+        End
+    End_Procedure
+
+    { Description = "Calculates the maximum value from the array to determine the scale for drawing the histogram bars." }
+    { Description += "Despite the function is called MaxValue it does not return that. The function returns the 2nd highest" }
+    { Description += "value for a nicer histogram view" }
+    { MethodType = Method }
+    Function MaxValue UInteger[] uiChannel Returns Float
+        Integer iElement
+
+        Move (SortArray (uiChannel)) to uiChannel
+        // Take the 2nd highest value for a nicer histogram view
+        Move (SizeOfArray (uiChannel) - 2) to iElement
+
+        Function_Return uiChannel[iElement]
+    End_Function
+
+    { Description = "Returns client rect including space which could be taken by borders" }
+    { MethodType = Method }
+    { Visibility = Private }
+    Function RealClientRect Returns tWinRect
+        Integer eStatus iError
+        Handle hWnd
+        tWinRect WindowRect
+
+        Get Window_Handle to hWnd
+        If (hWnd) Begin
+            // Retrieves the dimensions of the bounding rectangle of the specified window. The dimensions are given in screen coordinates that are relative to the upper-left corner of the screen.
+            Move (GetWindowRect (hWnd, AddressOf (WindowRect))) to eStatus
+            If (eStatus <> 0) Begin
+                // Convert from screen to client coordinates
+                Move (OffsetRect (AddressOf (WindowRect), WindowRect.left * -1, WindowRect.top * -1)) to eStatus
+                If (eStatus = 0) Begin
+                    Move (ShowLastError()) to iError
+                End
+            End
+            Else Begin
+                Move (ShowLastError()) to iError
+            End
+        End
+
+        Function_Return WindowRect
+    End_Function
+
+    { Visibility = Private }
+    { MethodType = Method }
+    { Description = "This routine is responsible for painting the histogram. It uses the histogram format and draws up to" }
+    { Description += "histogram pictures from the image information assigned to the container." }
+    Procedure OnPaint Longptr wParam Longptr lParam
+        Integer eHistogramFormat iEntries iResult iElement iOffset iHistogram
+        Integer iHeight iWidth 
+        UInteger uiColor uiPenColor
+        UInteger[] uiChannel0 uiChannel1 uiChannel2 uiChannel3 uiDataChannel
+        Handle hWnd hoImage hDC hBmp hMemDC hoSolidBrush hoPen hoGraphics
+        Pointer pImage
+        Float fXUnit fYUnit fMaxValue
+        Float fFromX fFromY fToX fToY
+        String sText
+        Boolean bIsImage bShowRect
+        tWinPaintStruct PaintData
+        tWinRect DestinationRect TextRect
+        gpStatus eStatus
+
+        Get Window_Handle to hWnd
+        If (hWnd = 0) Begin
+            Procedure_Return
+        End
+
+        Get phoImage to hoImage
+        If (hoImage = 0) Begin
+            Procedure_Return
+        End
+
+        Get IsObjectOfClass of hoImage (RefClass (cGDIImage)) to bIsImage
+        If (bIsImage) Begin
+            Get ppImage of hoImage to pImage
+            If (pImage = 0) Begin
+                Procedure_Return
+            End
+        End
+        Else Begin
+            Procedure_Return
+        End
+
+        Get piOffset to iOffset
+
+        Get peFormat to eHistogramFormat
+        Move 0 to iEntries
+        Move (GdipBitmapGetHistogramSize (eHistogramFormat, AddressOf (iEntries))) to eStatus
+        If (eStatus = gpOk) Begin
+            Case Begin
+                Case (eHistogramFormat = gpHistogramFormatRGB)
+                    // The red-channel histogram is written to channel0
+                    // The green-channel histogram is written to channel1
+                    // The blue-channel histogram is written to channel2
+                    Move (ResizeArray (uiChannel0, iEntries)) to uiChannel0
+                    Move (ResizeArray (uiChannel1, iEntries)) to uiChannel1
+                    Move (ResizeArray (uiChannel2, iEntries)) to uiChannel2
+                    Move (GdipBitmapGetHistogram (pImage, eHistogramFormat, iEntries, AddressOf (uiChannel0), AddressOf (uiChannel1), AddressOf (uiChannel2), 0)) to eStatus
+                    If (eStatus <> gpOk) Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler iResult "GDI+ BitmapGetHistogram failed in OnPaint"
+                    End
+                    Case Break
+                Case (eHistogramFormat = gpHistogramFormatARGB)
+                    // The alpha-channel histogram is written to channel0
+                    // The red-channel histogram is written to channel1
+                    // The green-channel histogram is written to channel2
+                    // The blue-channel histogram is written to channel3
+                Case (eHistogramFormat = gpHistogramFormatPARGB)
+                    // The alpha-channel histogram is written to channel0
+                    // The red-channel histogram is written to channel1
+                    // The green-channel histogram is written to channel2
+                    // The blue-channel histogram is written to channel3
+                    // The red, green, and blue channels are each multiplied by the alpha channel
+                    Move (ResizeArray (uiChannel0, iEntries)) to uiChannel0
+                    Move (ResizeArray (uiChannel1, iEntries)) to uiChannel1
+                    Move (ResizeArray (uiChannel2, iEntries)) to uiChannel2
+                    Move (ResizeArray (uiChannel3, iEntries)) to uiChannel3
+                    Move (GdipBitmapGetHistogram (pImage, eHistogramFormat, iEntries, AddressOf (uiChannel0), AddressOf (uiChannel1), AddressOf (uiChannel2), AddressOf (uiChannel3))) to eStatus
+                    If (eStatus <> gpOk) Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler iResult "GDI+ BitmapGetHistogram failed in OnPaint"
+                    End
+                    Case Break
+                Case (eHistogramFormat = gpHistogramFormatGray)
+                    // each pixel is converted to a grayscale value in the range 0 through 255,
+                    // and then one histogram, based on those grayscale value
+                    // The blue-channel histogram is written to channel0
+                Case (eHistogramFormat = gpHistogramFormatB)
+                    // The blue-channel histogram is written to channel0
+                Case (eHistogramFormat = gpHistogramFormatG)
+                    // The green-channel histogram is written to channel0
+                Case (eHistogramFormat = gpHistogramFormatR)
+                    // The red-channel histogram is written to channel0
+                Case (eHistogramFormat = gpHistogramFormatA)
+                    // The alpha-channel histogram is written to channel0
+                    Move (ResizeArray (uiChannel0, iEntries)) to uiChannel0
+                    Move (GdipBitmapGetHistogram (pImage, eHistogramFormat, iEntries, AddressOf (uiChannel0), 0, 0, 0)) to eStatus
+                    If (eStatus <> gpOk) Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler iResult "GDI+ BitmapGetHistogram failed in OnPaint"
+                    End
+                    Case Break
+            Case End
+
+            If (eStatus = gpOk) Begin
+                Move (BeginPaint (hWnd, AddressOf (PaintData))) to hDC
+
+                // Get client rect
+                Get RealClientRect to DestinationRect
+
+                // Create memory DC
+                Move (CreateCompatibleDC (hDC)) to hMemDC
+                Get phBmp to hBmp
+                If (hBmp = 0) Begin
+                    // Take one off for the array size; don't use the highest (white) value
+                    Move (iEntries - 2) to iEntries
+
+                    Get phoGraphics to hoGraphics
+
+                    // The InflateRect function increases or decreases the width and height of the specified rectangle.
+                    // The InflateRect Function adds dx units to the left and right ends of the rectangle and dy units
+                    // to the top and bottom. The dx and dy parameters are signed values; positive values increase the
+                    // width and height, and negative values decrease them.
+                    Move (InflateRect (AddressOf (DestinationRect), 1, 1)) to iResult
+                    If (iResult = 0) Begin
+                        Send HandleWinAPIError iResult "InflateRect in OnPaint"
+                    End
+
+                    // Create memory bitmap, size of bitmap is the same as the scaled image or the size of the client
+                    // area if the bitmap is smaller
+                    Move (CreateCompatibleBitmap (hDC, DestinationRect.right, DestinationRect.bottom)) to hBmp
+                    Move (SelectObject (hMemDC, hBmp)) to iResult
+
+                    // Attach graphics object to hMemDC
+                    Get AttachDC of hoGraphics hMemDC to eStatus
+                    If (eStatus <> gpOk) Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler iResult "AttachDC in OnPaint"
+                    End
+
+                    // Clear background
+                    Get ppcBackColor to uiColor
+                    Get ARGBFromRGB of ghoGDIPlusHandler uiColor 255 to uiColor
+                    Get Create (RefClass (cGDISolidBrush)) to hoSolidBrush
+                    Get CreateSolidFill of hoSolidBrush uiColor to eStatus
+                    If (eStatus = gpOk) Begin
+                        Get FillRectangle of hoGraphics hoSolidBrush 0 0 DestinationRect.right DestinationRect.bottom to eStatus
+                        If (eStatus <> gpOk) Begin
+                            Send HandleGDIResult of ghoGDIPlusHandler iResult "FillRectangle in OnPaint"
+                        End
+                        Send DeleteBrush of hoSolidBrush
+                    End
+                    Send Destroy of hoSolidBrush
+
+                    Get pbShowRect to bShowRect
+                    If (bShowRect) Begin
+                        Get pcRectColor to uiColor
+                        Get ARGBFromRGB of ghoGDIPlusHandler uiColor 255 to uiColor
+                        Get Create (RefClass (cGDIPen)) to hoPen
+                        Get CreatePenFromColor of hoPen uiColor 2 gpUnitPixel to eStatus
+                        If (eStatus = gpOk) Begin
+                            Move (InflateRect (AddressOf (DestinationRect), -1, -1)) to iResult
+                            Case Begin
+                                Case (eHistogramFormat = gpHistogramFormatGray)
+                                Case (eHistogramFormat = gpHistogramFormatB)
+                                Case (eHistogramFormat = gpHistogramFormatG)
+                                Case (eHistogramFormat = gpHistogramFormatR)
+                                Case (eHistogramFormat = gpHistogramFormatA)
+                                    Get DrawRectangle of hoGraphics hoPen DestinationRect.left Destinationrect.top DestinationRect.right DestinationRect.bottom to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle failed in OnPaint"
+                                    End
+                                    Case Break
+                                Case (eHistogramFormat = gpHistogramFormatRGB)
+                                    Move (DestinationRect.bottom - DestinationRect.top / 2 - 4) to iHeight
+                                    Move (DestinationRect.right - DestinationRect.left / 2 - 4) to iWidth
+                                    Get DrawRectangle of hoGraphics hoPen DestinationRect.left Destinationrect.top iWidth iHeight to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle (2) failed in OnPaint"
+                                    End
+                                    Get DrawRectangle of hoGraphics hoPen DestinationRect.left (Destinationrect.top + iHeight + 8) iWidth iHeight to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle (3) failed in OnPaint"
+                                    End
+                                    Get DrawRectangle of hoGraphics hoPen (DestinationRect.left + iWidth + 8) (Destinationrect.top + iHeight + 8) iWidth iHeight to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle (4) failed in OnPaint"
+                                    End
+                                    Case Break
+                                Case (eHistogramFormat = gpHistogramFormatARGB)
+                                Case (eHistogramFormat = gpHistogramFormatPARGB)
+                                    Move (DestinationRect.bottom - DestinationRect.top / 2 - 4) to iHeight
+                                    Move (DestinationRect.right - DestinationRect.left / 2 - 4) to iWidth
+                                    Get DrawRectangle of hoGraphics hoPen DestinationRect.left Destinationrect.top iWidth iHeight to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle (5) failed in OnPaint"
+                                    End
+                                    Get DrawRectangle of hoGraphics hoPen (DestinationRect.left + iWidth + 8) Destinationrect.top iWidth iHeight to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle (6) failed in OnPaint"
+                                    End
+                                    Get DrawRectangle of hoGraphics hoPen DestinationRect.left (Destinationrect.top + iHeight + 8) iWidth iHeight to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle (7) failed in OnPaint"
+                                    End
+                                    Get DrawRectangle of hoGraphics hoPen (DestinationRect.left + iWidth + 8) (Destinationrect.top + iHeight + 8) iWidth iHeight to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "DrawRectangle (8) failed in OnPaint"
+                                    End
+                                    Case Break
+                            Case End
+                            Send DeletePen of hoPen
+                        End
+                        Else Begin
+                            Send HandleGDIResult of ghoGDIPlusHandler iResult "CreatePenFromColor failed in OnPaint"
+                        End
+                        Send Destroy of hoPen
+                    End
+
+                    Case Begin
+                        Case (eHistogramFormat = gpHistogramFormatGray)
+                        Case (eHistogramFormat = gpHistogramFormatB)
+                        Case (eHistogramFormat = gpHistogramFormatG)
+                        Case (eHistogramFormat = gpHistogramFormatR)
+                        Case (eHistogramFormat = gpHistogramFormatA)
+                            Move (DestinationRect.bottom - DestinationRect.top) to iHeight
+                            Move (DestinationRect.right - DestinationRect.left) to iWidth
+
+                            Move ((iWidth - (2 * iOffset)) / (iEntries * 1.0)) to fXUnit
+                            Get MaxValue uiChannel0 to fMaxValue
+                            Move ((iHeight - (2 * iOffset)) / fMaxValue) to fYUnit
+
+                            Get Create (RefClass (cGDIPen)) to hoPen
+
+                            for iElement from 0 to iEntries
+                                Move (iOffset + (iElement * fXUnit)) to fFromX
+                                Move (iHeight - iOffset) to fFromY
+                                Move fFromX to fToX
+                                Move (iHeight - iOffset - (uiChannel0[iElement] * fYUnit)) to fToY
+                                Case Begin
+                                    Case (eHistogramFormat = gpHistogramFormatGray)
+                                        Move ((255 * 16777216) + (16777215 / (iEntries + 1) * iElement)) to uiPenColor
+                                        Case Break
+                                    Case (eHistogramFormat = gpHistogramFormatB)
+                                        Get ARGB of ghoGDIPlusHandler 255 0 0 iElement to uiPenColor
+                                        Case Break
+                                    Case (eHistogramFormat = gpHistogramFormatG)
+                                        Get ARGB of ghoGDIPlusHandler 255 0 iElement 0 to uiPenColor
+                                        Case Break
+                                    Case (eHistogramFormat = gpHistogramFormatR)
+                                        Get ARGB of ghoGDIPlusHandler 255 iElement 0 0 to uiPenColor
+                                        Case Break
+                                    Case (eHistogramFormat = gpHistogramFormatA)
+                                        Get ARGB of ghoGDIPlusHandler iElement 0 0 0 to uiPenColor
+                                        Case Break
+                                Case End
+                                Get CreatePenFromColor of hoPen uiPenColor fXUnit gpUnitPixel to eStatus
+                                If (eStatus <> gpOk) Begin
+                                    Send HandleGDIResult of ghoGDIPlusHandler iResult "CreatePenFromColor (2) failed in OnPaint"
+                                End
+                                Get DrawLine of hoGraphics hoPen fFromX fFromY fToX fToY to eStatus
+                                Send DeletePen of hoPen
+                            Loop
+
+                            Send Destroy of hoPen
+                            Case Break
+                        Case (eHistogramFormat = gpHistogramFormatRGB)
+                            Move (DestinationRect.bottom - DestinationRect.top / 2 - 4) to iHeight
+                            Move (DestinationRect.right - DestinationRect.left / 2 - 4) to iWidth
+
+                            Move ((iWidth - (2 * iOffset)) / (iEntries * 1.0)) to fXUnit
+
+                            For iHistogram from 1 to 3
+                                Case Begin
+                                    Case (iHistogram = 1)
+                                        Move uiChannel0 to uiDataChannel
+                                        Case Break
+                                    Case (iHistogram = 2)
+                                        Move uiChannel1 to uiDataChannel
+                                        Case Break
+                                    Case (iHistogram = 3)
+                                        Move uiChannel2 to uiDataChannel
+                                        Case Break
+                                Case End
+
+                                Get MaxValue uiDataChannel to fMaxValue
+                                Move ((iHeight - (2 * iOffset)) / fMaxValue) to fYUnit
+
+                                Get Create (RefClass (cGDIPen)) to hoPen
+
+                                For iElement from 0 to iEntries
+                                    Case Begin
+                                        Case (iHistogram = 1)
+                                            Move (iOffset + (iElement * fXUnit)) to fFromX
+                                            Move (iHeight - iOffset) to fFromY
+                                            Get ARGB of ghoGDIPlusHandler 255 iElement 0 0 to uiPenColor
+                                            Case Break
+                                        Case (iHistogram = 2)
+                                            Move (iOffset + (iElement * fXUnit)) to fFromX
+                                            Move (iHeight * 2 - (iOffset / 2)) to fFromY
+                                            Get ARGB of ghoGDIPlusHandler 255 0 iElement 0 to uiPenColor
+                                            Case Break
+                                        Case (iHistogram = 3)
+                                            Move (iOffset + iWidth + (iElement * fXUnit)) to fFromX
+                                            Move (iHeight * 2 - (iOffset / 2)) to fFromY
+                                            Get ARGB of ghoGDIPlusHandler 255 0 0 iElement to uiPenColor
+                                            Case Break
+                                    Case End
+                                    Move fFromX to fToX
+                                    Move (fFromY - (uiDataChannel[iElement] * fYUnit)) to fToY
+                                    Get CreatePenFromColor of hoPen uiPenColor fXUnit gpUnitPixel to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "CreatePenFromColor (3) failed in OnPaint"
+                                    End
+                                    If (Abs (fToY - fFromY) > iHeight) Begin
+                                        // This correction helps to avoid the line to be drawn through other diagrams
+                                        Move (iHeight + iOffset) to fToY
+                                    End
+                                    Get DrawLine of hoGraphics hoPen fFromX fFromY fToX fToY to eStatus
+                                    Send DeletePen of hoPen
+                                Loop
+
+                                Send Destroy of hoPen
+                            Loop
+                            Case Break
+                        Case (eHistogramFormat = gpHistogramFormatARGB)
+                        Case (eHistogramFormat = gpHistogramFormatPARGB)
+                            Move (DestinationRect.bottom - DestinationRect.top / 2 - 4) to iHeight
+                            Move (DestinationRect.right - DestinationRect.left / 2 - 4) to iWidth
+
+                            Move ((iWidth - (2 * iOffset)) / (iEntries * 1.0)) to fXUnit
+
+                            for iHistogram from 1 to 4
+                                Case Begin
+                                    Case (iHistogram = 1)
+                                        Move uiChannel0 to uiDataChannel
+                                        Case Break
+                                    Case (iHistogram = 2)
+                                        Move uiChannel1 to uiDataChannel
+                                        Case Break
+                                    Case (iHistogram = 3)
+                                        Move uiChannel2 to uiDataChannel
+                                        Case Break
+                                    Case (iHistogram = 4)
+                                        Move uiChannel3 to uiDataChannel
+                                        Case Break
+                                Case End
+
+                                Get MaxValue uiDataChannel to fMaxValue
+                                Move ((iHeight - (2 * iOffset)) / fMaxValue) to fYUnit
+
+                                Get Create (RefClass (cGDIPen)) to hoPen
+
+                                For iElement from 0 to iEntries
+                                    Case Begin
+                                        Case (iHistogram = 1)
+                                            Move (iOffset + (iElement * fXUnit)) to fFromX
+                                            Move (iHeight - iOffset) to fFromY
+                                            Move (fFromY - (uiDataChannel[iElement] * fYUnit)) to fToY
+                                            Get ARGB of ghoGDIPlusHandler iElement 0 0 0 to uiPenColor
+                                            Case Break
+                                        Case (iHistogram = 2)
+                                            Move (iOffset + iWidth + (iElement * fXUnit)) to fFromX
+                                            Move (iHeight - iOffset) to fFromY
+                                            Move (fFromY - (uiDataChannel[iElement] * fYUnit)) to fToY
+                                            Get ARGB of ghoGDIPlusHandler 255 iElement 0 0 to uiPenColor
+                                            Case Break
+                                        Case (iHistogram = 3)
+                                            Move (iOffset + (iElement * fXUnit)) to fFromX
+                                            Move (iHeight * 2 - (iOffset / 2)) to fFromY
+                                            Move (fFromY - (uiDataChannel[iElement] * fYUnit)) to fToY
+                                            Get ARGB of ghoGDIPlusHandler 255 0 iElement 0 to uiPenColor
+                                            Case Break
+                                        Case (iHistogram = 4)
+                                            Move (iOffset + iWidth + (iElement * fXUnit)) to fFromX
+                                            Move (iHeight * 2 - (iOffset / 2)) to fFromY
+                                            Move (fFromY - (uiDataChannel[iElement] * fYUnit)) to fToY
+                                            Get ARGB of ghoGDIPlusHandler 255 0 0 iElement to uiPenColor
+                                            Case Break
+                                    Case End
+                                    Move fFromX to fToX
+                                    Get CreatePenFromColor of hoPen uiPenColor fXUnit gpUnitPixel to eStatus
+                                    If (eStatus <> gpOk) Begin
+                                        Send HandleGDIResult of ghoGDIPlusHandler iResult "CreatePenFromColor (4) failed in OnPaint"
+                                    End
+                                    Get DrawLine of hoGraphics hoPen fFromX fFromY fToX fToY to eStatus
+                                    Send DeletePen of hoPen
+                                Loop
+
+                                Send Destroy of hoPen
+                            Loop
+                            Case Break
+                    Case End
+
+                    Set phBmp to hBmp
+                End
+                Else Begin
+                    Move (SelectObject (hMemDC, hBmp)) to iResult
+                End
+
+                // Copy bitmap
+                Move (BitBlt (hDC, 0, 0, DestinationRect.right, DestinationRect.bottom, hMemDC, 0, 0, SRCCOPY)) to iResult
+
+                Move (DeleteDC (hMemDC)) to iResult
+                Move (EndPaint (hWnd, AddressOf (PaintData))) to iResult
+                Set Windows_Override_State to True
+
+                Procedure_Return False
+            End
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Causes the histogram image to be repainted." }
+    { Visibility = Private }
+    Procedure RedrawHistogram
+        Integer iResult
+        Handle hWnd
+
+        Get Window_Handle to hWnd
+        If (hWnd) Begin
+            Move (InvalidateRect (hWnd, 0, False)) to iResult
+            Move (UpdateWindow (hWnd)) to iResult
+        End
+    End_Procedure
+
+    { Description = "Sets enabled state. If this is done before the object is paged, before it has a window handle, the state is remembered" }
+    { Description += "to be used during paging of the object. If set while the object has a window handle, it immediately sets the window's enabled flag." }
+    { MethodType = Property }
+    { Category = "Appearance"}
+    { PropertyType = Boolean }
+    { InitialValue = True }
+    Procedure Set pbEnabled Boolean bEnabled
+        Integer iResult
+        Handle hWnd
+
+        Set ppbEnabled to bEnabled
+        Get Window_Handle to hWnd
+
+        If (hWnd) Begin
+            Move (EnableWindow (hWnd, bEnabled)) to iResult
+        End
+    End_Procedure
+
+    { Description = "Returns whether the object is currently enabled or disabled." }
+    { MethodType = Property }
+    { PropertyType = Boolean }
+    { Category = "Appearance"}
+    { InitialValue = True }
+    Function pbEnabled Returns Boolean
+        Boolean bEnabled
+
+        Get ppbEnabled to bEnabled
+
+        Function_Return bEnabled
+    End_Function
+
+    { Description = "Set the visible state of the histogram. When the object is not paged, remember the settting and apply" }
+    { Description += "when it gets paged." }
+    { MethodType = Property }
+    { Category = "Appearance"}
+    { PropertyType = Boolean }
+    { InitialValue = True }
+    Procedure Set pbVisible Boolean bVisible
+        Integer iResult
+        Handle hWnd
+
+        Set ppbVisible to bVisible
+        Get Window_Handle to hWnd
+
+        If (hWnd) Begin
+            If (bVisible) Begin
+                Move (ShowWindow (hWnd, SW_SHOWNA)) to iResult
+            End
+            Else Begin
+                Move (ShowWindow (hWnd, SW_HIDE)) to iResult
+            End
+        End
+    End_Procedure
+
+    { Description = "Gets the visible state of the object. The state is maintained in a DataFlex property and applied to the" }
+    { Description += "histogram container when paged." }
+    { MethodType = Property }
+    { Category = "Appearance"}
+    { PropertyType = Boolean }
+    { InitialValue = True }
+    Function pbVisible Returns Boolean
+        Boolean bVisible
+
+        Get ppbVisible to bVisible
+
+        Function_Return bVisible
+    End_Function
+
+    { Description = "If there is a in memory bitmap object, delete it and release the reference" }
+    { Visibility = Private }
+    Procedure RemoveBitmap
+        Handle hBmp
+        Integer iResult
+
+        Get phBmp to hBmp
+        If (hBmp) Begin
+            Move (DeleteObject (hBmp)) to iResult
+            Set phBmp to 0
+        End
+    End_Procedure
+
+    { Description = "Sends a message to remove the bitmap property value from memory." }
+    { Visibility = Private }
+    Procedure Destroy_Object
+        Send RemoveBitmap
+
+        Forward Send Destroy_Object
+    End_Procedure
+End_Class

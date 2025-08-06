@@ -1,0 +1,117 @@
+﻿Use VdfBase.pkg
+Use Structs\tImageCodecInfo.pkg
+
+// Image mime types
+Define CS_BMP_Mimetype  for "image/bmp"
+Define CS_JPG_Mimetype  for "image/jpeg"
+Define CS_GIF_Mimetype  for "image/gif"
+Define CS_TIF_Mimetype  for "image/tiff"
+Define CS_PNG_Mimetype  for "image/png"
+Define CS_ICO_Mimetype  for "image/x-icon"
+Define CS_WMF_Mimetype  for "image/x-wmf"
+Define CS_EMF_Mimetype  for "image/x-emf"
+Define CS_EXIF_Mimetype for "image/exif"
+Define CS_HEIF_Mimetype for "image/heif"
+
+Define ImageCodecFlags for Integer
+    Define ImageCodecFlagsEncoder           for |CI$00000001
+    Define ImageCodecFlagsDecoder           for |CI$00000002
+    Define ImageCodecFlagsSupportBitmap     for |CI$00000004
+    Define ImageCodecFlagsSupportVector     for |CI$00000008
+    Define ImageCodecFlagsSeekableEncode    for |CI$00000010
+    Define ImageCodecFlagsBlockingDecode    for |CI$00000020
+    Define ImageCodecFlagsBuiltin           for |CI$00010000
+    Define ImageCodecFlagsSystem            for |CI$00020000
+    Define ImageCodecFlagsUser              for |CI$00040000
+
+Define guidEncoderChrominanceTable  for "F2E455DC-09B3-4316-8260-676ADA32481C"
+Define guidEncoderColorDepth        for "66087055-AD66-4C7C-9A18-38A2310B8337"
+Define guidEncoderCompression       for "E09D739D-CCD4-44EE-8EBA-3FBF8BE4FC58"
+Define guidEncoderLuminanceTable    for "EDB33BCE-0266-4A77-B904-27216099E717"
+Define guidEncoderQuality           for "1D5BE4B5-FA4A-452D-9CDD-5DB35105E7EB"
+Define guidEncoderRenderMethod      for "6D42C53A-229A-4825-8BB7-5C99E2B9A8B8"
+Define guidEncoderSaveFlag          for "292266FC-AC40-47BF-8CFC-A85B89A655DE"
+Define guidEncoderScanMethod        for "3A4E2661-3109-4E56-8536-42C156E7DCFA"
+Define guidEncoderTransformation    for "8D0EB2D1-A58E-4EA8-AA14-108074B7B6F9"
+Define guidEncoderVersion           for "24D18C76-814A-41A4-BF53-1C219CCCF797"
+
+//---------------------------------------------------------------------------
+// Image encoder parameter related types
+//---------------------------------------------------------------------------
+Define EncoderParameterValueType for Integer
+Enum_List
+    Define EncoderParameterValueTypeByte    for 1   // 8-bit unsigned int
+    Define EncoderParameterValueTypeASCII           // 8-bit byte containing one 7-bit ASCII code. NULL terminated.
+    Define EncoderParameterValueTypeShort           // 16-bit unsigned int
+    Define EncoderParameterValueTypeLong            // 32-bit unsigned int
+    Define EncoderParameterValueTypeRational        // Two Longs. The first Long is the numerator, the second Long expresses the denomintor.
+    Define EncoderParameterValueTypeLongRange       // Two longs which specify a range of integer values. The first Long specifies the lower end and the second one specifies the higher end. All values are inclusive at both ends
+    Define EncoderParameterValueTypeUndefined       // 8-bit byte that can take any value depending on field definition
+    Define EncoderParameterValueTypeRationalRange   // Two Rationals. The first Rational specifies the lower end and the second specifies the higher end. All values are inclusive at both ends
+    Define EncoderParameterValueTypePointer         // a Pointer to a parameter defined data.
+End_Enum_List
+
+Define EncoderValue for Integer
+Enum_List
+    Define EncoderValueColorTypeCMYK
+    Define EncoderValueColorTypeYCCK
+    Define EncoderValueCompressionLZW
+    Define EncoderValueCompressionCCITT3
+    Define EncoderValueCompressionCCITT4
+    Define EncoderValueCompressionRle
+    Define EncoderValueCompressionNone
+    Define EncoderValueScanMethodInterlaced
+    Define EncoderValueScanMethodNonInterlaced
+    Define EncoderValueVersionGif87
+    Define EncoderValueVersionGif89
+    Define EncoderValueRenderProgressive
+    Define EncoderValueRenderNonProgressive
+    Define EncoderValueTransformRotate90
+    Define EncoderValueTransformRotate180
+    Define EncoderValueTransformRotate270
+    Define EncoderValueTransformFlipHorizontal
+    Define EncoderValueTransformFlipVertical
+    Define EncoderValueMultiFrame
+    Define EncoderValueLastFrame
+    Define EncoderValueFlush
+    Define EncoderValueFrameDimensionTime
+    Define EncoderValueFrameDimensionResolution
+    Define EncoderValueFrameDimensionPage
+    Define EncoderValueColorTypeGray
+    Define EncoderValueColorTypeRGB
+End_Enum_List
+
+#IFNDEF get_GdipGetImageEncodersSize
+External_Function GdipGetImageEncodersSize "GdipGetImageEncodersSize" gdiplus.dll ;
+    Pointer numEncoders ;
+    Pointer size ;
+    Returns gpStatus
+#ENDIF
+
+#IFNDEF get_GdipGetImageEncoders
+External_Function GdipGetImageEncoders "GdipGetImageEncoders" gdiplus.dll ;
+    UInteger numEncoders ;
+    UInteger size ;
+    Pointer pImageCodeInfo ;
+    Returns gpStatus
+#ENDIF
+
+// GpStatus WINGDIPAPI GdipGetEncoderParameterListSize(GpImage *image, GDIPCONST CLSID* clsidEncoder, UINT* size)
+#IFNDEF get_GdipGetEncoderParameterListSize
+External_Function GdipGetEncoderParameterListSize "GdipGetEncoderParameterListSize" gdiplus.dll ;
+    Pointer image ;
+    Pointer clsidEncoder ;
+    Pointer size ;
+    Returns gpStatus
+#ENDIF
+
+// GpStatus WINGDIPAPI GdipGetEncoderParameterList(GpImage *image, GDIPCONST CLSID* clsidEncoder, UINT size, EncoderParameters* buffer)
+#IFNDEF get_GdipGetEncoderParameterList
+External_Function GdipGetEncoderParameterList "GdipGetEncoderParameterList" gdiplus.dll ;
+    Pointer image ;
+    Pointer clsidEncoder ;
+    UInteger size ;
+    Pointer buffer ;
+    Returns gpStatus
+#ENDIF
+

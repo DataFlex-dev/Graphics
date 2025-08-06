@@ -1,0 +1,199 @@
+Use GDI.h.pkg
+
+Define gpStatus for Integer
+Enum_List
+    Define gpOk
+    Define gpGenericError
+    Define gpInvalidParameter
+    Define gpOutOfMemory
+    Define gpObjectBusy
+    Define gpInsufficientBuffer
+    Define gpNotImplemented
+    Define gpWin32Error
+    Define gpWrongState
+    Define gpAborted
+    Define gpFileNotFound
+    Define gpValueOverflow
+    Define gpAccessDenied
+    Define gpUnknownImageFormat
+    Define gpFontFamilyNotFound
+    Define gpFontStyleNotFound
+    Define gpNotTrueTypeFont
+    Define gpUnsupportedGdiplusVersion
+    Define gpGdiplusNotInitialized
+    Define gpPropertyNotFound
+    Define gpPropertyNotSupported
+    Define gpProfileNotFound
+End_Enum_List
+
+Define gpColors for Integer
+Enum_List
+    Define gpAliceBlue                      for |CI$FFF0F8FF
+    Define gpAntiqueWhite                   for |CI$FFFAEBD7
+    Define gpAqua                           for |CI$FF00FFFF
+    Define gpAquamarine                     for |CI$FF7FFFD4
+    Define gpAzure                          for |CI$FFF0FFFF
+    Define gpBeige                          for |CI$FFF5F5DC
+    Define gpBisque                         for |CI$FFFFE4C4
+    Define gpBlack                          for |CI$FF000000
+    Define gpBlanchedAlmond                 for |CI$FFFFEBCD
+    Define gpBlue                           for |CI$FF0000FF
+    Define gpBlueViolet                     for |CI$FF8A2BE2
+    Define gpBrown                          for |CI$FFA52A2A
+    Define gpBurlyWood                      for |CI$FFDEB887
+    Define gpCadetBlue                      for |CI$FF5F9EA0
+    Define gpChartreuse                     for |CI$FF7FFF00
+    Define gpChocolate                      for |CI$FFD2691E
+    Define gpCoral                          for |CI$FFFF7F50
+    Define gpCornflowerBlue                 for |CI$FF6495ED
+    Define gpCornsilk                       for |CI$FFFFF8DC
+    Define gpCrimson                        for |CI$FFDC143C
+    Define gpCyan                           for |CI$FF00FFFF
+    Define gpDarkBlue                       for |CI$FF00008B
+    Define gpDarkCyan                       for |CI$FF008B8B
+    Define gpDarkGoldenrod                  for |CI$FFB8860B
+    Define gpDarkGray                       for |CI$FFA9A9A9
+    Define gpDarkGreen                      for |CI$FF006400
+    Define gpDarkKhaki                      for |CI$FFBDB76B
+    Define gpDarkMagenta                    for |CI$FF8B008B
+    Define gpDarkOliveGreen                 for |CI$FF556B2F
+    Define gpDarkOrange                     for |CI$FFFF8C00
+    Define gpDarkOrchid                     for |CI$FF9932CC
+    Define gpDarkRed                        for |CI$FF8B0000
+    Define gpDarkSalmon                     for |CI$FFE9967A
+    Define gpDarkSeaGreen                   for |CI$FF8FBC8B
+    Define gpDarkSlateBlue                  for |CI$FF483D8B
+    Define gpDarkSlateGray                  for |CI$FF2F4F4F
+    Define gpDarkTurquoise                  for |CI$FF00CED1
+    Define gpDarkViolet                     for |CI$FF9400D3
+    Define gpDeepPink                       for |CI$FFFF1493
+    Define gpDeepSkyBlue                    for |CI$FF00BFFF
+    Define gpDimGray                        for |CI$FF696969
+    Define gpDodgerBlue                     for |CI$FF1E90FF
+    Define gpFirebrick                      for |CI$FFB22222
+    Define gpFloralWhite                    for |CI$FFFFFAF0
+    Define gpForestGreen                    for |CI$FF228B22
+    Define gpFuchsia                        for |CI$FFFF00FF
+    Define gpGainsboro                      for |CI$FFDCDCDC
+    Define gpGhostWhite                     for |CI$FFF8F8FF
+    Define gpGold                           for |CI$FFFFD700
+    Define gpGoldenrod                      for |CI$FFDAA520
+    Define gpGray                           for |CI$FF808080
+    Define gpGreen                          for |CI$FF008000
+    Define gpGreenYellow                    for |CI$FFADFF2F
+    Define gpHoneydew                       for |CI$FFF0FFF0
+    Define gpHotPink                        for |CI$FFFF69B4
+    Define gpIndianRed                      for |CI$FFCD5C5C
+    Define gpIndigo                         for |CI$FF4B0082
+    Define gpIvory                          for |CI$FFFFFFF0
+    Define gpKhaki                          for |CI$FFF0E68C
+    Define gpLavender                       for |CI$FFE6E6FA
+    Define gpLavenderBlush                  for |CI$FFFFF0F5
+    Define gpLawnGreen                      for |CI$FF7CFC00
+    Define gpLemonChiffon                   for |CI$FFFFFACD
+    Define gpLightBlue                      for |CI$FFADD8E6
+    Define gpLightCoral                     for |CI$FFF08080
+    Define gpLightCyan                      for |CI$FFE0FFFF
+    Define gpLightGoldenrodYellow           for |CI$FFFAFAD2
+    Define gpLightGray                      for |CI$FFD3D3D3
+    Define gpLightGreen                     for |CI$FF90EE90
+    Define gpLightPink                      for |CI$FFFFB6C1
+    Define gpLightSalmon                    for |CI$FFFFA07A
+    Define gpLightSeaGreen                  for |CI$FF20B2AA
+    Define gpLightSkyBlue                   for |CI$FF87CEFA
+    Define gpLightSlateGray                 for |CI$FF778899
+    Define gpLightSteelBlue                 for |CI$FFB0C4DE
+    Define gpLightYellow                    for |CI$FFFFFFE0
+    Define gpLime                           for |CI$FF00FF00
+    Define gpLimeGreen                      for |CI$FF32CD32
+    Define gpLinen                          for |CI$FFFAF0E6
+    Define gpMagenta                        for |CI$FFFF00FF
+    Define gpMaroon                         for |CI$FF800000
+    Define gpMediumAquamarine               for |CI$FF66CDAA
+    Define gpMediumBlue                     for |CI$FF0000CD
+    Define gpMediumOrchid                   for |CI$FFBA55D3
+    Define gpMediumPurple                   for |CI$FF9370DB
+    Define gpMediumSeaGreen                 for |CI$FF3CB371
+    Define gpMediumSlateBlue                for |CI$FF7B68EE
+    Define gpMediumSpringGreen              for |CI$FF00FA9A
+    Define gpMediumTurquoise                for |CI$FF48D1CC
+    Define gpMediumVioletRed                for |CI$FFC71585
+    Define gpMidnightBlue                   for |CI$FF191970
+    Define gpMintCream                      for |CI$FFF5FFFA
+    Define gpMistyRose                      for |CI$FFFFE4E1
+    Define gpMoccasin                       for |CI$FFFFE4B5
+    Define gpNavajoWhite                    for |CI$FFFFDEAD
+    Define gpNavy                           for |CI$FF000080
+    Define gpOldLace                        for |CI$FFFDF5E6
+    Define gpOlive                          for |CI$FF808000
+    Define gpOliveDrab                      for |CI$FF6B8E23
+    Define gpOrange                         for |CI$FFFFA500
+    Define gpOrangeRed                      for |CI$FFFF4500
+    Define gpOrchid                         for |CI$FFDA70D6
+    Define gpPaleGoldenrod                  for |CI$FFEEE8AA
+    Define gpPaleGreen                      for |CI$FF98FB98
+    Define gpPaleTurquoise                  for |CI$FFAFEEEE
+    Define gpPaleVioletRed                  for |CI$FFDB7093
+    Define gpPapayaWhip                     for |CI$FFFFEFD5
+    Define gpPeachPuff                      for |CI$FFFFDAB9
+    Define gpPeru                           for |CI$FFCD853F
+    Define gpPink                           for |CI$FFFFC0CB
+    Define gpPlum                           for |CI$FFDDA0DD
+    Define gpPowderBlue                     for |CI$FFB0E0E6
+    Define gpPurple                         for |CI$FF800080
+    Define gpRed                            for |CI$FFFF0000
+    Define gpRosyBrown                      for |CI$FFBC8F8F
+    Define gpRoyalBlue                      for |CI$FF4169E1
+    Define gpSaddleBrown                    for |CI$FF8B4513
+    Define gpSalmon                         for |CI$FFFA8072
+    Define gpSandyBrown                     for |CI$FFF4A460
+    Define gpSeaGreen                       for |CI$FF2E8B57
+    Define gpSeaShell                       for |CI$FFFFF5EE
+    Define gpSienna                         for |CI$FFA0522D
+    Define gpSilver                         for |CI$FFC0C0C0
+    Define gpSkyBlue                        for |CI$FF87CEEB
+    Define gpSlateBlue                      for |CI$FF6A5ACD
+    Define gpSlateGray                      for |CI$FF708090
+    Define gpSnow                           for |CI$FFFFFAFA
+    Define gpSpringGreen                    for |CI$FF00FF7F
+    Define gpSteelBlue                      for |CI$FF4682B4
+    Define gpTan                            for |CI$FFD2B48C
+    Define gpTeal                           for |CI$FF008080
+    Define gpThistle                        for |CI$FFD8BFD8
+    Define gpTomato                         for |CI$FFFF6347
+    Define gpTransparent                    for |CI$00FFFFFF
+    Define gpTurquoise                      for |CI$FF40E0D0
+    Define gpViolet                         for |CI$FFEE82EE
+    Define gpWheat                          for |CI$FFF5DEB3
+    Define gpWhite                          for |CI$FFFFFFFF
+    Define gpWhiteSmoke                     for |CI$FFF5F5F5
+    Define gpYellow                         for |CI$FFFFFF00
+    Define gpYellowGreen                    for |CI$FF9ACD32
+End_Enum_List
+
+Define GDI_ERROR    for |CI$FFFFFFFF
+Define HGDI_ERROR   for GDI_ERROR
+
+// ************************************************************************************************ //
+// ** External Functions                                                                         ** //
+// ************************************************************************************************ //
+
+// void GdiplusShutdown(ULONG_PTR token)
+External_Function GdiplusShutdown "GdiplusShutdown" gdiplus.dll ;
+    Pointer token ;
+    Returns Integer
+
+// Status GdiplusStartup(ULONG_PTR token *token,const GdiplusStartupInput *input,GdiplusStartupOutput *output)
+External_Function GdiplusStartup "GdiplusStartup" gdiplus.dll ;
+    Pointer token ;
+    Pointer input ;
+    Pointer Output ;
+    Returns gpStatus
+
+// ************************************************************************************************ //
+// ** Structures                                                                                 ** //
+// ************************************************************************************************ //
+
+Use Structs\GdiplusStartupInput.pkg
+Use Structs\GdiplusStartupOutput.Pkg
+

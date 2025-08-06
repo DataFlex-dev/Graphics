@@ -1,0 +1,182 @@
+﻿Use Windows.Pkg
+Use Wingdi.pkg
+
+Define R2_NOT For 6
+
+External_Function GetDCEx "GetDCEx" User32.DLL Handle hWnd Handle hRgn Integer iFlag Returns Handle
+
+Define DCX_CLIPSIBLINGS For |CI$10
+Define DCX_PARENTCLIP   For |CI$20
+
+{ ClassLibrary = Windows }
+Class cSplitterControl is a DfBaseControl
+    { MethodType = Method }
+    { Visibility = Private }
+    { Description = "Draws the splitter line at the passed X location." }
+    Procedure DoDrawDrag Integer iX
+        Handle hDC hBrush hBrOld hPen hPenOld hWnd
+        Integer iLastX iVoid iXy iCy iXscreen iY
+
+        Get piLastX To iLastX
+
+        Get GuiLocation To iXy
+        Move (Hi (GuiSize (Self))) To iCy
+
+        Move (Hi (iXy)) To iY
+        Move (Low (iXy)) To iXScreen
+
+        Delegate Get Window_Handle To hWnd
+
+        Move (iX + iXscreen) To iX
+
+        Move (GetDCEx (hWnd, 0, DCX_PARENTCLIP iOr DCX_CLIPSIBLINGS)) To hDC
+        Move (GetStockObject (DKGRAY_BRUSH)) To hBrush
+        Move (GetStockObject (NULL_PEN)) To hPen
+        Move (SetRop2 (hDC, R2_NOT)) To iVoid
+        Move (SelectObject (hDC, hBrush)) To hBrOld
+        Move (SelectObject (hDC, hPen)) To hPenOld
+
+        If (iLastX <> 65536) Begin
+            Move (Rectangle (hDC, iLastX, iY + 1, iLastX + 4, iY + iCy)) To iVoid // erase last line
+        End
+        Move (Rectangle (hDC, iX, iY + 1, iX + 4, iY + iCy)) To iVoid
+
+        Move (SelectObject (hDC, hBrOld)) To iVoid
+        Move (SelectObject (hDC, hPenOld)) To iVoid
+        Move (ReleaseDC (0, hDC)) To iVoid
+
+        Set piLastX To iX
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Start of the splitter drag operation." }
+    Procedure WMSG_OnMouseDown Longptr wParam LongPtr lParam
+        Integer iX iParentGuiSize iGuiLocation iGuiXLocation iParentGuiWidth iMin iMax
+
+        Send Set_Mouse_Capture
+
+        Move (Low (lParam)) To iX
+        If (iX > 32000) Begin
+            Move (iX - 65536) To iX
+        End
+
+        Delegate Get GuiSize To iParentGuiSize
+
+        Get GuiLocation To iGuiLocation
+        Move (Low (iGuiLocation)) To iGuiXLocation
+        Move (Low (iParentGuiSize)) To iParentGuiWidth
+        Move 20 To iMin
+        Move (iParentGuiWidth - 20) To iMax
+        Set piMinTrack To (iMin - iGuiXLocation)
+        Set piMaxTrack To (iMax - iGuiXLocation)
+
+        Set piLastX To 65536
+
+        Send DoDrawDrag iX
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "This event fires when the user released the (left) mouse button. The message ResizeControls will be send." }
+    Procedure WMSG_OnMouseUp Longptr wParam LongPtr lParam
+        Integer iCxTrack iCxMin iCxMax
+
+        Send Release_Mouse_Capture
+
+        Move (Low (lParam)) To iCxTrack
+        If (iCxTrack > 32000) Begin
+            Move (iCxTrack - 65536) To iCxTrack
+        End
+
+        Get piMinTrack To iCxMin
+        Get piMaxTrack To iCxMax
+
+        Move (iCxMin Max iCxTrack) To iCxTrack
+        Move (iCxMax Min iCxTrack) To iCxTrack
+        Set piLastX To 65536
+        Send DoDrawDrag iCxTrack
+
+        Delegate Send ResizeControls iCxTrack
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Triggered when moving the mouse with a pressed left mouse button." }
+    Procedure WMSG_OnMouseMove Longptr wParam Longptr lParam
+        Integer iCxMin iCxMax iCxTrack
+
+        If (wParam iAnd MK_LBUTTON) Begin
+            Move (Low (lParam)) To iCxTrack
+            If (iCxTrack > 32000) Begin
+                Move (iCxTrack - 65536) To iCxTrack
+            End
+
+            Get piMinTrack To iCxMin
+            Get piMaxTrack To iCxMax
+
+            Move (iCxMin Max iCxTrack) To iCxTrack
+            Move (iCxMax Min iCxTrack) To iCxTrack
+            Send DoDrawDrag iCxTrack
+        End
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { OverrideProperty = Focus_Mode InitialValue = NonFocusable Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { Visibility = Private }
+        { Description = "Property to keep store the last used X location of the splitter" }
+        Property Integer piLastX
+        { Visibility = Private }
+        { Description = "Minimum location of the splitter. Set during beginning of dragging." }
+        Property Integer piMinTrack
+        { Visibility = Private }
+        { Description = "Maximum location of the splitter. Set during beginning of dragging." }
+        Property Integer piMaxTrack
+
+        Set External_Class_Name "DFSplitter" To "edit"
+
+        Set External_Message WM_LBUTTONDOWN To Msg_WMSG_OnMouseDown
+        Set External_Message WM_LBUTTONUP To Msg_WMSG_OnMouseUp
+        Set External_Message WM_MOUSEMOVE To Msg_WMSG_OnMouseMove
+
+        Set Focus_Mode to NonFocusable
+        Set Color To clBtnFace
+    End_Procedure
+
+    { MethodType = Method }
+    { Visibility = Private }
+    { Description = "Change the cursor shape to a splitter cursor" }
+    Procedure DoSetCursor
+        Integer iRetval iVoid
+        Handle hWnd hLib hCursor
+
+        Get Window_Handle to hWnd
+        If (hWnd) Begin
+            Move (LoadLibrary ("ComCtl32.dll")) to hLib
+            Move (LoadResourceCursor (hLib, "#106")) to hCursor    // splitter cursor
+            Move (SetClassLong (hWnd, GCL_HCURSOR, hCursor)) to iRetval
+            Move (FreeLibrary (hLib)) to iVoid
+        End
+    End_Procedure
+
+    { MethodType = Event }
+    { Visibility = Private }
+    { Description = "Send the DoSetCursor message to change the shape of the cursor for this control." }
+    Procedure Page Integer iState
+        Forward Send Page iState
+        If (iState = 1) Begin
+            Send DoSetCursor
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Sets both the visible_state as well as the enabled_state to make sure the tab order navigation works when made invisible" }
+    Procedure DoEnableControl Boolean bEnabled
+        Set Visible_State To bEnabled
+        Set Enabled_State To bEnabled
+    End_Procedure
+End_Class

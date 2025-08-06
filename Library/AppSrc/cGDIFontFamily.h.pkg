@@ -1,0 +1,100 @@
+﻿Use cGDIPlus.h.pkg
+
+Define gpFontStyle for Integer
+    Define FontStyleRegular    for 0 // Specifies normal weight or thickness of the typeface.
+    Define FontStyleBold       for 1 // Specifies bold typeface. Bold is a heavier weight or thickness.
+    Define FontStyleItalic     for 2 // Specifies italic typeface, which produces a noticeable slant to the vertical stems of the characters.
+    Define FontStyleBoldItalic for 3 // Specifies the typeface as both bold and italic.
+    Define FontStyleUnderline  for 4 // Specifies underline, which displays a line underneath the baseline of the characters.
+    Define FontStyleStrikeout  for 8 // Specifies strikeout, which displays a horizontal line drawn through the middle of the characters.
+
+// GpStatus WINGDIPAPI GdipCreateFontFamilyFromName(GDIPCONST WCHAR *name, GpFontCollection *fontCollection, GpFontFamily **FontFamily);
+External_Function GdipCreateFontFamilyFromName "GdipCreateFontFamilyFromName" gdiplus.dll ;
+    Pointer name ;
+    Pointer fontCollection ;
+    Pointer FontFamily ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeleteFontFamily(GpFontFamily *FontFamily);
+External_Function GdipDeleteFontFamily "GdipDeleteFontFamily" gdiplus.dll ;
+    Pointer fontFamily ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCloneFontFamily(GpFontFamily *FontFamily, GpFontFamily **clonedFontFamily);
+External_Function GdipCloneFontFamily "GdipCloneFontFamily" gdiplus.dll ;
+    Pointer fontFamily ;
+    Pointer clonedFontFamily ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetGenericFontFamilySansSerif(GpFontFamily **nativeFamily);
+External_Function GdipGetGenericFontFamilySansSerif "GdipGetGenericFontFamilySansSerif" gdiplus.dll ;
+    Pointer nativeFamily ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetGenericFontFamilySerif(GpFontFamily **nativeFamily);
+External_Function GdipGetGenericFontFamilySerif "GdipGetGenericFontFamilySerif" gdiplus.dll ;
+    Pointer nativeFamily ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetGenericFontFamilyMonospace(GpFontFamily **nativeFamily);
+External_Function GdipGetGenericFontFamilyMonospace "GdipGetGenericFontFamilyMonospace" gdiplus.dll ;
+    Pointer nativeFamily ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetFamilyName(GDIPCONST GpFontFamily *family, __out_ecount(LF_FACESIZE) LPWSTR name, LANGID language);
+External_Function GdipGetFamilyName "GdipGetFamilyName" gdiplus.dll ;
+    Pointer family ;
+    Pointer name ;
+    Integer language ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipIsStyleAvailable(GDIPCONST GpFontFamily *family, INT style, BOOL * IsStyleAvailable);
+External_Function GdipIsStyleAvailable "GdipIsStyleAvailable" gdiplus.dll ;
+    Pointer family ;
+    Integer style ;
+    Pointer IsStyleAvailable ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFontCollectionEnumerable(GpFontCollection* fontCollection, GpGraphics* graphics, INT* numFound);
+External_Function GdipFontCollectionEnumerable "GdipFontCollectionEnumerable" gdiplus.dll ;
+    Pointer fontCollection ;
+    Pointer graphics ;
+    Pointer numFound ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipFontCollectionEnumerate(GpFontCollection* fontCollection, INT numSought, GpFontFamily* gpfamilies[], INT* numFound, GpGraphics* graphics);
+External_Function GdipFontCollectionEnumerate "GdipFontCollectionEnumerate" gdiplus.dll ;
+    Pointer fontCollection ;
+    Integer numSought ;
+    Pointer gpfamilies ;
+    Pointer numFound ;
+    Pointer graphics ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetEmHeight(GDIPCONST GpFontFamily *family, INT style, UINT16 * EmHeight);
+External_Function GdipGetEmHeight "GdipGetEmHeight" gdiplus.dll ;
+    Pointer family ;
+    Integer style ;
+    Pointer EmHeight ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetCellAscent(GDIPCONST GpFontFamily *family, INT style, UINT16 * CellAscent);
+External_Function GdipGetCellAscent "GdipGetCellAscent" gdiplus.dll ;
+    Pointer family ;
+    Integer style ;
+    Pointer CellAscent ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetCellDescent(GDIPCONST GpFontFamily *family, INT style, UINT16 * CellDescent);
+External_Function GdipGetCellDescent "GdipGetCellDescent" gdiplus.dll ;
+    Pointer family ;
+    Integer style ;
+    Pointer CellDescent ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetLineSpacing(GDIPCONST GpFontFamily *family, INT style, UINT16 * LineSpacing);
+External_Function GdipGetLineSpacing "GdipGetLineSpacing" gdiplus.dll ;
+    Pointer family ;
+    Integer style ;
+    Pointer LineSpacing ;
+    Returns gpStatus

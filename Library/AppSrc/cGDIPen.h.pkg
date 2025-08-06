@@ -1,0 +1,362 @@
+﻿Use cGDIPlus.h.pkg
+Use gpMatrixOrder.h.pkg
+
+//---------------------------------------------------------------------------
+// Unit constants
+//---------------------------------------------------------------------------
+Define gpUnit for Integer
+    Define gpUnitWorld      for 0
+    Define gpUnitDisplay    for 1
+    Define gpUnitPixel      for 2
+    Define gpUnitPoint      for 3
+    Define gpUnitInch       for 4
+    Define gpUnitDocument   for 5
+    Define gpUnitMillimeter for 6
+
+//---------------------------------------------------------------------------
+// Line cap constants (only the lowest 8 bits are used).
+//---------------------------------------------------------------------------
+Define gpLineCap for Integer
+    Define gpLineCapFlat        for 0
+    Define gpLineCapSquare      for 1
+    Define gpLineCapRound       for 2
+    Define gpLineCapTriangle    for 3
+
+    Define gpLineCapNoAnchor        for |CI$10
+    Define gpLineCapSquareAnchor    for |CI$11
+    Define gpLineCapRoundAnchor     for |CI$12
+    Define gpLineCapDiamondAnchor   for |CI$13
+    Define gpLineCapArrowAnchor     for |CI$14
+    Define gpLineCapCustom          for |CI$ff
+    Define gpLineCapAnchorMask      for |CI$f0
+
+//--------------------------------------------------------------------------
+// Dash cap constants
+//--------------------------------------------------------------------------
+Define gpDashCap for Integer
+    Define gpDashCapFlat        for 0
+    Define gpDashCapRound       for 2
+    Define gpDashCapTriangle    for 3
+
+//--------------------------------------------------------------------------
+// Line join constants
+//--------------------------------------------------------------------------
+Define gpLineJoin for Integer
+    Define gpLineJoinMiter          for 0
+    Define gpLineJoinBevel          for 1
+    Define gpLineJoinRound          for 2
+    Define gpLineJoinMiterClipped   for 3
+
+//--------------------------------------------------------------------------
+// Pen types
+//--------------------------------------------------------------------------
+Define gpPenAlignment for Integer
+    Define gpPenAlignmentCenter for 0
+    Define gpPenAlignmentInset  for 1
+
+//--------------------------------------------------------------------------
+// Dash style constants
+//--------------------------------------------------------------------------
+Define gpDashStyle for Integer
+    Define gpDashStyleSolid         for 0
+    Define gpDashStyleDash          for 1
+    Define gpDashStyleDot           for 2
+    Define gpDashStyleDashDot       for 3
+    Define gpDashStyleDashDotDot    for 4
+    Define gpDashStyleCustom        for 5
+
+// GpStatus WINGDIPAPI GdipCreatePen1(ARGB color, Real width, GpUnit unit, GpPen **pen)
+External_Function GdipCreatePen1 "GdipCreatePen1" gdiplus.dll ;
+    Integer color ;
+    Float width ;
+    GpUnit unit ;
+    Pointer pen ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipCreatePen2(GpBrush *brush, Real width, GpUnit unit, GpPen **pen)
+External_Function GdipCreatePen2 "GdipCreatePen2" gdiplus.dll ;
+    Pointer brush ;
+    Float width ;
+    GpUnit unit ;
+    Pointer pen ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipClonePen(GpPen *pen, GpPen **clonepen)
+External_Function GdipClonePen "GdipClonePen" gdiplus.dll ;
+    Pointer pen ;
+    Pointer clonepen ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipDeletePen(GpPen *pen)
+External_Function GdipDeletePen "GdipDeletePen" gdiplus.dll ;
+    Pointer pen ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenWidth(GpPen *pen, Real width)
+External_Function GdipSetPenWidth "GdipSetPenWidth" gdiplus.dll ;
+    Pointer pen ;
+    Float width ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenWidth(GpPen *pen, Real *width)
+External_Function GdipGetPenWidth "GdipGetPenWidth" gdiplus.dll ;
+    Pointer pen ;
+    Pointer width ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenUnit(GpPen *pen, GpUnit unit)
+External_Function GdipSetPenUnit "GdipSetPenUnit" gdiplus.dll ;
+    Pointer pen ;
+    gpUnit unit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenUnit(GpPen *pen, GpUnit *unit)
+External_Function GdipGetPenUnit "GdipGetPenUnit" gdiplus.dll ;
+    Pointer pen ;
+    Pointer unit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenLineCap197819(GpPen *pen, GpLineCap startCap, GpLineCap endCap, GpDashCap dashCap)
+External_Function GdipSetPenLineCap197819 "GdipSetPenLineCap197819" gdiplus.dll ;
+    Pointer pen ;
+    GpLineCap startCap ;
+    GpLineCap endCap ;
+    GpDashCap dashCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenStartCap(GpPen *pen, GpLineCap startCap)
+External_Function GdipSetPenStartCap "GdipSetPenStartCap" gdiplus.dll ;
+    Pointer pen ;
+    gpLineCap startCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenEndCap(GpPen *pen, GpLineCap endCap)
+External_Function GdipSetPenEndCap "GdipSetPenEndCap" gdiplus.dll ;
+    Pointer pen ;
+    gpLineCap endCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenDashCap197819(GpPen *pen, GpDashCap dashCap)
+External_Function GdipSetPenDashCap197819 "GdipSetPenDashCap197819" gdiplus.dll ;
+    Pointer pen ;
+    gpDashCap dashCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenStartCap(GpPen *pen, GpLineCap *startCap)
+External_Function GdipGetPenStartCap "GdipGetPenStartCap" gdiplus.dll ;
+    Pointer pen ;
+    Pointer startCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenEndCap(GpPen *pen, GpLineCap *endCap)
+External_Function GdipGetPenEndCap "GdipGetPenEndCap" gdiplus.dll ;
+    Pointer pen ;
+    Pointer endCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenDashCap197819(GpPen *pen, GpDashCap *dashCap)
+External_Function GdipGetPenDashCap197819 "GdipGetPenDashCap197819" gdiplus.dll ;
+    Pointer pen ;
+    Pointer dashCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenLineJoin(GpPen *pen, GpLineJoin lineJoin)
+External_Function GdipSetPenLineJoin "GdipSetPenLineJoin" gdiplus.dll ;
+    Pointer pen ;
+    GpLineJoin lineJoin ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenLineJoin(GpPen *pen, GpLineJoin *lineJoin)
+External_Function GdipGetPenLineJoin "GdipGetPenLineJoin" gdiplus.dll ;
+    Pointer pen ;
+    Pointer lineJoin ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenCustomStartCap(GpPen *pen, GpCustomLineCap* customCap)
+External_Function GdipSetPenCustomStartCap "GdipSetPenCustomStartCap" gdiplus.dll ;
+    Pointer pen ;
+    Pointer customCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenCustomStartCap(GpPen *pen, GpCustomLineCap** customCap)
+External_Function GdipGetPenCustomStartCap "GdipGetPenCustomStartCap" gdiplus.dll ;
+    Pointer pen ;
+    Pointer customCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenCustomEndCap(GpPen *pen, GpCustomLineCap* customCap)
+External_Function GdipSetPenCustomEndCap "GdipSetPenCustomEndCap" gdiplus.dll ;
+    Pointer pen ;
+    Pointer customCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenCustomEndCap(GpPen *pen, GpCustomLineCap** customCap)
+External_Function GdipGetPenCustomEndCap "GdipGetPenCustomEndCap" gdiplus.dll ;
+    Pointer pen ;
+    Pointer customCap ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenMiterLimit(GpPen *pen, Real miterLimit)
+External_Function GdipSetPenMiterLimit "GdipSetPenMiterLimit" gdiplus.dll ;
+    Pointer pen ;
+    Float miterLimit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenMiterLimit(GpPen *pen, Real *miterLimit)
+External_Function GdipGetPenMiterLimit "GdipGetPenMiterLimit" gdiplus.dll ;
+    Pointer pen ;
+    Pointer miterLimit ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenMode(GpPen *pen, GpPenAlignment penMode)
+External_Function GdipSetPenMode "GdipSetPenMode" gdiplus.dll ;
+    Pointer pen ;
+    GpPenAlignment penMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenMode(GpPen *pen, GpPenAlignment *penMode)
+External_Function GdipGetPenMode "GdipGetPenMode" gdiplus.dll ;
+    Pointer pen ;
+    Pointer penMode ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenTransform(GpPen *pen, GpMatrix *matrix)
+External_Function GdipSetPenTransform "GdipSetPenTransform" gdiplus.dll ;
+    Pointer pen ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenTransform(GpPen *pen, GpMatrix *matrix)
+External_Function GdipGetPenTransform "GdipGetPenTransform" gdiplus.dll ;
+    Pointer pen ;
+    Pointer matrix ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipResetPenTransform(GpPen *pen)
+External_Function GdipResetPenTransform "GdipResetPenTransform" gdiplus.dll ;
+    Pointer pen ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipMultiplyPenTransform(GpPen *pen, GDIPCONST GpMatrix *matrix, GpMatrixOrder order)
+External_Function GdipMultiplyPenTransform "GdipMultiplyPenTransform" gdiplus.dll ;
+    Pointer pen ;
+    Pointer matrix ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipTranslatePenTransform(GpPen *pen, Real dx, Real dy, GpMatrixOrder order)
+External_Function GdipTranslatePenTransform "GdipTranslatePenTransform" gdiplus.dll ;
+    Pointer pen ;
+    Float dx ;
+    Float dy ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipScalePenTransform(GpPen *pen, Real sx, Real sy, GpMatrixOrder order)
+External_Function GdipScalePenTransform "GdipScalePenTransform" gdiplus.dll ;
+    Pointer pen ;
+    Float sx ;
+    Float sy ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipRotatePenTransform(GpPen *pen, Real angle, GpMatrixOrder order)
+External_Function GdipRotatePenTransform "GdipRotatePenTransform" gdiplus.dll ;
+    Pointer pen ;
+    Float angle ;
+    GpMatrixOrder order ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenColor(GpPen *pen, ARGB argb)
+External_Function GdipSetPenColor "GdipSetPenColor" gdiplus.dll ;
+    Pointer pen ;
+    UInteger argb ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenColor(GpPen *pen, ARGB *argb)
+External_Function GdipGetPenColor "GdipGetPenColor" gdiplus.dll ;
+    Pointer pen ;
+    Pointer argb ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenBrushFill(GpPen *pen, GpBrush *brush)
+External_Function GdipSetPenBrushFill "GdipSetPenBrushFill" gdiplus.dll ;
+    Pointer pen ;
+    Pointer brush ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenBrushFill(GpPen *pen, GpBrush **brush)
+External_Function GdipGetPenBrushFill "GdipGetPenBrushFill" gdiplus.dll ;
+    Pointer pen ;
+    Pointer brush ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenFillType(GpPen *pen, GpPenType* type)
+External_Function GdipGetPenFillType "GdipGetPenFillType" gdiplus.dll ;
+    Pointer pen ;
+    Pointer type ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenDashStyle(GpPen *pen, GpDashStyle *dashstyle)
+External_Function GdipGetPenDashStyle "GdipGetPenDashStyle" gdiplus.dll ;
+    Pointer pen ;
+    Pointer dashstyle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenDashStyle(GpPen *pen, GpDashStyle dashstyle)
+External_Function GdipSetPenDashStyle "GdipSetPenDashStyle" gdiplus.dll ;
+    Pointer pen ;
+    GpDashStyle dashstyle ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenDashOffset(GpPen *pen, Real *offset)
+External_Function GdipGetPenDashOffset "GdipGetPenDashOffset" gdiplus.dll ;
+    Pointer pen ;
+    Pointer offset ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenDashOffset(GpPen *pen, Real offset)
+External_Function GdipSetPenDashOffset "GdipSetPenDashOffset" gdiplus.dll ;
+    Pointer pen ;
+    Float offset ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenDashCount(GpPen *pen, INT *count)
+External_Function GdipGetPenDashCount "GdipGetPenDashCount" gdiplus.dll ;
+    Pointer pen ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenDashArray(GpPen *pen, GDIPCONST Real *dash, INT count)
+External_Function GdipSetPenDashArray "GdipSetPenDashArray" gdiplus.dll ;
+    Pointer pen ;
+    Pointer dash ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenDashArray(GpPen *pen, Real *dash, INT count)
+External_Function GdipGetPenDashArray "GdipGetPenDashArray" gdiplus.dll ;
+    Pointer pen ;
+    Pointer dash ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenCompoundCount(GpPen *pen, INT *count)
+External_Function GdipGetPenCompoundCount "GdipGetPenCompoundCount" gdiplus.dll ;
+    Pointer pen ;
+    Pointer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipSetPenCompoundArray(GpPen *pen, GDIPCONST Real *dash, INT count)
+External_Function GdipSetPenCompoundArray "GdipSetPenCompoundArray" gdiplus.dll ;
+    Pointer pen ;
+    Pointer dash ;
+    Integer count ;
+    Returns gpStatus
+
+// GpStatus WINGDIPAPI GdipGetPenCompoundArray(GpPen *pen, Real *dash, INT count)
+External_Function GdipGetPenCompoundArray "GdipGetPenCompoundArray" gdiplus.dll ;
+    Pointer pen ;
+    Pointer dash ;
+    Integer count ;
+    Returns gpStatus

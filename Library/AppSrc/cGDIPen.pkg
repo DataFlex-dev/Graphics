@@ -1,0 +1,363 @@
+﻿Use cGDIPlus.pkg
+Use cGDIPen.h.pkg
+Use cGDIBrush.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDIPen }
+{ Description = "A Pen object is a Windows GDI+ object used to draw lines and curves." }
+Class cGDIPen is a cObject
+    { MethodType = Event }
+    { Description = "Creates a property to store the handle of the pen" }
+    { Visibility = Private }
+    Procedure Construct_Object
+        Forward Send Construct_Object
+
+        { Visibility = Private }
+        { Description = "A pointer to store the pen" }
+        Property Pointer ppPen
+    End_Procedure
+
+    { Description = "Before destroying the object, remove the pen from the system" }
+    { MethodType = Event }
+    { Visibility = Private }
+    Procedure Destroy_Object
+        Send DeletePen
+
+        Forward Send Destroy_Object
+    End_Procedure
+
+    { Description = "Releases resources used by the Pen object." }
+    { Description += "When the GDI+ DeletePen instruction fails the message HandleGDIResult will be fired" }
+    { MethodType = Method }
+    Procedure DeletePen
+        gpStatus eStatus
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move (GdipDeletePen (pPen)) to eStatus
+            If (eStatus = gpOk) Begin
+                Set ppPen to 0
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Deleting Pen'
+            End
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Creates a Pen object that uses a specified color and width." }
+    { Description += "The unit parameter is a member of the Unit enumeration that specifies the unit of measure for the width of the pen." }
+    { Description += "Returns the result of the operation. Handle error status information when the result of this function is not zero" }
+    Function CreatePenFromColor Integer iColor Float fWidth GpUnit iUnit Returns gpStatus
+        gpStatus eStatus
+        Pointer pPen
+
+        Move 0 to pPen
+        Move (GdipCreatePen1 (iColor, fWidth, iUnit, AddressOf (pPen))) to eStatus
+        If (eStatus = gpOk) Begin  
+            // Remove existing pen if present
+            Send DeletePen
+            Set ppPen to pPen
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a Pen object that uses the attributes of a brush and a real number to set the width of this Pen object." }
+    { Description += "The unit parameter is a member of the Unit enumeration that specifies the unit of measure for the width of the pen." }
+    { Description += "Returns the result of the operation. Handle error status information when the result of this function is not zero" }
+    Function CreatePenFromBrush Handle hoBrush Float fWidth GpUnit iUnit Returns Integer
+        gpStatus eStatus
+        Pointer pPen pBrush
+
+        Get ppBrush of hoBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to pPen
+            Move (GdipCreatePen2 (pBrush, fWidth, iUnit, AddressOf (pPen))) to eStatus
+            If (eStatus = gpOk) Begin 
+                // Remove existing pen if present
+                Send DeletePen
+                Set ppPen to pPen
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Clones a pen and returns the DataFlex object handle of the cloned pen if succesful." }
+    { Description += "Return value will be zero when the operation failed" }
+    Function ClonePen Handle hoSourcePen Returns Handle
+        Boolean bIsPen
+        gpStatus eStatus
+        Pointer pSourcePen pClonedPen
+        Handle hoClonedPen
+
+        If (hoSourcePen <> 0) Begin
+            Get IsObjectOfClass of hoSourcePen (RefClass (cGDIPen)) to bIsPen
+            If (bIsPen) Begin
+                Get ppPen of hoSourcePen to pSourcePen
+                If (pSourcePen <> 0) Begin
+                    Move 0 to pClonedPen
+                    Move (GdipClonePen (pSourcePen, AddressOf (pClonedPen))) to eStatus
+                    If (eStatus = gpOk) Begin
+                        Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIPen)) "ClonedPen" to hoClonedPen
+                        Set ppPen of hoClonedPen to pClonedPen
+                    End
+                    Else Begin
+                        Send HandleGDIResult of ghoGDIPlusHandler eStatus 'ClonePen'
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+
+        Function_Return hoClonedPen
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the dash style currently set for this Pen object." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Procedure Set peDashStyle gpDashStyle eDashStyle
+        gpStatus eStatus
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move (GdipSetPenDashStyle (pPen, eDashStyle)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peDashStyle'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the dash style currently set for this Pen object." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Function peDashStyle Returns gpDashStyle
+        gpStatus eStatus
+        gpDashStyle eDashStyle
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move 0 to eDashStyle
+            Move (GdipGetPenDashStyle (pPen, AddressOf (eDashStyle))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get peDashStyle'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+
+        Function_Return eDashStyle
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Sets the alignment currently set for this Pen object." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Procedure Set peAlignment gpPenAlignment eAlignment
+        gpStatus eStatus
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move (GdipSetPenMode (pPen, eAlignment)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set peAlignment'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the alignment currently set for this Pen object." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Function peAlignment Returns gpPenAlignment
+        gpStatus eStatus
+        gpPenAlignment eAlignment
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move 0 to eAlignment
+            Move (GdipGetPenMode (pPen, AddressOf (eAlignment))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get peAlignment'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+
+        Function_Return eAlignment
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the Brush object that a pen uses to fill a line." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen or current Brush" }
+    Procedure Set phoBrush Handle hoBrush
+        Boolean bIsBrush
+        gpStatus eStatus
+        Pointer pBrush pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            If (hoBrush <> 0) Begin
+                Get IsObjectOfClass of hoBrush (RefClass (cGDIBrush)) to bIsBrush
+                If (bIsBrush) Begin
+                    Get ppBrush of hoBrush to pBrush
+                    If (pBrush <> 0) Begin
+                        Move (GdipSetPenBrushFill (pPen, pBrush)) to eStatus
+                        If (eStatus <> gpOk) Begin
+                            Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set phoBrush'
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the Brush object that a pen uses to fill a line" }
+    { Description += "Returns DataFlex cGDIBrush object when successful. Returns 0 when the operation fails" }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Function phoBrush Returns Handle
+        gpStatus eStatus
+        Pointer pBrush pPen
+        Handle hoBrush
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move 0 to pBrush
+            Move (GdipGetPenBrushFill (pPen, AddressOf (pBrush))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get CreateNamed of ghoGDIPlusHandler (RefClass (cGDIBrush)) "PenBrush" to hoBrush
+                Set ppBrush of hoBrush to pBrush
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get phoBrush'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+
+        Function_Return hoBrush
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the pen color of this object" }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Procedure Set pcColor UInteger uiColor
+        gpStatus eStatus
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move (GdipSetPenColor (pPen, uiColor)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set pcColor'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the color for this Pen object." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Function pcColor Returns UInteger
+        gpStatus eStatus
+        UInteger uiColor
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move 0 to uiColor
+            Move (GdipGetPenColor (pPen, AddressOf (uiColor))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get pcColor'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+
+        Function_Return uiColor
+    End_Function
+
+    { MethodType = Property }
+    { Description = "Sets the width for this Pen object." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Procedure Set pfWidth Float fWidth
+        gpStatus eStatus
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move (GdipSetPenWidth (pPen, fWidth)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Set pfWidth'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { Description = "Gets the width currently set for this Pen object." }
+    { Description += "Sends HandleGDIResult when the GDI+ Function fails. Sends HandleGDIError when there is no current Pen" }
+    Function pfWidth Returns Float
+        gpStatus eStatus
+        Float fWidth
+        Pointer pPen
+
+        Get ppPen to pPen
+        If (pPen <> 0) Begin
+            Move 0 to fWidth
+            Move (GdipGetPenWidth (pPen, AddressOf (fWidth))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus 'Get pfWidth'
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_PenObjectNotAvailable
+        End
+
+        Function_Return fWidth
+    End_Function
+End_Class

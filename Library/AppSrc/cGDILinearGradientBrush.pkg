@@ -1,0 +1,831 @@
+﻿Use cGDIPlus.pkg
+Use cGDILinearGradientBrush.h.pkg
+Use cGDIBrush.pkg
+Use cGDIMatrix.pkg
+
+Use tWinStructs.pkg
+Use Structs\tRectF.pkg
+Use Structs\tPointF.pkg
+
+{ ClassLibrary = Windows }
+{ HelpTopic = cGDILinearGradientBrush }
+{ Description = "Defines a brush that paints a color gradient in which the color changes evenly from the starting boundary line of the linear gradient brush to the ending boundary line of the linear gradient brush." }
+{ Description += "The boundary lines of a linear gradient brush are two parallel straight lines." }
+{ Description += "The color gradient is perpendicular to the boundary lines of the linear gradient brush, changing gradually across the stroke from the starting boundary line to the ending boundary line." }
+{ Description += "The color gradient has one color at the starting boundary line and another color at the ending boundary line" }
+Class cGDILinearGradientBrush is a cGDIBrush
+    { MethodType = Method }
+    { Description = "Creates a LinearGradientBrush object from a set of boundary points and boundary colors." }
+    { Description += "The wrapMode parameter in the flat Function is a member of the WrapMode enumeration that specifies how areas filled with the brush are tiled" }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateLineBrush tPointF Point1 tPointF Point2 UInteger uiStartColor UInteger uiEndColor gpWrapMode eWrapMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateLineBrush (AddressOf (Point1), AddressOf (Point2), uiStartColor, uiEndColor, eWrapMode, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            // If exists remove the old brush
+            Send DeleteBrush
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a LinearGradientBrush object from a set of boundary points and boundary colors." }
+    { Description += "The wrapMode parameter in the flat Function is a member of the WrapMode enumeration that specifies how areas filled with the brush are tiled" }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateLineBrushI tWinPoint Point1 tWinPoint Point2 UInteger uiStartColor UInteger uiEndColor gpWrapMode eWrapMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateLineBrushI (AddressOf (Point1), AddressOf (Point2), uiStartColor, uiEndColor, eWrapMode, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            // If exists remove the old brush
+            Send DeleteBrush
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a LinearGradientBrush object from a set of boundary points and boundary colors." }
+    { Description += "The wrapMode parameter in the flat Function is a member of the WrapMode enumeration that specifies how areas filled with the brush are tiled" }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateLineBrushIA Integer iX1 Integer iY1 Integer iX2 Integer iY2 UInteger uiStartColor UInteger uiEndColor gpWrapMode eWrapMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+        tWinPoint StartPoint EndPoint
+
+        Move 0 to pBrush
+        Move iX1 to StartPoint.x
+        Move iY1 to StartPoint.y
+        Move iX2 to EndPoint.x
+        Move iY2 to EndPoint.y
+        Move (GdipCreateLineBrushI (AddressOf (StartPoint), AddressOf (EndPoint), uiStartColor, uiEndColor, eWrapMode, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            // If exists remove the old brush
+            Send DeleteBrush
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a LineGradientBrush object based on a rectangle and mode of direction." }
+    { Description += "The wrapMode parameter is a member of the WrapMode enumeration that specifies how areas filled with the brush are tiled." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateLineBrushFromRect tRectf BrushRect UInteger uiStartColor UInteger uiEndColor gpLinearGradientMode eMode gpWrapMode eWrapMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateLineBrushFromRect (AddressOf (BrushRect), uiStartColor, uiEndColor, eMode, eWrapMode, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            // If exists remove the old brush
+            Send DeleteBrush
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a LineGradientBrush object based on a rectangle and mode of direction." }
+    { Description += "The wrapMode parameter is a member of the WrapMode enumeration that specifies how areas filled with the brush are tiled." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateLineBrushFromRectI tWinRect BrushRect UInteger uiStartColor UInteger uiEndColor Integer iMode gpWrapMode eWrapMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateLineBrushFromRectI (AddressOf (BrushRect), uiStartColor, uiEndColor, iMode, eWrapMode, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            // If exists remove the old brush
+            Send DeleteBrush
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a LineGradientBrush object from a rectangle and angle of direction." }
+    { Description += "The wrapMode parameter is a member of the WrapMode enumeration that specifies how areas filled with the brush are tiled." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateLineBrushFromRectWithAngle tRectf BrushAngleRect UInteger uiStartColor UInteger uiEndColor Float fAngle Boolean bAngleIsScalable gpWrapMode eWrapMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateLineBrushFromRectWithAngle (AddressOf (BrushAngleRect), uiStartColor, uiEndColor, fAngle, bAngleIsScalable, eWrapMode, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            // If exists remove the old brush
+            Send DeleteBrush
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Creates a LineGradientBrush object from a rectangle and angle of direction." }
+    { Description += "The wrapMode parameter is a member of the WrapMode enumeration that specifies how areas filled with the brush are tiled." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function CreateLineBrushFromRectWithAngleI tWinRect BrushAngleRect UInteger uiStartColor UInteger uiEndColor Float fAngle Boolean bAngleIsScalable gpWrapMode eWrapMode Returns gpStatus
+        gpStatus eStatus
+        Pointer pBrush
+
+        Move 0 to pBrush
+        Move (GdipCreateLineBrushFromRectWithAngleI (AddressOf (BrushAngleRect), uiStartColor, uiEndColor, fAngle, bAngleIsScalable, eWrapMode, AddressOf (pBrush))) to eStatus
+        If (eStatus = gpOk) Begin
+            // If exists remove the old brush
+            Send DeleteBrush
+            Set ppBrush to pBrush
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Sets the starting color and ending color of this linear gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Procedure Set piLineColors UInteger uiStartColor UInteger uiEndColor
+        gpStatus eStatus
+        Pointer pBrush
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetLineColors (AddressOf (pBrush), uiStartColor, uiEndColor)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Set piLineColors"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Gets the starting color and ending color of this linear gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function piLineColors Returns UInteger[]
+        gpStatus eStatus
+        Pointer pBrush
+        UInteger[2] uiColors
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetLineColors (AddressOf (pBrush), AddressOf (uiColors))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get piLineColors"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return uiColors
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Gets the rectangle that defines the boundaries of the gradient." }
+    { Description += "For example, if a linear gradient brush is constructed with a starting point at (20.2, 50.8) and an ending point at (60.5, 110.0), then the defining rectangle has its upper-left point at (20.2, 50.8), a width of 40.3, and a height of 59.2" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function LineRect Returns tRectF
+        Pointer pBrush
+        tRectF Rect
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetLineRect (AddressOf (pBrush), AddressOf (Rect))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get LineRect"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return Rect
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Gets the rectangle that defines the boundaries of the gradient." }
+    { Description += "For example, if a linear gradient brush is constructed with a starting point at (20, 50) and an ending point at (60, 110), then the defining rectangle has its upper-left point at (20, 50), a width of 40, and a height of 60" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function LineRectI Returns tWinRect
+        Pointer pBrush
+        tWinRect Rect
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipGetLineRect (AddressOf (pBrush), AddressOf (Rect))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get LineRectI"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return Rect
+    End_Function
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Specifies whether gamma correction is enabled for this linear gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Procedure Set pbLineGammaCorrection Boolean bUseGammaCorrection
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetLineGammaCorrection (AddressOf (pBrush), bUseGammaCorrection)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Set pbLineGammaCorrection"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Specifies whether gamma correction is enabled for this linear gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function pbLineGammaCorrection Returns Boolean
+        Boolean bUseGammaCorrection
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move False to bUseGammaCorrection
+            Move (GdipGetLineGammaCorrection (AddressOf (pBrush), AddressOf (bUseGammaCorrection))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Get pbLineGammaCorrection"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return bUseGammaCorrection
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Gets the number of blend factors currently set" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function LineBlendCount Returns Integer
+        Pointer pBrush
+        gpStatus eStatus
+        Integer iCount
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to iCount
+            Move (GdipGetLineBlendCount (AddressOf (pBrush), AddressOf (iCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "LineBlendCount"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iCount
+    End_Function
+
+    { Description = "Returns array of blend factors. If there is no brush the result is an empty float array." }
+    { Description += "Each number in the array indicates a percentage of the ending color and is in the range from 0.0 through 1.0." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    { Category = "Colors" }
+    Function pfLineBlendFactors Returns Float[]
+        gpStatus eStatus
+        Integer iBlendCount
+        Float[] fBlendPositions fBlendFactors
+        Pointer pBrush
+
+        Get LineBlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (fBlendFactors, iBlendCount)) to fBlendFactors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetLineBlend (pBrush, AddressOf (fBlendFactors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (fBlendFactors, 0)) to fBlendFactors
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Blend Factors"
+                End
+            End
+        End
+
+        Function_Return fBlendFactors
+    End_Function
+
+    { Description = "Returns array of blend positions. If there is no brush the function returns an empty array of real values" }
+    { Description += "Each number in the array indicates a percentage of the distance between the starting boundary and the ending boundary and is in the range from 0.0 through 1.0, where 0.0 indicates the starting boundary of the gradient and 1.0 indicates the ending boundary." }
+    { Description += "A blend position Between 0.0 and 1.0 indicates a line, parallel to the boundary lines, that is a certain fraction of the distance from the starting boundary to the ending boundary." }
+    { Description += "For example, a blend position of 0.7 indicates the line that is 70 percent of the distance from the starting boundary to the ending boundary." }
+    { Description += "The color is constant on lines that are parallel to the boundary lines." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function pfLineBlendPositions Returns Float[]
+        gpStatus eStatus
+        Integer iBlendCount
+        Float[] fBlendFactors fBlendPositions
+        Pointer pBrush
+
+        Get LineBlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (fBlendFactors, iBlendCount)) to fBlendFactors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetLineBlend (pBrush, AddressOf (fBlendFactors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (fBlendPositions, 0)) to fBlendPositions
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Blend Positions"
+                End
+            End
+        End
+
+        Function_Return fBlendPositions
+    End_Function
+
+    { Description = "Sets the blend factors and the blend positions of this linear gradient brush to create a custom blend." }
+    { Description += "The Property is not Set when there is no brush created yet." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set LineBlend Float[] fBlendFactors Float[] fBlendPositions
+        gpStatus eStatus
+        Integer iBlendFactorsCount iBlendPositionsCount
+        Pointer pBrush
+
+        Move (SizeOfArray (fBlendFactors)) to iBlendFactorsCount
+        Move (SizeOfArray (fBlendPositions)) to iBlendPositionsCount
+        If (iBlendFactorsCount = iBlendPositionsCount and iBlendPositionsCount > 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (GdipSetLineBlend (pBrush, AddressOf (fBlendFactors), AddressOf (fBlendPositions), iBlendFactorsCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting PresentBlend Positions and Factors"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_UnequalNumberOfArrayParameters
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Gets the number of colors currently set to be interpolated for this linear gradient brush" }
+    { Description += "Returns 0 if no colors have been set or if invalid positions were passed" }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function LinePresetBlendCount Returns Integer
+        Pointer pBrush
+        gpStatus eStatus
+        Integer iCount
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to iCount
+            Move (GdipGetLinePresetBlendCount (AddressOf (pBrush), AddressOf (iCount))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "PresetLineBlendCount"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return iCount
+    End_Function
+
+    { Description = "Gets the colors currently set to be interpolated for this linear gradient brush and their corresponding blend positions." }
+    { Description = "Returns array of blend colors. If there is no brush the result is an empty integer array." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    { Category = "Colors" }
+    Function piLinePresetBlendColors Returns UInteger[]
+        gpStatus eStatus
+        Integer iBlendCount
+        Float[] fBlendPositions
+        UInteger[] uiBlendColors
+        Pointer pBrush
+
+        Get LinePresetBlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (uiBlendColors, iBlendCount)) to uiBlendColors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetLinePresetBlend (pBrush, AddressOf (uiBlendColors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (uiBlendColors, 0)) to uiBlendColors
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting Preset Blend Colors"
+                End
+            End
+        End
+
+        Function_Return uiBlendColors
+    End_Function
+
+    { Description = "Returns array of blend positions. If there is no brush the function returns an empty array of real values" }
+    { Description += "Each number in the array indicates a percentage of the distance between the starting boundary and the ending boundary and is in the range from 0.0 through 1.0, where 0.0 indicates the starting boundary of the gradient and 1.0 indicates the ending boundary." }
+    { Description += "A blend position Between 0.0 and 1.0 indicates a line, parallel to the boundary lines, that is a certain fraction of the distance from the starting boundary to the ending boundary." }
+    { Description += "For example, a blend position of 0.7 indicates the line that is 70 percent of the distance from the starting boundary to the ending boundary." }
+    { Description += "The color is constant on lines that are parallel to the boundary lines." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Function pfLinePresetBlendPositions Returns Float[]
+        gpStatus eStatus
+        Integer iBlendCount
+        UInteger[] uiBlendColors
+        Float[] fBlendPositions
+        Pointer pBrush
+
+        Get LinePresetBlendCount to iBlendCount
+        If (iBlendCount >= 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (ResizeArray (uiBlendColors, iBlendCount)) to uiBlendColors
+                Move (ResizeArray (fBlendPositions, iBlendCount)) to fBlendPositions
+                Move (GdipGetLinePresetBlend (pBrush, AddressOf (uiBlendColors), AddressOf (fBlendPositions), iBlendCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Move (ResizeArray (fBlendPositions, 0)) to fBlendPositions
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting PresetBlend Positions"
+                End
+            End
+        End
+
+        Function_Return fBlendPositions
+    End_Function
+
+    { Description = "Sets the colors to be interpolated for this linear gradient brush and their corresponding blend positions" }
+    { Description += "The property is not set when there is no brush created yet." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    { MethodType = Property }
+    { DesignTime = False }
+    Procedure Set LinePresetBlend UInteger[] uiBlendColors Float[] fBlendPositions
+        gpStatus eStatus
+        Integer iBlendColorCount iBlendPositionsCount
+        Pointer pBrush
+
+        Move (SizeOfArray (uiBlendColors)) to iBlendColorCount
+        Move (SizeOfArray (fBlendPositions)) to iBlendPositionsCount
+        If (iBlendColorCount = iBlendPositionsCount and iBlendPositionsCount > 0) Begin
+            Get ppBrush to pBrush
+            If (pBrush <> 0) Begin
+                Move (GdipSetLinePresetBlend (pBrush, AddressOf (uiBlendColors), AddressOf (fBlendPositions), iBlendColorCount)) to eStatus
+                If (eStatus <> gpOk) Begin
+                    Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting PresentBlend Positions and Colors"
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_UnequalNumberOfArrayParameters
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Sets the blend shape of this linear gradient brush to create a custom blend based on a bell-shaped curve." }
+    { Description += "The fFocus specifies the position of the ending color. This number is a percentage of the distance between the boundary lines and must be in the range from 0.0 through 1.0." }
+    { Description += "The fScale parameter specifies the percentage of the gradient's ending color that gets blended, at the focus position, with the gradient's starting color. This Number must be in the range from 0.0 through 1.0. The default value is 1.0, which specifies that the ending color is at full intensity." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Procedure Set LineSigmaBlend Float fFocus Float fScale
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 1) Begin
+                Move (GdipSetLineSigmaBlend (pBrush, fFocus, fScale)) to eStatus
+            End
+            Else Begin
+                Move  (GdipSetLineSigmaBlend (pBrush, fFocus, Cast (1.0, Float))) to eStatus
+            End
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting LineSigmaBlend"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Sets the blend shape of this linear gradient brush to create a custom blend based on a triangular shape." }
+    { Description += "The fFocus specifies the position of the ending color. This number is a percentage of the distance between the boundary lines and must be in the range from 0.0 through 1.0." }
+    { Description += "The fScale parameter specifies the percentage of the gradient's ending color that gets blended, at the focus position, with the gradient's starting color. This number must be in the range from 0.0 through 1.0. The default value is 1.0, which specifies that the ending color is at full intensit." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Procedure Set LineLinearBlend Float fFocus Float fScale
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 1) Begin
+                Move (GdipSetLineLinearBlend (pBrush, fFocus, fScale)) to eStatus
+            End
+            Else Begin
+                Move (GdipSetLineLinearBlend (pBrush, fFocus, fScale)) to eStatus
+            End
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting LineLinearBlend"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Sets the wrap mode of this linear gradient brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Procedure Set peLineWrapMode gpWrapMode eMode
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipSetLineWrapMode (pBrush, eMode)) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting LineWrapMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Gets the wrap mode of this linear gradient brush." }
+    { Description += "The wrap mode determines how an area is tiled when it is painted with a brush." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function peLineWrapMode Returns gpWrapMode
+        gpWrapMode eMode
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to eMode
+            Move (GdipGetLineWrapMode (pBrush, AddressOf (eMode))) to eStatus
+            If (eStatus <> gpOk) Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting LineWrapMode"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eMode
+    End_Function
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Gets the transformation matrix of this linear gradient brush." }
+    { Description += "The function returns a DataFlex object handle of the cGDIMatrix class on success." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Function phoLineTransform Returns Handle
+        Pointer pBrush pMatrix
+        Handle hoMatrix
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move 0 to pMatrix
+            Move (GdipGetLineTransform (pBrush, AddressOf (pMatrix))) to eStatus
+            If (eStatus = gpOk) Begin
+                Get Create of ghoGDIPlusHandler (RefClass (cGDIMatrix)) to hoMatrix
+                Set ppMatrix of hoMatrix to pMatrix
+            End
+            Else Begin
+                Send HandleGDIResult of ghoGDIPlusHandler eStatus "Getting LineTransform"
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return hoMatrix
+    End_Function
+
+    { MethodType = Property }
+    { DesignTime = False }
+    { Description = "Sets the transformation matrix of this linear gradient brush." }
+    { Description += "The function returns a DataFlex object handle of the cGDIMatrix class on success." }
+    { Description += "Sends HandleGDIResult if the GDI+ function fails" }
+    Procedure Set phoLineTransform Handle hoMatrix
+        Boolean bIsMatrix
+        Pointer pBrush pMatrix
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (hoMatrix <> 0) Begin
+                Get IsObjectOfClass of hoMatrix (RefClass (cGDIMatrix)) to bIsMatrix
+                If (bIsMatrix) Begin
+                    Get ppMatrix of hoMatrix to pMatrix
+                    If (pMatrix <> 0) Begin
+                        Move (GdipSetLineTransform (pBrush, pMatrix)) to eStatus
+                        If (eStatus <> gpOk) Begin
+                            Send HandleGDIResult of ghoGDIPlusHandler eStatus "Setting LineTransform"
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+    End_Procedure
+
+    { MethodType = Method }
+    { Description = "Resets the transformation matrix of this linear gradient brush to the identity matrix." }
+    { Description += "This means that no transformation takes place." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function ResetLineTransform Returns gpStatus
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            Move (GdipResetLineTransform (pBrush)) to eStatus
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this brush's transformation matrix with the product of itself and another matrix." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function MultiplyLineTransform Handle hoMatrix gpMatrixOrder eOrder Returns gpStatus
+        Boolean bIsMatrix
+        Pointer pBrush pMatrix
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (hoMatrix <> 0) Begin
+                Get IsObjectOfClass of hoMatrix (RefClass (cGDIMatrix)) to bIsMatrix
+                If (bIsMatrix) Begin
+                    Get ppMatrix of hoMatrix to pMatrix
+                    If (pMatrix <> 0) Begin
+                        If (num_arguments > 1) Begin
+                            Move (GdipMultiplyLineTransform (pBrush, pMatrix, eOrder)) to eStatus
+                        End
+                        Else Begin
+                            Move (GdipMultiplyLineTransform (pBrush, pMatrix, gpMatrixOrderPrepend)) to eStatus
+                        End
+                    End
+                    Else Begin
+                        Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                    End
+                End
+                Else Begin
+                    Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+                End
+            End
+            Else Begin
+                Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_MatrixObjectNotAvailable
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this brush's current transformation matrix with the product of itself and a translation matrix." }
+    { Description += "The fDx parameter specifies the horizontal component of the translation." }
+    { Description += "The fDy parameter specifies the vertical component of the translation." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function TranslateLineTransform Float fDx Float fDy gpMatrixOrder eOrder Returns gpStatus
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 1) Begin
+                Move (GdipTranslateLineTransform (pBrush, fDx, fDy, eOrder)) to eStatus
+            End
+            Else Begin
+                Move (GdipTranslateLineTransform (pBrush, fDx, fDy, gpMatrixOrderPrepend)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this brush's current transformation matrix with the product of itself and a scaling matrix." }
+    { Description += "The fSx parameter specifies the amount to scale in the x direction." }
+    { Description += "The fSy parameter specifies the amount to scale in the y direction." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function ScaleLineTransform Float fSx Float fSy gpMatrixOrder eOrder Returns gpStatus
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 1) Begin
+                Move (GdipScaleLineTransform (pBrush, fSx, fSy, eOrder)) to eStatus
+            End
+            Else Begin
+                Move (GdipScaleLineTransform (pBrush, fSx, fSy, gpMatrixOrderPrepend)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+
+    { MethodType = Method }
+    { Description = "Updates this brush's current transformation matrix with the product of itself and a rotating matrix." }
+    { Description += "The fAngle parameter specifies the angle of rotation in degrees." }
+    { Description += "The eOrder parameter that specifies the order of the multiplication." }
+    { Description += "MatrixOrderPrepend specifies that the passed matrix is on the left," }
+    { Description += "and MatrixOrderAppend specifies that the passed matrix is on the right." }
+    { Description += "The default value is MatrixOrderPrepend." }
+    { Description += "Returns the GDI+ result value. Handle this status if needed" }
+    Function RotateLineTransform Float fAngle gpMatrixOrder eOrder Returns gpStatus
+        Pointer pBrush
+        gpStatus eStatus
+
+        Get ppBrush to pBrush
+        If (pBrush <> 0) Begin
+            If (num_arguments > 1) Begin
+                Move (GdipRotateLineTransform (pBrush, fAngle, eOrder)) to eStatus
+            End
+            Else Begin
+                Move (GdipRotateLineTransform (pBrush, fAngle, gpMatrixOrderPrepend)) to eStatus
+            End
+        End
+        Else Begin
+            Send HandleGDIError of ghoGDIPlusHandler C_GDIErr_BrushObjectNotAvailable
+        End
+
+        Function_Return eStatus
+    End_Function
+End_Class

@@ -1,0 +1,12 @@
+Use VdfBase.pkg
+Use tWinStructs.pkg
+
+Struct tScrollbarInfo
+    Integer cbSize
+    tWinRect rcScrollBar
+    Integer dxyLineButton
+    Integer xyThumbTop
+    Integer xyThumbBottom
+    Integer reserved
+    Integer[6] rgstate
+End_Struct

@@ -1,0 +1,15 @@
+Use VdfBase.pkg
+
+Struct tWinBitmapInfoHeader
+    Integer biSize
+    Integer biWidth
+    Integer biHeight
+    Short biPlanes
+    Short biBitCount
+    Integer biCompression
+    Integer biSizeImage
+    Integer biXPelsPerMeter
+    Integer biYPelsPerMeter
+    Integer biClrUsed
+    Integer biClrImportant
+End_Struct

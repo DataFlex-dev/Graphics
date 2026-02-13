@@ -129,3 +129,34 @@ Define CF_PRIVATELAST       for |CI$02FF // See CF_PRIVATEFIRST.
 Define CF_GDIOBJFIRST       for |CI$0300 // Start of a range of Integer values for application-defined GDI Object clipboard formats. The End of the range is CF_GDIOBJLAST.
                                          // Handles associated with clipboard formats in this range are not automatically deleted using the GlobalFree Function when the clipboard is emptied. Also, when using values in this range, the hMem parameter is not a Handle to a GDI Object, but is a Handle allocated by the GlobalAlloc Function with the GMEM_MOVEABLE flag.
 Define CF_GDIOBJLAST        for |CI$03FF // See CF_GDIOBJFIRST.
+
+Define ERROR_ACCESS_DENIED      for 5 // Another application has the clipboard locked via OpenClipboard.
+Define ERROR_CLIPBOARD_NOT_OPEN for 1418 // Thread has not opened clipboard You attempted to call SetClipboardData or GetClipboardData without calling OpenClipboard first.
+Define ERROR_INVALID_HANDLE     for 6 // Invalid Handle The Handle passed to the Function (like hMem in SetClipboardData) is null or corrupted.
+Define ERROR_NOT_ENOUGH_MEMORY  for 8 // Out of memory The system could not allocate enough memory to store the data you are trying to "set" on the clipboard.
+
+Define PROCESS_QUERY_LIMITED_INFORMATION    for |CI$1000
+Define PROCESS_QUERY_INFORMATION            for |CI$0400
+Define PROCESS_VM_READ                      for |CI$0010
+
+External_Function WINAPI_GetWindowThreadProcessId "GetWindowThreadProcessId" User32.dll ;
+    Handle hWnd ;
+    Pointer lpdwProcessId ;
+    Returns DWord
+    
+External_Function WINAPI_OpenProcess "OpenProcess" Kernel32.dll ;
+    DWord dwDesiredAccess ;
+    Boolean bInheritHandle ;
+    DWord dwProcessId ;
+    Returns Handle
+    
+External_Function WINAPI_QueryFullProcessImageName "QueryFullProcessImageNameW" Kernel32.dll ;
+    Handle hProcess ;
+    DWord  dwFlags ;
+    Pointer lpExeName ;
+    Pointer lpdwSize ;
+    Returns Boolean
+
+External_Function WINAPI_CloseHandle "CloseHandle" Kernel32.dll ;
+    Handle hObject ;
+    Returns Boolean

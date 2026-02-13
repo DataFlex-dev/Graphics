@@ -1,0 +1,18 @@
+﻿Use vdfbase.pkg
+Use Structs\tUUID.Pkg
+
+External_Function WinAPI_UuidIsNil "UuidIsNil" rpcrt4.dll ;
+    Pointer aUuid ;
+    Pointer aUUIDStatus ;
+    Returns UShort
+
+External_Function WinAPI_UuidFromString "UuidFromStringW" Rpcrt4.dll ;
+    Pointer lpUUIDString ;
+    Pointer aUuid ;
+    Returns Integer
+
+External_Function WinAPI_UuidEqual "UuidEqual" rpcrt4.dll ;
+    Pointer aUuid1 ;
+    Pointer aUuid2 ;
+    Pointer aUUIDStatus ;
+    Returns Integer

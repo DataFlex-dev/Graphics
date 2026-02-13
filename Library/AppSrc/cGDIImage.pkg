@@ -2062,4 +2062,33 @@ Class cGDIImage is a cObject
 
         Function_Return nValue
     End_Function
+    
+    { Description = "Update or add a value for the longitude or latitude of the image" }
+    { MethodType = Method }
+    Function UpdateGPSInfo Integer eValueProperty Number nDegrees Returns gpStatus
+        Pointer pImage
+        tuRational[] uratValues
+        tPropertyItem ImagePropertyItem
+        gpStatus eStatus
+
+        Get ppImage to pImage
+        If (pImage <> 0) Begin    
+            Move (Integer (nDegrees)) to uratValues[0].uiValue1
+            Move 1 to uratValues[0].uiValue2
+            Move ((nDegrees - uratValues[0].uiValue1) * 60) to nDegrees
+            Move (Integer (nDegrees)) to uratValues[1].uiValue1
+            Move 1 to uratValues[1].uiValue2
+            Move ((nDegrees - uratValues[1].uiValue1) * 60) to nDegrees
+            Move (Round (nDegrees)) to uratValues[2].uiValue1
+            Move 1 to uratValues[2].uiValue2
+            
+            Move eValueProperty to ImagePropertyItem.id
+            Move gpPropertyTagTypeRational to ImagePropertyItem.type
+            Move (SizeOfType (tuRational) * 3) to ImagePropertyItem.length
+            Move (AddressOf (uratValues)) to ImagePropertyItem.value
+            Move (GdipSetPropertyItem (pImage, AddressOf (ImagePropertyItem))) to eStatus
+        End
+        
+        Function_Return eStatus
+    End_Function
 End_Class

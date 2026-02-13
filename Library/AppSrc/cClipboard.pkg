@@ -218,8 +218,12 @@ Class cClipboard is a cObject
     { Description += "If the clipboard could be opened the pbIsOpen property keeping track of the opened state is updated." }
     Procedure DoOpen Handle hWnd
         Boolean bSuccess
-        Handle hWindow
-        Integer iError
+        Handle hWindow hWndOpened hProcess
+        Integer iError iRetval iSize
+        Pointer pProcessId pExeName
+        WString wsExeName
+        String sError
+        DWord dwProcessId
 
         If (num_arguments > 0) Begin
             Move hWnd to hWindow
@@ -235,7 +239,34 @@ Class cClipboard is a cObject
         End
         Else Begin
             Set pbIsOpen to False
-            Move (ShowLastError ()) to iError
+            Move (GetLastError()) to iError
+            If (iError = ERROR_ACCESS_DENIED) Begin
+                Move (WinAPI_GetOpenClipboardWindow ()) to hWndOpened 
+                If (hWndOpened <> 0) Begin
+                    Move (SFormat ("Cannot open Clipboard, is currently opened by %1", hWndOpened)) to sError
+                    Move 0 to dwProcessId
+                    Move (WINAPI_GetWindowThreadProcessId (hWndOpened, AddressOf (dwProcessId))) to iRetval
+                    If (dwProcessId <> 0) Begin
+                        Move (WINAPI_OpenProcess (PROCESS_QUERY_LIMITED_INFORMATION, False, dwProcessId)) to hProcess
+                        If (hProcess <> 0) Begin
+                            Move (ZeroString (MAX_PATH)) to wsExeName
+                            Move MAX_PATH to iSize
+                            Move (WINAPI_QueryFullProcessImageName (hProcess, 0, AddressOf (wsExeName), AddressOf (iSize))) to iRetval
+                            If (iRetval <> 0) Begin
+                                Move (SFormat ("Cannot open Clipboard, is currently opened by %1", wsExeName)) to sError
+                            End
+                            Move (WINAPI_CloseHandle (hProcess)) to iRetval
+                        End    
+                    End
+                    Error DFERR_WINDOWS sError
+                End
+                Else Begin
+                    Move (ShowLastError ()) to iError
+                End
+            End
+            Else Begin
+                Move (ShowLastError ()) to iError
+            End
         End
     End_Procedure
 

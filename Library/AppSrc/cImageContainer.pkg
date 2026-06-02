@@ -279,15 +279,18 @@ Class cImageContainer is a DfBaseControl
     { Description += "Changes the value of the global ERR indicator" }
     { MethodType = Method }
     Function CanPaste Returns Boolean
-        Boolean bSuccess
+        Boolean bSuccess bIsOpen
         Handle hBitmap hoClipboard
 
         Move False to Err
         Get Create (RefClass (cClipboard)) to hoClipboard
         Send DoOpen of hoClipboard
         If (not (Err)) Begin
-            Get ppData of hoClipboard CF_BITMAP to hBitmap
-            Send DoClose of hoClipboard
+            Get pbIsOpen of hoClipboard to bIsOpen
+            If (bIsOpen) Begin
+                Get ppData of hoClipboard CF_BITMAP to hBitmap
+                Send DoClose of hoClipboard
+            End
         End
         Send Destroy of hoClipboard
 
@@ -723,23 +726,26 @@ Class cImageContainer is a DfBaseControl
     { Description += "Sets the name reference to a previous loaded image to an empty string." }
     { MethodType = Method }
     Procedure Paste
-        Boolean bSuccess
+        Boolean bSuccess bIsOpen
         Handle hBitmap hoClipboard
 
         Move False to Err
         Get Create (RefClass (cClipboard)) to hoClipboard
         Send DoOpen of hoClipboard
         If (not (Err)) Begin
-            Get ppData of hoClipboard CF_BITMAP to hBitmap
-            If (hBitmap <> 0) Begin
-                Get LoadBitmapFromHBITMAP hBitmap to bSuccess
-                If (bSuccess) Begin
-                    Set Changed_State to True
-                    Send OnImageSelected ""
-                    Set ppsImage to ""
+            Get pbIsOpen of hoClipboard to bIsOpen
+            If (bIsOpen) Begin
+                Get ppData of hoClipboard CF_BITMAP to hBitmap
+                If (hBitmap <> 0) Begin
+                    Get LoadBitmapFromHBITMAP hBitmap to bSuccess
+                    If (bSuccess) Begin
+                        Set Changed_State to True
+                        Send OnImageSelected ""
+                        Set ppsImage to ""
+                    End
                 End
+                Send DoClose of hoClipboard
             End
-            Send DoClose of hoClipboard
         End
         Send Destroy of hoClipboard
     End_Procedure

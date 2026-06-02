@@ -1943,6 +1943,7 @@ Class cGDIImage is a cObject
         UInteger uiBackGroundColor
         Void_Type iVoid
         tARGColor PixelColorInfo
+        Boolean bIsOpen
 
         // Get a handle for a 32bpp DIB from gdiplus
         Get ppImage to pImage
@@ -1964,10 +1965,13 @@ Class cGDIImage is a cObject
                 Get Create (RefClass (cClipboard)) to hoClipboard
                 Move False to Err
                 Send DoOpen of hoClipboard
-                Send DoEmpty of hoClipboard
-                Set ppData of hoClipboard CF_BITMAP to hDDB
-                // Do not delete the hDDB handle, the clipboard owns it
-                Send Doclose of hoClipboard
+                Get pbIsOpen of hoClipboard to bIsOpen
+                If (bIsOpen) Begin
+                    Send DoEmpty of hoClipboard
+                    Set ppData of hoClipboard CF_BITMAP to hDDB
+                    // Do not delete the hDDB handle, the clipboard owns it
+                    Send Doclose of hoClipboard
+                End
                 Send Destroy of hoClipboard
 
                 Move (DeleteObject (hBitmap)) to iVoid

@@ -14,6 +14,8 @@ Class cClipboard is a cObject
         { Visibility = Private }
         { Description = "Keeps the open state of the Windows Clipboard" }
         Property Boolean pbIsOpen False
+        { Description = "If opening the Windows Clipboard fails retry it NN times" }
+        Property Integer piRetries 10
     End_Procedure
 
     { MethodType = Event }
@@ -219,7 +221,7 @@ Class cClipboard is a cObject
     Procedure DoOpen Handle hWnd
         Boolean bSuccess
         Handle hWindow hWndOpened hProcess
-        Integer iError iRetval iSize
+        Integer iError iRetval iSize iRetries iRetryCount
         Pointer pProcessId pExeName
         WString wsExeName
         String sError
@@ -261,7 +263,19 @@ Class cClipboard is a cObject
                     Error DFERR_WINDOWS sError
                 End
                 Else Begin
-                    Move (ShowLastError ()) to iError
+                    // First retry opening
+                    Get piRetries to iRetries
+                    
+                    While (not (bSuccess) and (iRetryCount < iRetries))
+                        Move (WinAPI_OpenClipboard (hWindow)) to bSuccess
+                        If (not (bSuccess)) Begin
+                            Sleep 1
+                            Increment iRetryCount
+                        End
+                    Loop
+                    If (not (bSuccess)) Begin
+                        Move (ShowLastError ()) to iError
+                    End
                 End
             End
             Else Begin

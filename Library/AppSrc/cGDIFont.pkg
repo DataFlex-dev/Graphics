@@ -162,9 +162,7 @@ Class cGDIFont is a cObject
     { Description += "Calls HandleGDIError when the Font object is not available." }
     { Description += "Sends HandleGDIResult if the GDI+ GetFontSize function fails" }
     { MethodType = Method }
-CompilerLevelWarning AmbiguousFunctions Off // Suppress the ambigious function declaration of FontSize
     Function FontSize Returns Float
-CompilerLevelWarning AmbiguousFunctions On
         gpStatus eStatus
         Pointer pFont
         Float fSize

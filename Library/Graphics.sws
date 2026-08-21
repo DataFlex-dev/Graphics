@@ -1,4 +1,10 @@
-[Properties]
-Version=25.0
-[WorkspacePaths]
-ConfigFile=.\Programs\Config.ws
+{
+    "df": 26.0,
+    "package": {
+        "icon": "2022-09-07 Graphics Icon.png",
+        "license": "BSD-3-Clause",
+        "version": "3.5.2"
+    },
+    "workspaceName": "Graphics",
+    "description": "Graphics Library"
+}

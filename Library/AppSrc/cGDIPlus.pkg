@@ -599,7 +599,7 @@ Class cGDIPlus is a cObject
         // Convert pStream to a VT_DISPATCH
         Move 0 to vStream
         Move (StoreDw (AddressOf (vStream), 0, OLE_VT_Dispatch)) to iResult
-        Move (StoreDw (AddressOf (vStream), 8, pStream)) to iResult
+        Move (StorePtr (AddressOf (vStream), 8, pStream)) to iResult
         Set pvComObject of hoStream to vStream
 
         // Release the stream

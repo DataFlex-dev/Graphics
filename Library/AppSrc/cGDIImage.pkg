@@ -886,17 +886,37 @@ Class cGDIImage is a cObject
                                     If (iElements = 3) Begin // Should be for this type of property
                                         Move (ResizeArray (ImageValuePairs, iElements)) to ImageValuePairs
                                         Move C_$PropertyTagDegrees to ImageValuePairs[0].sName
-                                        Move (uratValues[0].uiValue1 / uratValues[0].uiValue2) to ImageValuePairs[0].vValue
+                                        If (uratValues[0].uiValue2 <> 0) Begin
+                                            Move (uratValues[0].uiValue1 / uratValues[0].uiValue2) to ImageValuePairs[0].vValue
+                                        End
+                                        Else Begin
+                                            Move "" to ImageValuePairs[0].vValue
+                                        End
                                         Move C_$PropertyTagMinutes to ImageValuePairs[1].sName
-                                        Move (uratValues[1].uiValue1 / uratValues[1].uiValue2) to ImageValuePairs[1].vValue
+                                        If (uratValues[1].uiValue2 <> 0) Begin
+                                            Move (uratValues[1].uiValue1 / uratValues[1].uiValue2) to ImageValuePairs[1].vValue
+                                        End
+                                        Else Begin
+                                            Move "" to ImageValuePairs[1].vValue
+                                        End
                                         Move C_$PropertyTagSeconds to ImageValuePairs[2].sName
-                                        Move (uratValues[2].uiValue1 / uratValues[2].uiValue2) to ImageValuePairs[2].vValue
+                                        If (uratValues[2].uiValue2 <> 0) Begin
+                                            Move (uratValues[2].uiValue1 / uratValues[2].uiValue2) to ImageValuePairs[2].vValue
+                                        End
+                                        Else Begin
+                                            Move "" to ImageValuePairs[2].vValue
+                                        End
                                         Move ImageValuePairs to ImageProperties[iItem].vValue
                                     End
                                     Case Break
                                 Case (PropertyItems[iItem].id = gpPropertyTagGpsGpsTime)
                                     If (iElements = 3) Begin // Should be for this type of property
-                                        Move (SFormat ("%1:%2:%3", (uratValues[0].uiValue1 / uratValues[0].uiValue2), (uratValues[1].uiValue1 / uratValues[1].uiValue2), (uratValues[2].uiValue1 / uratValues[2].uiValue2))) to ImageProperties[iItem].vValue
+                                        If (uratValues[0].uiValue2 <> 0 and uratValues[1].uiValue2 <> 0 and uratValues[2].uiValue2 <> 0) Begin                                        
+                                            Move (SFormat ("%1:%2:%3", (uratValues[0].uiValue1 / uratValues[0].uiValue2), (uratValues[1].uiValue1 / uratValues[1].uiValue2), (uratValues[2].uiValue1 / uratValues[2].uiValue2))) to ImageProperties[iItem].vValue
+                                        End
+                                        Else Begin
+                                            Move "" to ImageProperties[iItem].vValue
+                                        End
                                     End
                                     Else Begin
                                         Move "" to ImageProperties[iItem].vValue
@@ -907,7 +927,12 @@ Class cGDIImage is a cObject
                                     Decrement iElements
                                     For iElement from 0 to iElements
                                         Get PropertyName PropertyItems[iItem].id to ImageValuePairs[iElement].sName
-                                        Move (uratValues[iElement].uiValue1 / uratValues[iElement].uiValue2) to ImageValuePairs[iElement].vValue
+                                        If (uratValues[iElement].uiValue2 <> 0) Begin
+                                            Move (uratValues[iElement].uiValue1 / uratValues[iElement].uiValue2) to ImageValuePairs[iElement].vValue
+                                        End
+                                        Else Begin
+                                            Move "" to ImageValuePairs[iElement].vValue
+                                        End
                                     Loop
                                     Move ImageValuePairs to ImageProperties[iItem].vValue
                                     Case Break
